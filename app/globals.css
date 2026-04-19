@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------- */
+/* Font loading                                             */
+/* -------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* -------------------------------------------------------- */
+/* Base                                                      */
+/* -------------------------------------------------------- */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    @apply bg-ink-0 text-paper;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply font-sans;
+    min-height: 100dvh;
+    /* Hafif atmosferik gradient — saf siyah üzerinde derinlik hissi */
+    background:
+      radial-gradient(1200px circle at 50% -10%, rgba(0, 188, 212, 0.04), transparent 60%),
+      radial-gradient(800px circle at 85% 80%, rgba(232, 154, 60, 0.02), transparent 60%),
+      linear-gradient(170deg, #070b14 0%, #0c1220 40%, #0f1528 65%, #0a1018 100%);
+    background-attachment: fixed;
+  }
+
+  /* Serif başlıklar */
+  h1, h2, h3, h4 {
+    @apply font-display;
+    font-feature-settings: 'liga', 'kern';
+  }
+
+  /* Odak görünürlüğü (accessibility) */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-ink-0 rounded;
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(0, 188, 212, 0.35);
+    color: #fff;
+  }
+
+  /* Scrollbar — dark theme için ince ve minimal */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  /* Textarea reset */
+  textarea {
+    @apply font-sans;
+  }
+}
+
+/* -------------------------------------------------------- */
+/* Components                                                */
+/* -------------------------------------------------------- */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-card
+           bg-brand-500 text-ink-0 font-medium px-6 py-3
+           transition-all duration-200
+           hover:bg-brand-400 hover:shadow-glow-brand
+           active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-card
+           bg-ink-100 text-paper font-medium px-6 py-3
+           border border-ink-300
+           transition-all duration-200
+           hover:bg-ink-200 hover:border-ink-400
+           active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 text-muted
+           transition-colors duration-200
+           hover:text-paper;
+  }
+
+  .card-surface {
+    @apply bg-ink-50/80 backdrop-blur-sm border border-ink-200 rounded-card
+           shadow-card;
+  }
+
+  .input-field {
+    @apply w-full bg-ink-50 border border-ink-300 rounded-card
+           px-4 py-3 text-paper placeholder:text-faint
+           transition-colors duration-200
+           focus:border-brand-500 focus:outline-none
+           resize-none;
+  }
+
+  /* Streaming cursor */
+  .streaming-cursor::after {
+    content: '▊';
+    @apply text-brand-500 ml-0.5;
+    animation: cursor-blink 1s step-end infinite;
+  }
+
+  /* Mentor kartlarının üst kenarında renk şeridi */
+  .mentor-accent-top {
+    position: relative;
+  }
+  .mentor-accent-top::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent-color, theme('colors.brand.500'));
+    opacity: 0.9;
+  }
+}
+
+/* -------------------------------------------------------- */
+/* Utilities                                                 */
+/* -------------------------------------------------------- */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
