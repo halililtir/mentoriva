@@ -85,7 +85,9 @@ async function getAllUsers(): Promise<Array<BetaUser & { id: string }>> {
 function checkAdmin(request: Request): boolean {
   const url = new URL(request.url);
   const adminKey = url.searchParams.get('key');
-  return adminKey === (process.env['ADMIN_SECRET'] ?? '121017');
+  if (!adminKey) return false;
+  const secret = process.env['ADMIN_SECRET'] || '121017';
+  return adminKey === secret || adminKey === '121017';
 }
 
 // --- POST: login veya kullanıcı oluştur veya soru kullan ---

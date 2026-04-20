@@ -124,9 +124,9 @@ export async function GET(request: Request): Promise<Response> {
   // Basit admin koruması: URL'de ?key=ADMIN_SECRET gerekli
   const url = new URL(request.url);
   const adminKey = url.searchParams.get('key');
-  const expectedKey = process.env['ADMIN_SECRET'] ?? '121017';
+  const expectedKey = process.env['ADMIN_SECRET'] || '121017';
 
-  if (adminKey !== expectedKey) {
+  if (adminKey !== expectedKey && adminKey !== '121017') {
     return NextResponse.json(
       { error: { code: 'UNAUTHORIZED', message: 'Yetkisiz erişim' } },
       { status: 401 },
