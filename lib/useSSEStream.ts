@@ -31,9 +31,19 @@ export function useSSEStream<TEvent>() {
     setIsStreaming(true);
 
     try {
+      // Kullanıcı bilgisini header'a ekle (kota kontrolü için)
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      try {
+        const session = localStorage.getItem('mentoriva_session');
+        if (session) {
+          const parsed = JSON.parse(session);
+          if (parsed?.username) headers['x-mentoriva-user'] = parsed.username;
+        }
+      } catch {}
+
       const response = await fetch(options.url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(options.body),
         signal: abortController.signal,
       });

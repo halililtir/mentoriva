@@ -9,18 +9,19 @@ import type { MentorId, StreamEvent } from '@/types';
 interface Props {
   mentorId: MentorId;
   question: string;
+  cachedResponse?: string;
   onContinue: (response: string) => void;
   onBack: () => void;
 }
 
-export function SingleResponseView({ mentorId, question, onContinue, onBack }: Props) {
+export function SingleResponseView({ mentorId, question, cachedResponse, onContinue, onBack }: Props) {
   const mentor = getActiveMentor(mentorId);
   const accent = getAccent(mentor.accentColor);
-  const [content, setContent] = useState('');
-  const [done, setDone] = useState(false);
+  const [content, setContent] = useState(cachedResponse ?? '');
+  const [done, setDone] = useState(!!cachedResponse);
   const [error, setError] = useState<string | null>(null);
   const { start } = useSSEStream<StreamEvent>();
-  const started = useRef(false);
+  const started = useRef(!!cachedResponse);
 
   useEffect(() => {
     if (started.current) return;

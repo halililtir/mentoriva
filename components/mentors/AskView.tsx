@@ -82,19 +82,42 @@ export function AskView({ mentorIds, onSubmit, onBack }: Props) {
       </div>
 
       {/* Form */}
-      <label className="text-[11px] uppercase tracking-wider text-white/35 font-medium mb-2 block">
-        Sorunuz
+      <label className="text-[14px] text-white/60 font-medium mb-1 block">
+        Bugün neyi anlamak istiyorsun?
       </label>
+      <p className="text-[11px] text-white/25 mb-3">
+        Kısa ve net bir soru yaz. En iyi cevaplar tek cümlelik sorularla gelir.
+      </p>
       <textarea
         ref={taRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={isMulti ? 'Hepsine soracağın soruyu yaz…' : `${mentors[0]!.name.split(' ')[0]}'a ne sormak istersin?`}
+        placeholder={isMulti ? 'Hepsine soracağın soruyu yaz\u2026' : `${mentors[0]!.name.split(' ')[0]}'a ne sormak istersin?`}
         className="input-field text-base leading-relaxed min-h-[120px]"
         maxLength={INPUT_LIMITS.MAX_QUESTION_LENGTH + 10}
         aria-label="Sorunuz"
       />
+
+      {/* Örnek sorular */}
+      {!value && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {[
+            'İnsan neden kendini sabote eder?',
+            'Korku ile sezgi nasıl ayırt edilir?',
+            'Neden hep aynı hataları tekrarlıyorum?',
+            'Başarısızlık korkusu nasıl aşılır?',
+          ].map((q) => (
+            <button
+              key={q}
+              onClick={() => setValue(q)}
+              className="text-[11px] px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-white/35 hover:text-white/60 hover:border-white/15 transition-colors"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex gap-3 mt-4">
         <button onClick={() => canSubmit && onSubmit(trimmed)} disabled={!canSubmit} className="btn-primary">

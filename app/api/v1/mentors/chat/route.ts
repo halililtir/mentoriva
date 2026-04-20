@@ -147,6 +147,24 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  // Kullanıcı kota kontrolü (beta)
+  const username = request.headers.get('x-mentoriva-user');
+  if (username && process.env['KV_REST_API_URL']) {
+    try {
+      const { kv } = await import('@vercel/kv');
+      const raw = await kv.get(`user:${username}`);
+      if (raw) {
+        const user = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (user.questionsUsed >= user.questionLimit) {
+          return NextResponse.json(
+            { error: { code: 'QUOTA_EXCEEDED', message: 'Soru limitine ulaştın.' } },
+            { status: 429 },
+          );
+        }
+      }
+    } catch {}
+  }
+
   // Validation
   let body: unknown;
   try {

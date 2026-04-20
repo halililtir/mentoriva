@@ -29,6 +29,7 @@ export default function HomePage() {
   const [chat, setChat] = useState<ChatState | null>(null);
   const [premiumEmail, setPremiumEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [cachedResponses, setCachedResponses] = useState<Record<string, string>>({});
   const tokens = useTokens();
   const consumeToken = tokens.consumeToken;
 
@@ -64,6 +65,9 @@ export default function HomePage() {
   }, [selectedIds, tokens.isLoggedIn, tokens.canAsk, consumeToken]);
 
   const handleContinueToChat = useCallback((mentorId: MentorId, response: string) => {
+    // Cevabı cache'le — geri tuşuna basılırsa tekrar API çağrılmasın
+    const cacheKey = `${mentorId}:${question}`;
+    setCachedResponses((prev) => ({ ...prev, [cacheKey]: response }));
     setChat({ mentorId, question, response });
     setView('chat');
   }, [question]);
@@ -72,11 +76,12 @@ export default function HomePage() {
     setSelectedIds([]);
     setQuestion('');
     setChat(null);
+    setCachedResponses({});
     setView('gallery');
   }, []);
 
   const backToAsk = useCallback(() => {
-    setQuestion('');
+    // Soruyu ve cache'i koru — geri gelirse tekrar sormasın
     setChat(null);
     setView('ask');
   }, []);
@@ -176,38 +181,46 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Action bar */}
-          <div className="flex flex-col items-center gap-3 mt-8 animate-fade-up" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
-            <div className="flex items-center gap-3 flex-wrap justify-center">
-              {selectedIds.length === 0 && (
-                <span className="text-xs text-white/25">Bir mentor seç</span>
-              )}
-              {selectedIds.length === 1 && (
-                <>
-                  <button onClick={goToAsk} className="btn-primary">
-                    {getActiveMentor(selectedIds[0]!).name}{"'"}a sor →
-                  </button>
-                  <span className="text-xs text-white/25">veya 2-4 seçerek karşılaştır</span>
-                </>
-              )}
-              {selectedIds.length > 1 && (
-                <>
-                  <button onClick={goToAsk} className="btn-primary">
-                    Karşılaştır ({selectedIds.length}) →
-                  </button>
-                  <span className="text-xs text-white/25">{selectedIds.length} mentor seçildi</span>
-                </>
-              )}
+          {/* Action bar — mentor seçiliyken altta sabit */}
+          {selectedIds.length > 0 && (
+            <div className="fixed bottom-0 left-0 right-0 z-30 bg-[#070b14]/95 backdrop-blur-md border-t border-white/[0.06] px-5 py-3 sm:relative sm:bg-transparent sm:backdrop-blur-none sm:border-0 sm:mt-8 sm:py-0">
+              <div className="flex flex-col items-center gap-2 max-w-[1140px] mx-auto">
+                <div className="flex items-center gap-3 flex-wrap justify-center">
+                  {selectedIds.length === 1 && (
+                    <>
+                      <button onClick={goToAsk} className="btn-primary">
+                        {getActiveMentor(selectedIds[0]!).name}{"'"}a sor →
+                      </button>
+                      <span className="text-xs text-white/25 hidden sm:inline">veya 2-4 seçerek karşılaştır</span>
+                    </>
+                  )}
+                  {selectedIds.length > 1 && (
+                    <>
+                      <button onClick={goToAsk} className="btn-primary">
+                        Karşılaştır ({selectedIds.length}) →
+                      </button>
+                      <span className="text-xs text-white/25">{selectedIds.length} mentor seçildi</span>
+                    </>
+                  )}
+                </div>
+                {tokens.warningMessage && (
+                  <span className="text-xs text-amber-400/70">
+                    {tokens.warningMessage}
+                  </span>
+                )}
+              </div>
             </div>
-            {tokens.warningMessage && (
-              <span className="text-xs text-amber-400/70 animate-fade-up">
-                {tokens.warningMessage}
-              </span>
-            )}
-          </div>
+          )}
+
+          {/* Mentor seçilmemişken hint */}
+          {selectedIds.length === 0 && (
+            <div className="flex justify-center mt-8">
+              <span className="text-xs text-white/25">Bir mentor seç</span>
+            </div>
+          )}
 
           {/* Footer */}
-          <footer className="mt-14 pt-5 border-t border-white/[0.04] text-center space-y-4">
+          <footer className="mt-14 pt-5 pb-20 sm:pb-5 border-t border-white/[0.04] text-center space-y-4">
             <div className="flex items-center justify-center gap-5 text-xs text-white/25">
               <Link href="/test" className="hover:text-white/50 transition-colors">Testi Çöz</Link>
               <Link href="/hakkimizda" className="hover:text-white/50 transition-colors">Hakkımızda</Link>
@@ -244,6 +257,7 @@ export default function HomePage() {
           key={`${selectedIds[0]}-${question}`}
           mentorId={selectedIds[0]}
           question={question}
+          cachedResponse={cachedResponses[`${selectedIds[0]}:${question}`]}
           onContinue={(resp) => handleContinueToChat(selectedIds[0]!, resp)}
           onBack={resetToGallery}
         />
