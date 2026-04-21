@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/shared/Logo';
 
@@ -24,8 +24,9 @@ interface Feedback {
 }
 
 export default function AdminPage() {
-  const [key, setKey] = useState('');
-  const [auth, setAuth] = useState(false);
+  const [password, setPassword] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [tab, setTab] = useState<'users' | 'feedback'>('users');
   const [users, setUsers] = useState<BetaUser[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -36,45 +37,71 @@ export default function AdminPage() {
   const [newUser, setNewUser] = useState({ username: '', password: '', questionLimit: '10', notes: '' });
   const [formMsg, setFormMsg] = useState('');
 
-  const adminKey = () => `key=${encodeURIComponent(key)}`;
+  // Sayfa yüklendiğinde cookie kontrolü
+  useEffect(() => {
+    fetch('/api/admin/check')
+      .then((res) => {
+        if (res.ok) {
+          setAuthenticated(true);
+          loadData();
+        }
+      })
+      .catch(() => {})
+      .finally(() => setChecking(false));
+  }, []);
 
-  const login = async () => {
+  const handleLogin = async () => {
+    if (!password.trim()) return;
     setLoading(true);
     setError('');
+
     try {
-      const [uRes, fRes] = await Promise.all([
-        fetch(`/api/v1/users?${adminKey()}`),
-        fetch(`/api/v1/feedback?${adminKey()}`),
-      ]);
-      if (!uRes.ok) throw new Error('Yanlış anahtar');
-      const uData = await uRes.json();
-      const fData = await fRes.json();
-      setUsers(uData.users ?? []);
-      setFeedbacks(fData.feedbacks ?? []);
-      setAuth(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Hata');
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? 'Giriş başarısız');
+        return;
+      }
+
+      setAuthenticated(true);
+      loadData();
+    } catch {
+      setError('Bağlantı hatası');
     } finally {
       setLoading(false);
     }
   };
 
-  const refresh = async () => {
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
+    setAuthenticated(false);
+    setPassword('');
+    setUsers([]);
+    setFeedbacks([]);
+  };
+
+  const loadData = async () => {
     setLoading(true);
     try {
       const [uRes, fRes] = await Promise.all([
-        fetch(`/api/v1/users?${adminKey()}`),
-        fetch(`/api/v1/feedback?${adminKey()}`),
+        fetch('/api/v1/users?key=121017'),
+        fetch('/api/v1/feedback?key=121017'),
       ]);
       if (uRes.ok) { const d = await uRes.json(); setUsers(d.users ?? []); }
       if (fRes.ok) { const d = await fRes.json(); setFeedbacks(d.feedbacks ?? []); }
-    } finally { setLoading(false); }
+    } catch {} finally { setLoading(false); }
   };
 
   const createUser = async () => {
     setFormMsg('');
     try {
-      const res = await fetch(`/api/v1/users?${adminKey()}`, {
+      const res = await fetch('/api/v1/users?key=121017', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -89,38 +116,38 @@ export default function AdminPage() {
       if (!res.ok) { setFormMsg(data.error ?? 'Hata'); return; }
       setFormMsg('Kullanıcı oluşturuldu');
       setNewUser({ username: '', password: '', questionLimit: '10', notes: '' });
-      refresh();
+      loadData();
     } catch { setFormMsg('Bağlantı hatası'); }
   };
 
   const toggleActive = async (u: BetaUser) => {
-    await fetch(`/api/v1/users?${adminKey()}`, {
+    await fetch('/api/v1/users?key=121017', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: u.username, isActive: !u.isActive }),
     });
-    refresh();
+    loadData();
   };
 
   const resetQuestions = async (u: BetaUser) => {
-    await fetch(`/api/v1/users?${adminKey()}`, {
+    await fetch('/api/v1/users?key=121017', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: u.username, questionsUsed: 0 }),
     });
-    refresh();
+    loadData();
   };
 
   const deleteUser = async (username: string) => {
     if (!confirm(`"${username}" silinecek. Emin misin?`)) return;
-    await fetch(`/api/v1/users?${adminKey()}&username=${encodeURIComponent(username)}`, {
+    await fetch(`/api/v1/users?key=121017&username=${encodeURIComponent(username)}`, {
       method: 'DELETE',
     });
-    refresh();
+    loadData();
   };
 
   const fmt = (iso: string | null) => {
-    if (!iso) return '—';
+    if (!iso) return '\u2014';
     try {
       return new Intl.DateTimeFormat('tr-TR', {
         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
@@ -128,19 +155,40 @@ export default function AdminPage() {
     } catch { return iso; }
   };
 
-  if (!auth) {
+  // Loading
+  if (checking) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center">
+        <Logo />
+      </div>
+    );
+  }
+
+  // Login ekranı
+  if (!authenticated) {
     return (
       <div className="min-h-dvh flex items-center justify-center px-5">
         <div className="w-full max-w-sm space-y-6 text-center">
           <Logo />
           <h1 className="font-display text-2xl">Admin Panel</h1>
+          <p className="text-white/35 text-sm">Yönetim paneline erişmek için şifreyi girin.</p>
           <div className="space-y-3">
-            <input type="password" value={key} onChange={(e) => setKey(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && login()}
-              placeholder="Admin anahtarı" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white/90 text-center placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" autoFocus />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              placeholder="Admin şifresi"
+              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white/90 text-center placeholder:text-white/20 focus:outline-none focus:border-brand-500/40"
+              autoFocus
+            />
             {error && <p className="text-red-400 text-sm">{error}</p>}
-            <button onClick={login} disabled={loading} className="w-full py-3 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium">
-              {loading ? 'Kontrol...' : 'Giriş'}
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium hover:bg-brand-400 transition-colors disabled:opacity-30"
+            >
+              {loading ? 'Kontrol ediliyor...' : 'Giriş'}
             </button>
           </div>
         </div>
@@ -148,6 +196,7 @@ export default function AdminPage() {
     );
   }
 
+  // Admin Dashboard
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#070b14]/85 backdrop-blur-md">
@@ -157,10 +206,12 @@ export default function AdminPage() {
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 font-medium uppercase tracking-wider">Admin</span>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={refresh} disabled={loading} className="text-xs text-white/35 hover:text-white/60 transition-colors">
+            <button onClick={loadData} disabled={loading} className="text-xs text-white/35 hover:text-white/60 transition-colors">
               {loading ? '...' : 'Yenile'}
             </button>
-            <button onClick={() => { setAuth(false); setKey(''); }} className="text-xs text-white/20 hover:text-white/40">Çıkış</button>
+            <button onClick={handleLogout} className="text-xs text-white/20 hover:text-white/40 transition-colors">
+              Çıkış
+            </button>
           </div>
         </div>
       </header>
@@ -208,7 +259,7 @@ export default function AdminPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-white/80 text-sm">{u.username}</span>
-                        <span className="text-[10px] text-white/25 font-mono">şifre: {u.password}</span>
+                        <span className="text-[10px] text-white/25 font-mono">pw: {u.password}</span>
                         {!u.isActive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">Pasif</span>}
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-[11px] text-white/30">
