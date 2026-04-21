@@ -21,12 +21,9 @@ export interface RateLimitResult {
   remaining: number;
 }
 
-async function getKV() {
-  if (process.env['KV_REST_API_URL']) {
-    const { kv } = await import('@vercel/kv');
-    return kv;
-  }
-  return null;
+async function getRateLimitKV() {
+  const { getKV } = await import('@/lib/kv');
+  return getKV();
 }
 
 const SCOPE_CONFIG: Record<RateLimitScope, { limit: number; windowSeconds: number }> = {
@@ -55,7 +52,7 @@ export async function checkRateLimit(
     return { allowed: true, message: '', remaining: 999 };
   }
 
-  const kv = await getKV();
+  const kv = await getRateLimitKV();
   if (!kv) return { allowed: true, message: '', remaining: 999 };
 
   try {

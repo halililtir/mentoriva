@@ -56,8 +56,9 @@ async function saveFeedback(entry: FeedbackEntry): Promise<void> {
 
   // KV varsa oraya kaydet
   if (process.env['KV_REST_API_URL']) {
-    const { kv } = await import('@vercel/kv');
-    await kv.set(key, JSON.stringify(entry));
+    const { getKV } = await import('@/lib/kv');
+    const redis = getKV();
+    if (redis) await redis.set(key, JSON.stringify(entry));
     // TTL koymuyoruz — geri bildirimler kalıcı
     return;
   }
@@ -141,8 +142,12 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   try {
-    const { kv } = await import('@vercel/kv');
-    const keys = await kv.keys('feedback:*');
+    const { getKV } = await import('@/lib/kv');
+    const kv = getKV();
+    if (!kv) {
+      return NextResponse.json({ feedbacks: [], total: 0 });
+    }
+    const keys: string[] = await kv.keys('feedback:*');
 
     const feedbacks: Array<FeedbackEntry & { id: string }> = [];
     for (const key of keys) {

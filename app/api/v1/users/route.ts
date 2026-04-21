@@ -28,48 +28,46 @@ interface BetaUser {
 // --- In-memory fallback (local dev) ---
 const memoryStore: Record<string, BetaUser> = {};
 
-async function getKV() {
-  if (process.env['KV_REST_API_URL']) {
-    const { kv } = await import('@vercel/kv');
-    return kv;
-  }
-  return null;
+async function getUserKV() {
+  const { getKV } = await import('@/lib/kv');
+  return getKV();
 }
 
 async function getUser(username: string): Promise<BetaUser | null> {
-  const kv = await getKV();
-  if (kv) {
-    const raw = await kv.get(`user:${username}`);
+  const kv = getUserKV();
+  const redis = await kv;
+  if (redis) {
+    const raw = await redis.get(`user:${username}`);
     return raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) as BetaUser : null;
   }
   return memoryStore[username] ?? null;
 }
 
 async function setUser(username: string, user: BetaUser): Promise<void> {
-  const kv = await getKV();
-  if (kv) {
-    await kv.set(`user:${username}`, JSON.stringify(user));
+  const redis = await getUserKV();
+  if (redis) {
+    await redis.set(`user:${username}`, JSON.stringify(user));
   } else {
     memoryStore[username] = user;
   }
 }
 
-async function deleteUser(username: string): Promise<void> {
-  const kv = await getKV();
-  if (kv) {
-    await kv.del(`user:${username}`);
+async function deleteUserKV(username: string): Promise<void> {
+  const redis = await getUserKV();
+  if (redis) {
+    await redis.del(`user:${username}`);
   } else {
     delete memoryStore[username];
   }
 }
 
 async function getAllUsers(): Promise<Array<BetaUser & { id: string }>> {
-  const kv = await getKV();
-  if (kv) {
-    const keys = await kv.keys('user:*');
+  const redis = await getUserKV();
+  if (redis) {
+    const keys: string[] = await redis.keys('user:*');
     const users: Array<BetaUser & { id: string }> = [];
     for (const key of keys) {
-      const raw = await kv.get(key);
+      const raw = await redis.get(key);
       if (raw) {
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
         users.push({ ...parsed as BetaUser, id: key as string });
@@ -242,6 +240,6 @@ export async function DELETE(request: Request): Promise<Response> {
   const username = url.searchParams.get('username');
   if (!username) return NextResponse.json({ error: 'username gerekli' }, { status: 400 });
 
-  await deleteUser(username.toLowerCase());
+  await deleteUserKV(username.toLowerCase());
   return NextResponse.json({ success: true });
 }
