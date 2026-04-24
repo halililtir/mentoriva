@@ -1,23 +1,26 @@
 /**
- * KV Helper — Upstash Redis üzerinden key-value işlemleri.
- *
- * Tüm API route'ları bu modülü kullanır.
- * KV_REST_API_URL ve KV_REST_API_TOKEN env variable'ları gerekir.
- * Yoksa null döner (fallback: in-memory veya skip).
+ * KV — Upstash Redis bağlantısı.
+ * Tüm projede tek giriş noktası.
  */
 
-import { Redis } from '@upstash/redis';
+let instance: any = null;
+let tried = false;
 
-let redis: Redis | null = null;
-
-export function getKV(): Redis | null {
-  if (redis) return redis;
+export function getKV(): any {
+  if (instance) return instance;
+  if (tried) return null;
+  tried = true;
 
   const url = process.env['KV_REST_API_URL'];
   const token = process.env['KV_REST_API_TOKEN'];
 
   if (!url || !token) return null;
 
-  redis = new Redis({ url, token });
-  return redis;
+  try {
+    const { Redis } = require('@upstash/redis');
+    instance = new Redis({ url, token });
+    return instance;
+  } catch {
+    return null;
+  }
 }

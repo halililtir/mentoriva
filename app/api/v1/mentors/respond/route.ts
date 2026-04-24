@@ -17,6 +17,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { getKV } from '@/lib/kv';
 import { streamMentorResponse } from '@/lib/claude/client';
 import { checkRateLimit, getClientIp } from '@/lib/claude/rate-limit';
 import { INPUT_LIMITS } from '@/lib/features';
@@ -100,7 +101,6 @@ export async function POST(request: Request): Promise<Response> {
   const username = request.headers.get('x-mentoriva-user');
   if (username) {
     try {
-      const { getKV } = await import('@/lib/kv');
       const redis = getKV();
       if (redis) {
         const raw = await redis.get(`user:${username}`);
