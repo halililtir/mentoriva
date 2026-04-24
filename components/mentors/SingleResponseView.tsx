@@ -12,9 +12,10 @@ interface Props {
   cachedResponse?: string;
   onContinue: (response: string) => void;
   onBack: () => void;
+  onResponseComplete?: () => void;
 }
 
-export function SingleResponseView({ mentorId, question, cachedResponse, onContinue, onBack }: Props) {
+export function SingleResponseView({ mentorId, question, cachedResponse, onContinue, onBack, onResponseComplete }: Props) {
   const mentor = getActiveMentor(mentorId);
   const accent = getAccent(mentor.accentColor);
   const [content, setContent] = useState(cachedResponse ?? '');
@@ -22,6 +23,7 @@ export function SingleResponseView({ mentorId, question, cachedResponse, onConti
   const [error, setError] = useState<string | null>(null);
   const { start } = useSSEStream<StreamEvent>();
   const started = useRef(!!cachedResponse);
+  const tokenConsumed = useRef(!!cachedResponse);
 
   useEffect(() => {
     if (started.current) return;
@@ -33,14 +35,27 @@ export function SingleResponseView({ mentorId, question, cachedResponse, onConti
       body: { question, mentorIds: [mentorId] },
       onEvent: (ev) => {
         if (ev.type === 'delta' && 'text' in ev) { text += ev.text; setContent(text); }
-        else if (ev.type === 'end') setDone(true);
+        else if (ev.type === 'end') {
+          setDone(true);
+          // Cevap tamamlandı — token'ı şimdi tüket
+          if (!tokenConsumed.current && onResponseComplete) {
+            tokenConsumed.current = true;
+            onResponseComplete();
+          }
+        }
         else if (ev.type === 'error' && 'message' in ev) setError(ev.message);
         else if (ev.type === 'crisis') setError(ev.message);
       },
       onError: (e) => setError(e.message),
-      onComplete: () => { if (!done) setDone(true); },
+      onComplete: () => {
+        if (!done) setDone(true);
+        if (!tokenConsumed.current && onResponseComplete) {
+          tokenConsumed.current = true;
+          onResponseComplete();
+        }
+      },
     });
-  }, [mentorId, question, start, done]);
+  }, [mentorId, question, start, done, onResponseComplete]);
 
   return (
     <div className="mx-auto max-w-[680px] px-5 py-10 sm:py-14 animate-fade-up">

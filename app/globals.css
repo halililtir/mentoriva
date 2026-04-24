@@ -114,6 +114,12 @@
            transition-colors duration-200
            focus:border-brand-500 focus:outline-none
            resize-none;
+    font-size: 16px; /* iOS zoom engellemek için min 16px */
+  }
+
+  /* Tüm input ve textarea'larda iOS zoom engelle */
+  input, textarea, select {
+    font-size: 16px !important;
   }
 
   /* Streaming cursor */

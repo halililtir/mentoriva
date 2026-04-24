@@ -47,22 +47,20 @@ export default function HomePage() {
   const goToAsk = useCallback(() => {
     if (selectedIds.length === 0) return;
     if (!tokens.isLoggedIn) { window.location.href = '/giris'; return; }
-    if (!tokens.canAsk) { setView('premium'); return; }
     setView('ask');
-  }, [selectedIds, tokens.isLoggedIn, tokens.canAsk]);
+  }, [selectedIds, tokens.isLoggedIn]);
 
   const handleSubmitQuestion = useCallback(async (q: string) => {
     if (!tokens.isLoggedIn) { window.location.href = '/giris'; return; }
-    // Token'ı tüket — server kontrol eder
-    const ok = await consumeToken();
-    if (!ok) { setView('premium'); return; }
+    if (tokens.remaining <= 0) { setView('premium'); return; }
+    // Token'ı burada tüketME — cevap geldikten sonra tüketilecek
     setQuestion(q);
     if (selectedIds.length === 1) {
       setView('single-response');
     } else {
       setView('compare');
     }
-  }, [selectedIds, tokens.isLoggedIn, consumeToken]);
+  }, [selectedIds, tokens.isLoggedIn, tokens.remaining]);
 
   const handleContinueToChat = useCallback((mentorId: MentorId, response: string) => {
     // Cevabı cache'le — geri tuşuna basılırsa tekrar API çağrılmasın
@@ -260,6 +258,7 @@ export default function HomePage() {
           cachedResponse={cachedResponses[`${selectedIds[0]}:${question}`]}
           onContinue={(resp) => handleContinueToChat(selectedIds[0]!, resp)}
           onBack={resetToGallery}
+          onResponseComplete={() => { consumeToken(); }}
         />
       )}
 
@@ -271,6 +270,7 @@ export default function HomePage() {
           question={question}
           onSelect={handleContinueToChat}
           onBack={backToAsk}
+          onResponseComplete={() => { consumeToken(); }}
         />
       )}
 

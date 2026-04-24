@@ -12,9 +12,10 @@ interface Props {
   question: string;
   onSelect: (mentorId: MentorId, response: string) => void;
   onBack: () => void;
+  onResponseComplete?: () => void;
 }
 
-export function CompareView({ mentorIds, question, onSelect, onBack }: Props) {
+export function CompareView({ mentorIds, question, onSelect, onBack, onResponseComplete }: Props) {
   const [states, setStates] = useState<Record<string, MentorResponseState>>(() => {
     const s: Record<string, MentorResponseState> = {};
     mentorIds.forEach((id) => { s[id] = { status: 'pending', content: '' }; });
@@ -22,6 +23,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack }: Props) {
   });
   const { start } = useSSEStream<StreamEvent>();
   const started = useRef(false);
+  const tokenConsumed = useRef(false);
 
   useEffect(() => {
     if (started.current) return;
@@ -41,6 +43,12 @@ export function CompareView({ mentorIds, question, onSelect, onBack }: Props) {
           if (ev.type === 'error') return { ...prev, [mid]: { ...cur, status: 'error', error: ev.message } };
           return prev;
         });
+      },
+      onComplete: () => {
+        if (!tokenConsumed.current && onResponseComplete) {
+          tokenConsumed.current = true;
+          onResponseComplete();
+        }
       },
     });
   }, [mentorIds, question, start]);
