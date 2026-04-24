@@ -20,11 +20,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   body {
     @apply font-sans;
     min-height: 100dvh;
+    overflow-x: hidden;
     /* Hafif atmosferik gradient — saf siyah üzerinde derinlik hissi */
     background:
       radial-gradient(1200px circle at 50% -10%, rgba(0, 188, 212, 0.04), transparent 60%),

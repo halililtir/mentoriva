@@ -53,7 +53,7 @@ export default function HomePage() {
 
   const handleSubmitQuestion = useCallback(async (q: string) => {
     if (!tokens.isLoggedIn) { window.location.href = '/giris'; return; }
-    if (!tokens.canAsk) { setView('premium'); return; }
+    // Token'ı tüket — server kontrol eder
     const ok = await consumeToken();
     if (!ok) { setView('premium'); return; }
     setQuestion(q);
@@ -62,7 +62,7 @@ export default function HomePage() {
     } else {
       setView('compare');
     }
-  }, [selectedIds, tokens.isLoggedIn, tokens.canAsk, consumeToken]);
+  }, [selectedIds, tokens.isLoggedIn, consumeToken]);
 
   const handleContinueToChat = useCallback((mentorId: MentorId, response: string) => {
     // Cevabı cache'le — geri tuşuna basılırsa tekrar API çağrılmasın
