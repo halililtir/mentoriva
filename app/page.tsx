@@ -117,15 +117,17 @@ export default function HomePage() {
 
       {/* Kalan hak sayacı — sadece giriş yapanlara */}
       {tokens.isLoggedIn && view !== 'premium' && (
-        <div className="mx-auto max-w-[1140px] w-full px-5 pt-3 flex items-center justify-between">
-          <span className="text-[11px] text-white/20">
-            Hoş geldin, <span className="text-white/40">{tokens.username}</span>
+        <div className="mx-auto max-w-[1140px] w-full px-5 pt-4 pb-1 flex items-center justify-between">
+          <span className="text-sm text-white/30">
+            Hoş geldin, <span className="text-white/50 font-medium">{tokens.username}</span>
           </span>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-white/25">
-              Kalan: <span className="text-brand-400 font-medium">{tokens.remaining}</span>/{tokens.limit}
-            </span>
-            <button onClick={tokens.logout} className="text-[10px] text-white/15 hover:text-white/35 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+              <span className="text-sm text-white/40">Kalan:</span>
+              <span className="text-base font-semibold text-brand-400">{tokens.remaining}</span>
+              <span className="text-sm text-white/25">/ {tokens.limit}</span>
+            </div>
+            <button onClick={tokens.logout} className="text-xs text-white/20 hover:text-white/40 transition-colors">
               Çıkış
             </button>
           </div>
@@ -219,10 +221,12 @@ export default function HomePage() {
 
           {/* Footer */}
           <footer className="mt-14 pt-5 pb-20 sm:pb-5 border-t border-white/[0.04] text-center space-y-4">
-            <div className="flex items-center justify-center gap-5 text-xs text-white/25">
+            <div className="flex items-center justify-center gap-5 text-xs text-white/25 flex-wrap">
               <Link href="/test" className="hover:text-white/50 transition-colors">Testi Çöz</Link>
               <Link href="/hakkimizda" className="hover:text-white/50 transition-colors">Hakkımızda</Link>
               <Link href="/geri-bildirim" className="hover:text-white/50 transition-colors">Geri Bildirim</Link>
+              <Link href="/gizlilik" className="hover:text-white/50 transition-colors">Gizlilik</Link>
+              <Link href="/kullanim-sartlari" className="hover:text-white/50 transition-colors">Kullanım Şartları</Link>
             </div>
             <div className="flex items-center justify-center gap-4">
               <a href="mailto:info@mentoriva.com.tr" className="text-[11px] text-white/25 hover:text-white/50 transition-colors">
@@ -234,7 +238,7 @@ export default function HomePage() {
               </a>
             </div>
             <p className="text-[10px] text-white/15 max-w-[500px] mx-auto">
-              Mentoriva, profesyonel psikolojik destek veya tıbbi tavsiye yerine geçmez.
+              Mentoriva yapay zeka destekli bir düşünce aracıdır. Tarihî figürlerin gerçek görüşlerini yansıtmaz. Profesyonel psikolojik destek veya tıbbi tavsiye yerine geçmez.
             </p>
           </footer>
         </div>

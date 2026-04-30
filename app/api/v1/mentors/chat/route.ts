@@ -148,7 +148,7 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  // Kullanıcı kota kontrolü (beta)
+  // Kullanıcı kota kontrolü + token tüketimi
   const username = request.headers.get('x-mentoriva-user');
   if (username) {
     try {
@@ -156,13 +156,17 @@ export async function POST(request: Request): Promise<Response> {
       if (redis) {
         const raw = await redis.get(`user:${username}`);
         if (raw) {
-          const user = typeof raw === 'string' ? JSON.parse(raw) : raw as Record<string, number>;
+          const user = typeof raw === 'string' ? JSON.parse(raw) : raw as Record<string, any>;
           if (user.questionsUsed >= user.questionLimit) {
             return NextResponse.json(
               { error: { code: 'QUOTA_EXCEEDED', message: 'Soru limitine ulaştın.' } },
               { status: 429 },
             );
           }
+          // Token tüket
+          user.questionsUsed = (user.questionsUsed || 0) + 1;
+          user.lastSeen = new Date().toISOString();
+          await redis.set(`user:${username}`, JSON.stringify(user));
         }
       }
     } catch {}

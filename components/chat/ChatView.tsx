@@ -42,9 +42,11 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
     ta.style.height = `${Math.min(ta.scrollHeight, 150)}px`;
   }, [input]);
 
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+
   const send = async () => {
     const t = input.trim();
-    if (!t || isStreaming) return;
+    if (!t || isStreaming || quotaExceeded) return;
     const userMsg: Message = { role: 'user', content: t, id: `u${Date.now()}`, timestamp: Date.now() };
     const next = [...messages, userMsg];
     setMessages(next);
@@ -62,10 +64,26 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
           setMessages((p) => [...p, { role: 'assistant', content: acc, id: `a${Date.now()}`, timestamp: Date.now() }]);
           setStreaming('');
         }
-        else if (ev.type === 'error') { setError(ev.message); setStreaming(''); }
+        else if (ev.type === 'error') {
+          if (ev.message?.includes('limit') || ev.message?.includes('Limit')) {
+            setQuotaExceeded(true);
+            setError('Soru limitine ulaştın. Daha fazla perspektif için bizimle iletişime geç.');
+          } else {
+            setError(ev.message);
+          }
+          setStreaming('');
+        }
         else if (ev.type === 'crisis') { setError(ev.message); setStreaming(''); }
       },
-      onError: (e) => { setError(e.message); setStreaming(''); },
+      onError: (e) => {
+        if (e.message?.includes('429') || e.message?.includes('limit')) {
+          setQuotaExceeded(true);
+          setError('Soru limitine ulaştın.');
+        } else {
+          setError(e.message);
+        }
+        setStreaming('');
+      },
     });
   };
 
@@ -114,22 +132,32 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
 
       {/* Input */}
       <div className="py-3 border-t border-white/[0.06]">
-        <div className="flex items-end gap-3">
-          <textarea
-            ref={taRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
-            placeholder={`${mentor.name.split(' ')[0]}'a cevap ver…`}
-            className="input-field min-h-[48px] flex-1 text-sm"
-            maxLength={INPUT_LIMITS.MAX_CHAT_MESSAGE_LENGTH}
-            disabled={isStreaming}
-          />
-          <button onClick={() => void send()} disabled={!input.trim() || isStreaming} className="btn-primary !px-4 !py-3 h-[48px]" aria-label="Gönder">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12L22 2L15 22L12 13L2 12Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
-          </button>
-        </div>
-        <p className="text-[10px] text-white/15 mt-1.5">Enter ile gönder · Shift+Enter ile yeni satır</p>
+        {quotaExceeded ? (
+          <div className="text-center py-4 space-y-2">
+            <p className="text-sm text-amber-400/80">Soru limitine ulaştın</p>
+            <p className="text-xs text-white/30">Daha fazla perspektif için bizimle iletişime geç</p>
+            <a href="mailto:info@mentoriva.com.tr" className="text-xs text-brand-400 hover:text-brand-300">info@mentoriva.com.tr</a>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-end gap-3">
+              <textarea
+                ref={taRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
+                placeholder={`${mentor.name.split(' ')[0]}'a cevap ver\u2026`}
+                className="input-field min-h-[48px] flex-1 text-sm"
+                maxLength={INPUT_LIMITS.MAX_CHAT_MESSAGE_LENGTH}
+                disabled={isStreaming}
+              />
+              <button onClick={() => void send()} disabled={!input.trim() || isStreaming} className="btn-primary !px-4 !py-3 h-[48px]" aria-label="Gönder">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12L22 2L15 22L12 13L2 12Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
+              </button>
+            </div>
+            <p className="text-[10px] text-white/15 mt-1.5">Enter ile gönder · Shift+Enter ile yeni satır</p>
+          </>
+        )}
       </div>
     </div>
   );
