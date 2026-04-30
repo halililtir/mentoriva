@@ -73,24 +73,55 @@ export async function POST(req: Request) {
     if (action === 'login') {
       const u = String(body.username ?? '').trim().toLowerCase();
       const p = String(body.password ?? '').trim();
-      if (!u || !p) return NextResponse.json({ error: 'Kullanıcı adı ve şifre gerekli' }, { status: 400 });
+      if (!u || !p) return NextResponse.json({ error: 'E-posta ve şifre gerekli' }, { status: 400 });
       const user = await get(u);
-      if (!user || user.password !== p) return NextResponse.json({ error: 'Kullanıcı adı veya şifre hatalı' }, { status: 401 });
+      if (!user || user.password !== p) return NextResponse.json({ error: 'E-posta veya şifre hatalı' }, { status: 401 });
       if (!user.isActive) return NextResponse.json({ error: 'Hesap pasif' }, { status: 403 });
+      
+      // Günlük limit sıfırlama
+      const today = new Date().toISOString().slice(0, 10);
+      const dailyLimit = (user as any).dailyLimit || user.questionLimit || 5;
+      let dailyUsed = (user as any).dailyUsed || 0;
+      const resetDate = (user as any).dailyResetDate || '';
+      if (resetDate !== today) {
+        dailyUsed = 0;
+        (user as any).dailyUsed = 0;
+        (user as any).dailyResetDate = today;
+      }
+      
       user.lastSeen = new Date().toISOString();
       await set(u, user);
-      return NextResponse.json({ success: true, user: { username: u, questionLimit: user.questionLimit, questionsUsed: user.questionsUsed, remaining: Math.max(0, user.questionLimit - user.questionsUsed) } });
+      
+      const remaining = Math.max(0, dailyLimit - dailyUsed);
+      return NextResponse.json({ success: true, user: { username: u, name: (user as any).name || u, questionLimit: dailyLimit, questionsUsed: dailyUsed, remaining } });
     }
 
     if (action === 'use_token') {
       const u = String(body.username ?? '').trim().toLowerCase();
       const user = await get(u);
       if (!user || !user.isActive) return NextResponse.json({ error: 'Geçersiz kullanıcı' }, { status: 401 });
-      if (user.questionsUsed >= user.questionLimit) return NextResponse.json({ error: 'limit_reached', remaining: 0 }, { status: 429 });
-      user.questionsUsed++;
+      
+      // Günlük limit sıfırlama
+      const today = new Date().toISOString().slice(0, 10);
+      const dailyLimit = (user as any).dailyLimit || user.questionLimit || 5;
+      let dailyUsed = (user as any).dailyUsed || 0;
+      const resetDate = (user as any).dailyResetDate || '';
+      if (resetDate !== today) {
+        dailyUsed = 0;
+        (user as any).dailyUsed = 0;
+        (user as any).dailyResetDate = today;
+      }
+      
+      if (dailyUsed >= dailyLimit) return NextResponse.json({ error: 'limit_reached', remaining: 0 }, { status: 429 });
+      
+      (user as any).dailyUsed = dailyUsed + 1;
+      (user as any).dailyResetDate = today;
+      user.questionsUsed = (user.questionsUsed || 0) + 1;
       user.lastSeen = new Date().toISOString();
       await set(u, user);
-      return NextResponse.json({ success: true, questionsUsed: user.questionsUsed, remaining: Math.max(0, user.questionLimit - user.questionsUsed) });
+      
+      const remaining = Math.max(0, dailyLimit - (dailyUsed + 1));
+      return NextResponse.json({ success: true, questionsUsed: dailyUsed + 1, remaining });
     }
 
     if (action === 'create') {

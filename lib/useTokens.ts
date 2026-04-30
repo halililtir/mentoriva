@@ -32,18 +32,17 @@ export function useTokens() {
   }, []);
 
   const isLoggedIn = !!session;
-  const remaining = session ? Math.max(0, session.questionLimit - session.questionsUsed) : 0;
+  const remaining = session?.remaining ?? 0;
   const used = session?.questionsUsed ?? 0;
-  const limit = session?.questionLimit ?? 0;
+  const limit = session?.questionLimit ?? 5;
   const canAsk = remaining > 0;
   const showLimitReached = isLoggedIn && !canAsk;
 
   const warningMessage = (() => {
     if (!session) return null;
-    const left = session.questionLimit - session.questionsUsed;
-    if (left > 2) return null;
-    if (left === 2) return 'Bugün 2 perspektif daha alabilirsin';
-    if (left === 1) return 'Son perspektifin';
+    if (remaining > 2) return null;
+    if (remaining === 2) return 'Bugün 2 perspektif daha alabilirsin';
+    if (remaining === 1) return 'Son perspektifin';
     return null;
   })();
 

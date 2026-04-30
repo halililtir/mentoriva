@@ -71,12 +71,20 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
               {session.username}
             </span>
           ) : (
-            <Link
-              href="/giris"
-              className="ml-1 px-3.5 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-medium hover:bg-brand-500/20 transition-colors"
-            >
-              Giriş Yap
-            </Link>
+            <div className="flex items-center gap-2 ml-1">
+              <Link
+                href="/giris"
+                className="px-3 py-1.5 rounded-lg text-white/40 text-xs font-medium hover:text-white/70 transition-colors"
+              >
+                Giriş
+              </Link>
+              <Link
+                href="/kayit"
+                className="px-3.5 py-1.5 rounded-lg bg-brand-500 text-[#070b14] text-xs font-medium hover:bg-brand-400 transition-colors"
+              >
+                Kayıt Ol
+              </Link>
+            </div>
           )}
         </nav>
       </div>
