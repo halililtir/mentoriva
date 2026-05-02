@@ -7,16 +7,18 @@ import { Logo } from '@/components/shared/Logo';
 
 export default function KayitPage() {
   const [step, setStep] = useState<'form' | 'verify'>('form');
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accepted, setAccepted] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) return;
+    if (!username.trim() || !email.trim() || !password.trim() || !accepted) return;
+    if (password.trim().length < 6) { setError('Şifre en az 6 karakter olmalı'); return; }
     setLoading(true);
     setError('');
 
@@ -24,7 +26,7 @@ export default function KayitPage() {
       const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), password: password.trim() }),
+        body: JSON.stringify({ name: username.trim(), email: email.trim(), password: password.trim() }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Kayıt başarısız'); return; }
@@ -50,7 +52,6 @@ export default function KayitPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Doğrulama başarısız'); return; }
 
-      // Session kaydet
       localStorage.setItem('mentoriva_session', JSON.stringify({
         username: data.user.username,
         name: data.user.name,
@@ -67,6 +68,8 @@ export default function KayitPage() {
       setLoading(false);
     }
   };
+
+  const formValid = username.trim().length >= 3 && email.trim().includes('@') && password.trim().length >= 6 && accepted;
 
   return (
     <div className="min-h-dvh flex items-center justify-center px-5">
@@ -93,11 +96,12 @@ export default function KayitPage() {
           <div className="space-y-3">
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Adın"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Kullanıcı adı (en az 3 karakter)"
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
               autoFocus
+              minLength={3}
             />
             <input
               type="email"
@@ -110,14 +114,32 @@ export default function KayitPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
-              placeholder="Şifre (en az 4 karakter)"
+              onKeyDown={(e) => e.key === 'Enter' && formValid && handleRegister()}
+              placeholder="Şifre (en az 6 karakter)"
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
+              minLength={6}
             />
+
+            {/* Onay checkbox */}
+            <label className="flex items-start gap-3 text-left cursor-pointer py-2">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/[0.04] accent-brand-500 flex-shrink-0"
+              />
+              <span className="text-[11px] text-white/30 leading-relaxed">
+                <Link href="/kullanim-sartlari" target="_blank" className="text-brand-400/70 hover:text-brand-400 underline">Kullanım Şartları</Link>
+                {"'"}nı ve{' '}
+                <Link href="/gizlilik" target="_blank" className="text-brand-400/70 hover:text-brand-400 underline">Gizlilik Politikası</Link>
+                {"'"}nı okudum ve kabul ediyorum.
+              </span>
+            </label>
+
             {error && <p className="text-sm text-red-400/80">{error}</p>}
             <button
               onClick={handleRegister}
-              disabled={loading || !name.trim() || !email.trim() || !password.trim()}
+              disabled={loading || !formValid}
               className="w-full py-3.5 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium hover:bg-brand-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {loading ? 'Gönderiliyor...' : 'Doğrulama kodu gönder'}
@@ -156,16 +178,9 @@ export default function KayitPage() {
         <div className="space-y-3 pt-2">
           <p className="text-[12px] text-white/25">
             Zaten hesabın var mı?{' '}
-            <Link href="/giris" className="text-brand-400/70 hover:text-brand-400 transition-colors">
+            <Link href="/giris" className="text-brand-400/70 hover:text-brand-400 transition-colors font-medium">
               Giriş yap
             </Link>
-          </p>
-          <p className="text-[10px] text-white/15 leading-relaxed">
-            Kayıt olarak{' '}
-            <Link href="/kullanim-sartlari" className="underline hover:text-white/30">Kullanım Şartları</Link>
-            {' '}ve{' '}
-            <Link href="/gizlilik" className="underline hover:text-white/30">Gizlilik Politikası</Link>
-            {"'"}nı kabul etmiş olursun.
           </p>
         </div>
       </div>

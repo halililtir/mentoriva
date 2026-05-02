@@ -12,11 +12,11 @@ export async function POST(req: Request) {
     if (!email || !email.includes('@') || !email.includes('.')) {
       return NextResponse.json({ error: 'Geçerli bir e-posta adresi girin' }, { status: 400 });
     }
-    if (password.length < 4) {
-      return NextResponse.json({ error: 'Şifre en az 4 karakter olmalı' }, { status: 400 });
+    if (password.length < 6) {
+      return NextResponse.json({ error: 'Şifre en az 6 karakter olmalı' }, { status: 400 });
     }
-    if (name.length < 2) {
-      return NextResponse.json({ error: 'İsim en az 2 karakter olmalı' }, { status: 400 });
+    if (name.length < 3) {
+      return NextResponse.json({ error: 'Kullanıcı adı en az 3 karakter olmalı' }, { status: 400 });
     }
 
     const kv = getKV();
