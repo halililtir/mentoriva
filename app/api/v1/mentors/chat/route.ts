@@ -14,11 +14,19 @@
 import { NextResponse } from 'next/server';
 import { getKV } from '@/lib/kv';
 import { streamMentorResponse } from '@/lib/claude/client';
-import { checkRateLimit, getClientIp } from '@/lib/claude/rate-limit';
+import { checkRateLimit } from '@/lib/claude/rate-limit';
 import { INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
 import { MENTOR_IDS } from '@/types';
 import type { Message, MentorId } from '@/types';
+
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0]!.trim();
+  const real = request.headers.get('x-real-ip');
+  if (real) return real.trim();
+  return 'unknown';
+}
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;

@@ -3,6 +3,14 @@ import { getKV } from '@/lib/kv';
 export type RateLimitScope = 'respond' | 'chat';
 export interface RateLimitResult { allowed: boolean; message: string; remaining: number; }
 
+export function getClientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0]!.trim();
+  const real = request.headers.get('x-real-ip');
+  if (real) return real.trim();
+  return 'unknown';
+}
+
 const LIMITS = { respond: { max: 3, window: 60 }, chat: { max: 10, window: 60 } };
 const DAILY_MAX = 15;
 
