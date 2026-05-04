@@ -27,17 +27,17 @@ export async function POST(req: Request) {
       }
     }
 
-    // IP bazlı kayıt limiti
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    if (kv) {
-      const today = new Date().toISOString().slice(0, 10);
-      const ipKey = `reg-ip:${ip}:${today}`;
-      const regCount = await kv.incr(ipKey);
-      if (regCount === 1) await kv.expire(ipKey, 86400);
-      if (regCount > 2) {
-        return NextResponse.json({ error: 'Bugün çok fazla kayıt denemesi yapıldı.' }, { status: 429 });
-      }
-    }
+    // IP bazlı kayıt limiti (geçici olarak kapalı - test için)
+    // const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    // if (kv) {
+    //   const today = new Date().toISOString().slice(0, 10);
+    //   const ipKey = `reg-ip:${ip}:${today}`;
+    //   const regCount = await kv.incr(ipKey);
+    //   if (regCount === 1) await kv.expire(ipKey, 86400);
+    //   if (regCount > 2) {
+    //     return NextResponse.json({ error: 'Bugün çok fazla kayıt denemesi yapıldı.' }, { status: 429 });
+    //   }
+    // }
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
 
