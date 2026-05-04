@@ -57,6 +57,15 @@ export function SingleResponseView({ mentorId, question, cachedResponse, onConti
     });
   }, [mentorId, question, start, done, onResponseComplete]);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Otomatik scroll - sadece streaming sırasında
+  useEffect(() => {
+    if (!done && content) {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [content, done]);
+
   return (
     <div className="mx-auto max-w-[680px] px-5 py-10 sm:py-14 animate-fade-up">
       {/* Header */}
@@ -78,15 +87,18 @@ export function SingleResponseView({ mentorId, question, cachedResponse, onConti
         </div>
       )}
 
-      {/* Response */}
+      {/* Response - min-height ile kayma önlenir */}
       {content && (
         <div
-          className="text-[15px] leading-[1.75] text-white/90 border-l-2 pl-5 ml-[22px] mt-4"
+          className="text-[15px] leading-[1.85] text-white/85 border-l-2 pl-5 ml-[22px] mt-4 min-h-[100px] whitespace-pre-wrap"
           style={{ borderColor: accent.border }}
         >
-          <span className={!done ? 'streaming-cursor' : ''}>{content}</span>
+          {content}
+          {!done && <span className="inline-block w-[2px] h-[18px] bg-brand-500 ml-1 animate-pulse align-middle" />}
         </div>
       )}
+
+      <div ref={scrollRef} />
 
       {error && (
         <div className="mt-4 p-4 rounded-card bg-red-500/10 border border-red-500/30 text-sm text-red-300">
@@ -94,9 +106,10 @@ export function SingleResponseView({ mentorId, question, cachedResponse, onConti
         </div>
       )}
 
-      {/* Actions */}
-      {done && content && (
-        <div className="flex gap-3 mt-6 ml-[56px] animate-fade-up">
+      {/* Actions - sabit alan ayır */}
+      <div className="min-h-[60px] mt-6 ml-[56px]">
+        {done && content && (
+          <div className="flex gap-3 animate-fade-up">
           <button onClick={() => onContinue(content)} className="btn-primary text-sm">
             Devam et →
           </button>
@@ -104,7 +117,8 @@ export function SingleResponseView({ mentorId, question, cachedResponse, onConti
             Başka mentora sor
           </button>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

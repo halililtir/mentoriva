@@ -131,8 +131,9 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
         ))}
         {isStreaming && streaming && (
           <div className="flex justify-start" style={{ maxWidth: '85%' }}>
-            <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed border streaming-cursor" style={{ background: accent.bg, borderColor: accent.border }}>
+            <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed border whitespace-pre-wrap" style={{ background: accent.bg, borderColor: accent.border }}>
               {streaming}
+              <span className="inline-block w-[2px] h-[14px] bg-brand-500 ml-0.5 animate-pulse align-middle" />
             </div>
           </div>
         )}
