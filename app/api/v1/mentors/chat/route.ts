@@ -165,13 +165,25 @@ export async function POST(request: Request): Promise<Response> {
         const raw = await redis.get(`user:${username}`);
         if (raw) {
           const user = typeof raw === 'string' ? JSON.parse(raw) : raw as Record<string, any>;
-          if (user.questionsUsed >= user.questionLimit) {
+          
+          // Günlük limit sıfırlama
+          const today = new Date().toISOString().slice(0, 10);
+          const dailyLimit = user.dailyLimit || user.questionLimit || 5;
+          let dailyUsed = user.dailyUsed || 0;
+          if ((user.dailyResetDate || '') !== today) {
+            dailyUsed = 0;
+            user.dailyUsed = 0;
+            user.dailyResetDate = today;
+          }
+
+          if (dailyUsed >= dailyLimit) {
             return NextResponse.json(
-              { error: { code: 'QUOTA_EXCEEDED', message: 'Soru limitine ulaştın.' } },
+              { error: { code: 'QUOTA_EXCEEDED', message: 'Günlük soru limitine ulaştın.' } },
               { status: 429 },
             );
           }
           // Token tüket
+          user.dailyUsed = dailyUsed + 1;
           user.questionsUsed = (user.questionsUsed || 0) + 1;
           user.lastSeen = new Date().toISOString();
           await redis.set(`user:${username}`, JSON.stringify(user));

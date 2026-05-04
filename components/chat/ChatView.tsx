@@ -63,6 +63,16 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
         else if (ev.type === 'end') {
           setMessages((p) => [...p, { role: 'assistant', content: acc, id: `a${Date.now()}`, timestamp: Date.now() }]);
           setStreaming('');
+          // Sayaç güncelle
+          try {
+            const raw = localStorage.getItem('mentoriva_session');
+            if (raw) {
+              const s = JSON.parse(raw);
+              s.questionsUsed = (s.questionsUsed || 0) + 1;
+              s.remaining = Math.max(0, (s.remaining || 0) - 1);
+              localStorage.setItem('mentoriva_session', JSON.stringify(s));
+            }
+          } catch {}
         }
         else if (ev.type === 'error') {
           if (ev.message?.includes('limit') || ev.message?.includes('Limit')) {
