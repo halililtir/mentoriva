@@ -27,68 +27,52 @@ export async function POST(req: Request) {
       }
     }
 
-    // IP bazlı kayıt limiti (geçici olarak kapalı - test için)
-    // const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    // if (kv) {
-    //   const today = new Date().toISOString().slice(0, 10);
-    //   const ipKey = `reg-ip:${ip}:${today}`;
-    //   const regCount = await kv.incr(ipKey);
-    //   if (regCount === 1) await kv.expire(ipKey, 86400);
-    //   if (regCount > 2) {
-    //     return NextResponse.json({ error: 'Bugün çok fazla kayıt denemesi yapıldı.' }, { status: 429 });
-    //   }
-    // }
-
     const code = String(Math.floor(100000 + Math.random() * 900000));
 
     if (kv) {
       await kv.set(`verify:${email}`, JSON.stringify({ email, password, name, code }), { ex: 600 });
     }
 
-    // Hosting SMTP ile mail gönder
-    const smtpHost = process.env['SMTP_HOST'];
-    const smtpPort = Number(process.env['SMTP_PORT']) || 465;
-    const smtpUser = process.env['SMTP_USER'];
-    const smtpPass = process.env['SMTP_PASS'];
+    // Resend HTTP API ile mail gönder
+    const resendKey = process.env['RESEND_API_KEY'];
 
-    if (smtpHost && smtpUser && smtpPass) {
+    if (resendKey) {
       try {
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: smtpPort,
-          secure: smtpPort === 465,
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${resendKey}`,
           },
-          tls: {
-            rejectUnauthorized: false,
-          },
+          body: JSON.stringify({
+            from: 'Mentoriva <onboarding@resend.dev>',
+            to: [email],
+            subject: 'Mentoriva - Doğrulama Kodu',
+            html: `
+              <div style="font-family: -apple-system, sans-serif; max-width: 420px; margin: 0 auto; padding: 32px; background: #0a0e1a; color: #e0e0e0; border-radius: 16px;">
+                <h2 style="color: #5ce1e6; margin: 0 0 4px 0; font-size: 20px;">Mentoriva</h2>
+                <p style="color: #666; font-size: 13px; margin: 0 0 24px 0;">Düşünce meclisine hoş geldin.</p>
+                <div style="background: #12182a; border: 1px solid #1a2340; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
+                  <p style="color: #888; font-size: 13px; margin: 0 0 12px 0;">Doğrulama kodun:</p>
+                  <p style="font-size: 36px; font-weight: bold; color: #5ce1e6; letter-spacing: 8px; margin: 0;">${code}</p>
+                </div>
+                <p style="color: #444; font-size: 11px; margin: 0;">Bu kod 10 dakika geçerlidir.</p>
+              </div>
+            `,
+          }),
         });
 
-        await transporter.sendMail({
-          from: `"Mentoriva" <${smtpUser}>`,
-          to: email,
-          subject: 'Mentoriva - Doğrulama Kodu',
-          html: `
-            <div style="font-family: -apple-system, sans-serif; max-width: 420px; margin: 0 auto; padding: 32px; background: #0a0e1a; color: #e0e0e0; border-radius: 16px;">
-              <h2 style="color: #5ce1e6; margin: 0 0 4px 0; font-size: 20px;">Mentoriva</h2>
-              <p style="color: #666; font-size: 13px; margin: 0 0 24px 0;">Düşünce meclisine hoş geldin.</p>
-              <div style="background: #12182a; border: 1px solid #1a2340; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
-                <p style="color: #888; font-size: 13px; margin: 0 0 12px 0;">Doğrulama kodun:</p>
-                <p style="font-size: 36px; font-weight: bold; color: #5ce1e6; letter-spacing: 8px; margin: 0;">${code}</p>
-              </div>
-              <p style="color: #444; font-size: 11px; margin: 0;">Bu kod 10 dakika geçerlidir.</p>
-            </div>
-          `,
-        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error('[Auth] Resend API hatası:', res.status, JSON.stringify(errData));
+          return NextResponse.json({ error: 'Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.' }, { status: 500 });
+        }
       } catch (mailErr) {
-        console.error('[Auth] SMTP hatası:', mailErr);
-        return NextResponse.json({ error: 'Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.' }, { status: 500 });
+        console.error('[Auth] Mail gönderim hatası:', mailErr);
+        return NextResponse.json({ error: 'Doğrulama kodu gönderilemedi.' }, { status: 500 });
       }
     } else {
-      console.log('[Auth] SMTP ayarları eksik. Kod:', code, 'Email:', email);
+      console.log('[Auth] RESEND_API_KEY yok. Kod:', code, 'Email:', email);
     }
 
     return NextResponse.json({ success: true, message: 'Doğrulama kodu gönderildi' });
