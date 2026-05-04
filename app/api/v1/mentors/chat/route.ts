@@ -143,7 +143,7 @@ function sseHeaders(): HeadersInit {
 export async function POST(request: Request): Promise<Response> {
   // Rate limit
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(ip, 'chat');
+  const rateLimit = await checkRateLimit(ip, 'chat', request.headers.get('x-mentoriva-user') || undefined);
   if (!rateLimit.allowed) {
     return NextResponse.json(
       {

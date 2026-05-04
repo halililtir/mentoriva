@@ -92,7 +92,7 @@ function formatSSE(event: StreamEvent): string {
 export async function POST(request: Request): Promise<Response> {
   // 1. Rate limit kontrolü
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(ip, 'respond');
+  const rateLimit = await checkRateLimit(ip, 'respond', request.headers.get('x-mentoriva-user') || undefined);
   if (!rateLimit.allowed) {
     return NextResponse.json(
       {
