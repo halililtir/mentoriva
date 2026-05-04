@@ -63,7 +63,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
         else if (ev.type === 'end') {
           setMessages((p) => [...p, { role: 'assistant', content: acc, id: `a${Date.now()}`, timestamp: Date.now() }]);
           setStreaming('');
-          // Sayaç güncelle
+          // Sayaç güncelle + UI'ı bilgilendir
           try {
             const raw = localStorage.getItem('mentoriva_session');
             if (raw) {
@@ -71,6 +71,11 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
               s.questionsUsed = (s.questionsUsed || 0) + 1;
               s.remaining = Math.max(0, (s.remaining || 0) - 1);
               localStorage.setItem('mentoriva_session', JSON.stringify(s));
+              window.dispatchEvent(new Event('mentoriva-token-update'));
+              if (s.remaining <= 0) {
+                setQuotaExceeded(true);
+                setError('Günlük soru limitine ulaştın.');
+              }
             }
           } catch {}
         }

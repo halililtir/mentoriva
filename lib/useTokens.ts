@@ -20,6 +20,7 @@ export function useTokens() {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
 
+  // İlk yükleme
   useEffect(() => {
     try {
       const raw = localStorage.getItem('mentoriva_session');
@@ -29,6 +30,21 @@ export function useTokens() {
       }
     } catch {}
     setReady(true);
+  }, []);
+
+  // Chat'ten gelen token güncellemelerini dinle
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const raw = localStorage.getItem('mentoriva_session');
+        if (raw) {
+          const s = JSON.parse(raw) as Session;
+          setSession(s);
+        }
+      } catch {}
+    };
+    window.addEventListener('mentoriva-token-update', handler);
+    return () => window.removeEventListener('mentoriva-token-update', handler);
   }, []);
 
   const isLoggedIn = !!session;

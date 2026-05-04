@@ -55,8 +55,8 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
           )}
         </div>
 
-        <nav className="flex items-center gap-1 sm:gap-2">
-          <Link href="/test" className="btn-ghost text-xs sm:text-sm">Testi Çöz</Link>
+        <nav className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <Link href="/test" className="hidden sm:inline-flex btn-ghost text-xs sm:text-sm">Testi Çöz</Link>
           <Link href="/hakkimizda" className="hidden sm:inline-flex btn-ghost text-xs sm:text-sm">Hakkımızda</Link>
           <Link href="/geri-bildirim" className="hidden sm:inline-flex btn-ghost text-xs sm:text-sm">Geri Bildirim</Link>
           {onNewQuestion && (
