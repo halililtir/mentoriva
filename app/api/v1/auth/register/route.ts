@@ -20,7 +20,6 @@ export async function POST(req: Request) {
 
     const kv = getKV();
 
-    // Email zaten kayıtlı mı
     if (kv) {
       const existing = await kv.get(`user:${email}`);
       if (existing) {
@@ -28,7 +27,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // IP bazlı kayıt limiti (günde 2 hesap)
+    // IP bazlı kayıt limiti
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (kv) {
       const today = new Date().toISOString().slice(0, 10);
@@ -36,30 +35,35 @@ export async function POST(req: Request) {
       const regCount = await kv.incr(ipKey);
       if (regCount === 1) await kv.expire(ipKey, 86400);
       if (regCount > 2) {
-        return NextResponse.json({ error: 'Bugün çok fazla kayıt denemesi yapıldı. Yarın tekrar deneyin.' }, { status: 429 });
+        return NextResponse.json({ error: 'Bugün çok fazla kayıt denemesi yapıldı.' }, { status: 429 });
       }
     }
 
-    // 6 haneli doğrulama kodu
     const code = String(Math.floor(100000 + Math.random() * 900000));
 
-    // Geçici kayıt (10 dakika TTL)
     if (kv) {
       await kv.set(`verify:${email}`, JSON.stringify({ email, password, name, code }), { ex: 600 });
     }
 
-    // Gmail SMTP ile mail gönder
+    // Hosting SMTP ile mail gönder
+    const smtpHost = process.env['SMTP_HOST'];
+    const smtpPort = Number(process.env['SMTP_PORT']) || 465;
     const smtpUser = process.env['SMTP_USER'];
     const smtpPass = process.env['SMTP_PASS'];
 
-    if (smtpUser && smtpPass) {
+    if (smtpHost && smtpUser && smtpPass) {
       try {
         const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
-          service: 'gmail',
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
           auth: {
             user: smtpUser,
             pass: smtpPass,
+          },
+          tls: {
+            rejectUnauthorized: false,
           },
         });
 
@@ -75,16 +79,16 @@ export async function POST(req: Request) {
                 <p style="color: #888; font-size: 13px; margin: 0 0 12px 0;">Doğrulama kodun:</p>
                 <p style="font-size: 36px; font-weight: bold; color: #5ce1e6; letter-spacing: 8px; margin: 0;">${code}</p>
               </div>
-              <p style="color: #444; font-size: 11px; margin: 0;">Bu kod 10 dakika geçerlidir. Eğer bu kaydı sen yapmadıysan bu maili görmezden gelebilirsin.</p>
+              <p style="color: #444; font-size: 11px; margin: 0;">Bu kod 10 dakika geçerlidir.</p>
             </div>
           `,
         });
       } catch (mailErr) {
-        console.error('[Auth] Gmail SMTP hatası:', mailErr);
+        console.error('[Auth] SMTP hatası:', mailErr);
         return NextResponse.json({ error: 'Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.' }, { status: 500 });
       }
     } else {
-      console.log('[Auth] SMTP ayarları yok. Doğrulama kodu:', code, 'Email:', email);
+      console.log('[Auth] SMTP ayarları eksik. Kod:', code, 'Email:', email);
     }
 
     return NextResponse.json({ success: true, message: 'Doğrulama kodu gönderildi' });
