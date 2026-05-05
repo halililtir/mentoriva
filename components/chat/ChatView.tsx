@@ -116,11 +116,11 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-5 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 space-y-3">
         {messages.map((msg) => (
           <div key={msg.id} className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')} style={{ maxWidth: '85%', marginLeft: msg.role === 'user' ? 'auto' : undefined }}>
             <div className={cn(
-              'px-4 py-3 rounded-2xl text-sm leading-relaxed border whitespace-pre-wrap',
+              'px-4 py-2.5 rounded-2xl text-sm leading-normal border',
               msg.role === 'user'
                 ? 'bg-brand-500/10 border-brand-500/20'
                 : '',
@@ -131,7 +131,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) 
         ))}
         {isStreaming && streaming && (
           <div className="flex justify-start" style={{ maxWidth: '85%' }}>
-            <div className="px-4 py-3 rounded-2xl text-sm leading-relaxed border whitespace-pre-wrap" style={{ background: accent.bg, borderColor: accent.border }}>
+            <div className="px-4 py-2.5 rounded-2xl text-sm leading-normal border" style={{ background: accent.bg, borderColor: accent.border }}>
               {streaming}
               <span className="inline-block w-[2px] h-[14px] bg-brand-500 ml-0.5 animate-pulse align-middle" />
             </div>
