@@ -146,6 +146,28 @@ export async function POST(request: Request): Promise<Response> {
 
   const { question, mentorIds } = validation.data;
 
+  // Analytics: mentor popülerlik + soru kaydet
+  try {
+    const redis = getKV();
+    if (redis) {
+      const today = new Date().toISOString().slice(0, 10);
+      // Mentor popülerlik sayacı
+      for (const mid of mentorIds) {
+        await redis.incr(`stats:mentor:${mid}`);
+        await redis.incr(`stats:mentor:${mid}:${today}`);
+      }
+      // Son soruları kaydet (max 100)
+      const questionEntry = JSON.stringify({
+        q: question.slice(0, 200),
+        mentors: mentorIds,
+        user: request.headers.get('x-mentoriva-user') || 'anon',
+        at: new Date().toISOString(),
+      });
+      await redis.lpush('stats:recent-questions', questionEntry);
+      await redis.ltrim('stats:recent-questions', 0, 99);
+    }
+  } catch {}
+
   // 3. Moderation
   const moderation = moderateInput(question);
   if (!moderation.allowed) {
