@@ -7,7 +7,13 @@ export const maxDuration = 60;
 
 /** Günün sorusu ve tüm aktif mentorların cevabı. Herkese açık; giriş gerekmez. */
 export async function GET() {
-  const entry = await ensureDaily();
+  let entry;
+  try {
+    entry = await ensureDaily();
+  } catch (e) {
+    console.error('[daily] üretilemedi:', e instanceof Error ? e.message : e);
+    return NextResponse.json({ error: 'Günün cevapları şu an hazırlanamıyor.' }, { status: 503 });
+  }
   if (!entry) {
     return NextResponse.json({ error: 'Günün cevapları hazırlanıyor, birazdan tekrar dene.' }, { status: 503 });
   }

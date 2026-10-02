@@ -86,7 +86,14 @@ export async function* streamMentorResponse(
   // model alıntı metnini kendisi üretmez (lib/mentors/quotes.ts).
   const filter = new QuoteTagFilter(params.mentorId);
   let fullText = '';
-  for await (const chunk of rawMentorStream(params)) {
+  let source: AsyncGenerator<StreamChunk, void, unknown>;
+  try {
+    source = rawMentorStream(params);
+  } catch (e) {
+    yield { type: 'error', error: e instanceof Error ? e.message : 'Yapay zekâ istemcisi kurulamadı' };
+    return;
+  }
+  for await (const chunk of guard(source)) {
     if (chunk.type === 'text_delta' && chunk.text) {
       const text = filter.push(chunk.text);
       if (text) {
@@ -103,6 +110,16 @@ export async function* streamMentorResponse(
     } else {
       yield chunk;
     }
+  }
+}
+
+/** Üreteç içinde fırlayan hataları (ör. eksik API anahtarı) hata parçasına çevirir. */
+async function* guard(gen: AsyncGenerator<StreamChunk, void, unknown>): AsyncGenerator<StreamChunk, void, unknown> {
+  try {
+    yield* gen;
+  } catch (e) {
+    console.error('[Claude] akış başlatılamadı:', e instanceof Error ? e.message : 'bilinmeyen hata');
+    yield { type: 'error', error: e instanceof Error ? e.message : 'Yapay zekâ isteği başarısız' };
   }
 }
 
