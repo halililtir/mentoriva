@@ -1,136 +1,174 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from '@/components/shared/Header';
 import { Footer } from '@/components/shared/Footer';
 import { Logo } from '@/components/shared/Logo';
+import { Reveal } from '@/components/ui/Reveal';
+import { SectionHeading } from '@/components/home/Sections';
+import { ACTIVE_MENTORS, getAccent } from '@/lib/mentors/metadata';
+import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Hakkımızda',
-  description: 'Mentoriva nedir, misyonumuz ve rehberlik notu.',
+  description: 'Mentoriva nedir, mentorlar nasıl konuşur, kaynaklara nasıl sadık kalırız ve neyi yapmayız.',
 };
+
+const PRINCIPLES = [
+  {
+    title: 'Eserlere dayanır',
+    body: 'Her mentor yalnızca o düşünürün belgelenmiş eserlerinde ve fikirlerinde temellenir. Düşünürün söylemediği bir şeyi ona söyletmemeye çalışırız.',
+  },
+  {
+    title: 'Alıntılar doğrulanmıştır',
+    body: 'Cevapların sonundaki alıntılar yapay zekâya yazdırılmaz. Orijinal dilinde (Latince, Yunanca, Almanca, Farsça) kaynağından tek tek kontrol edilmiş bir katalogdan gelir; Türkçesi bize aittir. Jung’un eserleri hâlâ telif kapsamında olduğu için onun cevaplarında alıntı yer almaz.',
+  },
+  {
+    title: 'Yapay zekâ olduğunu saklamaz',
+    body: 'Mentorlar düşünürlerin kendisi değil, onların fikirlerinden ilham alan yapay zekâ karakterleridir. İçtenlikle sorarsan bunu açıkça söylerler.',
+  },
+  {
+    title: 'Karar senindir',
+    body: 'Mentorlar aynı soruya bilerek farklı, hatta çelişen cevaplar verir. Amaç sana doğruyu dikte etmek değil, bakabileceğin pencereleri çoğaltmaktır.',
+  },
+];
+
+const NOT_LIST = [
+  'Terapi, psikolojik danışmanlık ya da tıbbi tavsiye değildir.',
+  'Hukuki veya finansal karar için kaynak değildir.',
+  'Kriz anında yardım hattı değildir; zor bir dönemdeysen lütfen bir yakınına ya da bir uzmana ulaş.',
+  'Düşünürlerin “gerçek” sözlerinin arşivi değildir; doğrulanmış alıntılar dışındaki her cümle yapay zekâ yorumudur.',
+];
 
 export default function AboutPage() {
   return (
     <div className="min-h-dvh">
       <Header />
 
-      <main className="mx-auto max-w-[720px] px-5 py-12 sm:py-20 space-y-16">
-
-        {/* Hero */}
-        <section className="text-center space-y-6">
-          <h1 className="font-display text-4xl sm:text-5xl leading-tight">
-            Tek bir hakikatten <span className="text-brand-500">fazlası</span>.
+      <main className="mx-auto max-w-content px-5 pb-20 pt-12 sm:pt-20">
+        {/* Giriş */}
+        <section className="mx-auto max-w-[720px] text-center">
+          <p className="eyebrow animate-fade-up">Hakkımızda</p>
+          <h1 className="mt-6 font-display text-[clamp(2.2rem,5.5vw,3.6rem)] leading-[1.08] tracking-[-0.02em] text-balance animate-fade-up" style={{ animationDelay: '80ms' }}>
+            Tek bir doğrudan <span className="italic text-gradient">fazlası.</span>
           </h1>
-          <p className="text-[16px] text-white/50 leading-relaxed max-w-[560px] mx-auto">
-            Cevap bulmak kolaydır. Zor olan, doğru soruyu sormak ve o soruya farklı aynalardan bakabilmektir.
+          <p className="mx-auto mt-6 max-w-[580px] text-[16px] leading-relaxed text-white/65 animate-fade-up" style={{ animationDelay: '160ms' }}>
+            Mentoriva, aklındaki bir soruya farklı düşünce geleneklerinden bakmanı sağlayan bir düşünme aracıdır.
+            Aynı soruyu sorarsın; bir psikolog, bir filozof, bir şair ya da bir Stoacı kendi diliyle cevap verir.
           </p>
         </section>
 
-        {/* Hikaye */}
-        <section className="space-y-5">
-          <p className="text-[15px] text-white/50 leading-[1.8]">
-            Mentoriva; seni tek bir zihinle, tek bir doğruyla ya da tek bir algıyla sınırlamaz. Bu yolculuk, basit ama tutkulu bir hayalle başladı: {'\u201c'}Kitap sayfalarında fısıldayan o dev zihinlerle gerçekten konuşabilseydik ne olurdu?{'\u201d'}
+        {/* Hikâye */}
+        <Reveal className="mx-auto mt-16 max-w-[680px] space-y-5 text-[15.5px] leading-[1.85] text-white/60">
+          <p>
+            Hepimiz zor bir kararın, bir kırgınlığın ya da tekrar eden bir döngünün içinde tek bir sesle düşünürüz:
+            kendi sesimizle. Kitapların değerli tarafı, o sesin yanına başka sesler koymasıdır. Ama bir kitabı açıp
+            kendi derdine cevap bulmak çoğu zaman zordur.
           </p>
-          <p className="text-[15px] text-white/50 leading-[1.8]">
-            Biz, sorulara yanıt vermek için değil; bakış açısını çoğaltmak ve tarihin tozlu raflarındaki bilgeliği bugünün canlı bir diyaloğuna dönüştürmek için buradayız.
+          <p>
+            Mentoriva bu boşluk için yapıldı: yüzyıllardır okunan düşünürlerin bakış açılarını, senin bugünkü
+            sorunla buluşturmak. Hazır reçete vermek için değil; soruna başka pencerelerden bakabilmen ve kendi
+            cevabını daha net görebilmen için.
           </p>
-          <div className="relative py-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/[0.06]"></div></div>
-            <div className="relative flex justify-center">
-              <p className="bg-[#070b14] px-6 text-[15px] text-brand-400/80 italic">
-                Çünkü biliyoruz ki: doğru cevap yoktur; yalnızca güçlü perspektifler vardır.
-              </p>
-            </div>
+        </Reveal>
+
+        {/* Mentorlar */}
+        <section className="mt-24" aria-labelledby="about-mentors">
+          <SectionHeading eyebrow="Mentorlar" title="Kimlerle" accent="konuşursun?" id="about-mentors">
+            Her biri kendi geleneğinin diliyle ve kendi cevap tarzıyla konuşur. Yeni mentorlar zamanla eklenir.
+          </SectionHeading>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {ACTIVE_MENTORS.map((m, i) => {
+              const a = getAccent(m.accentColor);
+              return (
+                <Reveal key={m.id} delay={i * 80} as="article">
+                  <div className="glass flex h-full gap-4 rounded-2xl p-5 transition-colors duration-300 hover:border-white/15">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border" style={{ borderColor: a.border }}>
+                      <Image src={m.portraitUrl} alt={m.name} fill sizes="64px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-lg leading-tight" style={{ color: a.hex }}>{m.name}</h3>
+                      <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/40">
+                        {m.tradition}{m.lifespan ? ` · ${m.lifespan}` : ''}
+                      </p>
+                      <p className="mt-2 text-[13.5px] leading-relaxed text-white/60">{m.voice}</p>
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </section>
 
-        {/* Zihinlerin karşılaşma noktası */}
-        <section className="space-y-6">
-          <h2 className="font-display text-2xl sm:text-3xl">Zihinlerin karşılaşma noktası</h2>
-          <p className="text-[15px] text-white/45 leading-[1.8]">
-            Aynı soruyu sorarsın, ancak yankısı her defasında değişir.
-          </p>
+        {/* İlkeler */}
+        <section className="mt-24" aria-labelledby="about-principles">
+          <SectionHeading eyebrow="İlkelerimiz" title="Kaynağa" accent="sadakat" id="about-principles">
+            Bir düşünürün adıyla konuşmak sorumluluk ister. Bu sorumluluğu şöyle taşıyoruz.
+          </SectionHeading>
 
-          {/* Mentor kartları */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {[
-              { name: 'Carl Jung', desc: 'İç dünyandaki arketipleri keşfet', color: '#00bcd4', border: 'border-cyan-500/20', bg: 'bg-cyan-500/[0.04]' },
-              { name: 'Friedrich Nietzsche', desc: 'Konfor alanının dışına savrul', color: '#f59e0b', border: 'border-amber-500/20', bg: 'bg-amber-500/[0.04]' },
-              { name: 'Mevlânâ', desc: 'Kalbin dinginliğine sığın', color: '#d4a574', border: 'border-orange-400/20', bg: 'bg-orange-400/[0.04]' },
-              { name: 'Marcus Aurelius', desc: 'Zihnini disipline et', color: '#8b9bb4', border: 'border-slate-400/20', bg: 'bg-slate-400/[0.04]' },
-            ].map((m) => (
-              <div key={m.name} className={`rounded-xl ${m.border} ${m.bg} p-4 sm:p-5 space-y-2 transition-all hover:scale-[1.02]`}>
-                <h3 className="font-display text-sm sm:text-base" style={{ color: m.color }}>{m.name}</h3>
-                <p className="text-[12px] sm:text-[13px] text-white/35 leading-relaxed">{m.desc}</p>
-              </div>
+          <div className="mx-auto mt-12 grid max-w-[920px] gap-4 sm:grid-cols-2">
+            {PRINCIPLES.map((p, i) => (
+              <Reveal key={p.title} delay={i * 80}>
+                <div className="glass h-full rounded-2xl p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-500/30 bg-brand-500/10 text-xs font-semibold text-brand-300">
+                      {i + 1}
+                    </span>
+                    <h3 className="font-display text-lg text-white/90">{p.title}</h3>
+                  </div>
+                  <p className="mt-3 text-[14px] leading-relaxed text-white/60">{p.body}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
 
-          <p className="text-[15px] text-white/45 leading-[1.8]">
-            Mentoriva, tarihin en keskin akıllarını bugünün teknolojisiyle bir araya getirerek onları birer {'\u201c'}kitap karakteri{'\u201d'} olmaktan çıkarıp birer yol arkadaşına dönüştürür. Karar ise her zaman sana aittir. Biz sadece perdeleri aralarız.
+          <p className="mt-8 text-center text-sm text-white/45">
+            Doğrulanmış alıntıların tamamı kaynaklarıyla birlikte{' '}
+            <Link href="/alintilar" className="text-brand-300 hover:text-brand-200">Alıntılar</Link> sayfasında.
           </p>
         </section>
 
-        {/* Misyon */}
-        <section className="space-y-5">
-          <h2 className="font-display text-2xl sm:text-3xl">Misyonumuz: {'\u201c'}nasıl{'\u201d'} düşünmek?</h2>
-          <p className="text-[15px] text-white/50 leading-[1.8]">
-            Mesele sana ne düşüneceğini söylemek değil, nasıl düşünebileceğini göstermek. Günümüzün bilgi kirliliği içinde Mentoriva, seni hazır reçetelerden kurtarıp çoklu farkındalığa davet eder.
-          </p>
-          <p className="text-[15px] text-white/50 leading-[1.8]">
-            Bu platform, kütüphanelerin sessizliğini bir sohbetin samimiyetiyle birleştirme arzusundan doğdu. Düşünce biçimini dönüştürmek, hayatı dönüştürmenin ilk adımıdır.
-          </p>
+        {/* Ne değildir */}
+        <section className="mx-auto mt-24 max-w-[720px]" aria-labelledby="about-not">
+          <Reveal>
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 sm:p-8">
+              <h2 id="about-not" className="font-display text-2xl">Mentoriva ne değildir?</h2>
+              <ul className="mt-5 space-y-3">
+                {NOT_LIST.map((t) => (
+                  <li key={t} className="flex gap-3 text-[14.5px] leading-relaxed text-white/65">
+                    <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400/70" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 border-t border-white/[0.06] pt-5 text-[13.5px] leading-relaxed text-white/50">
+                Sorularını satmayız, reklam için kullanmayız; yapay zekâ sağlayıcımız da onları model eğitiminde kullanmaz.
+                Ayrıntılar <Link href="/gizlilik" className="text-brand-300 hover:text-brand-200">Gizlilik Politikası</Link>’nda.
+              </p>
+            </div>
+          </Reveal>
         </section>
 
-        {/* Bilgelik ve Teknoloji */}
-        <section className="space-y-5">
-          <h2 className="font-display text-2xl sm:text-3xl">Bilgelik ve teknoloji</h2>
-          <p className="text-[15px] text-white/50 leading-[1.8]">
-            Mentoriva, gelişmiş yapay zekâ mimarisini insanlık tarihinin felsefi mirasıyla harmanlar. Her mentor kendi özgün üslubu ve terminolojisiyle konuşur, kendi düşünce sisteminin süzgecinden geçerek yanıt verir.
-          </p>
-          <p className="text-[15px] text-white/50 leading-[1.8]">
-            Yapay zekayı, geçmişin bilgeliğine ulaşmak için dijital bir köprü olarak konumlandırdık.
-          </p>
-        </section>
-
-        {/* Rehberlik Notu */}
-        <section className="space-y-4">
-          <h2 className="font-display text-2xl sm:text-3xl">Bir rehberlik notu</h2>
-          <div className="rounded-2xl border border-brand-500/15 bg-gradient-to-br from-brand-500/[0.03] to-transparent p-6 sm:p-8 space-y-4">
-            <p className="text-[16px] text-brand-400 font-display">
-              Mentoriva bir otorite değil, bir pusuladır.
+        {/* Erken aşama + iletişim */}
+        <section className="mx-auto mt-24 max-w-[720px] text-center">
+          <Reveal>
+            <Logo />
+            <h2 className="mt-6 font-display text-2xl sm:text-3xl text-balance">Henüz yolun başındayız.</h2>
+            <p className="mx-auto mt-4 max-w-[540px] text-[15px] leading-relaxed text-white/55">
+              Mentoriva kapalı beta aşamasında. Hangi cevabın işine yaradığını, hangisinin yaramadığını bize söylemen,
+              ürünü en çok geliştiren şey.
             </p>
-            <p className="text-[14px] text-white/45 leading-[1.8]">
-              Sunulan perspektifler; profesyonel psikolojik destek, tıbbi teşhis veya hukuki tavsiye niteliği taşımaz. Buradaki sesler, tarihsel figürlerin öğretilerinden ilham alan yapay zekâ yorumlarıdır.
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/" className="btn-primary w-full sm:w-auto">Mentorlarla tanış</Link>
+              <Link href="/geri-bildirim" className="btn-secondary w-full sm:w-auto">Geri bildirim ver</Link>
+            </div>
+            <p className="mt-8 text-sm text-white/40">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white/70">{CONTACT_EMAIL}</a>
+              <span className="mx-2">·</span>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white/70">{INSTAGRAM_HANDLE}</a>
             </p>
-            <p className="text-[14px] text-white/45 leading-[1.8]">
-              Mentoriva henüz ilk adımlarını atan bir keşif yolculuğu. Bu dijital kütüphaneyi ve düşünce mimarisini birlikte inşa ediyoruz; bu yüzden geri bildirimlerin bizim için kadim bir el yazması kadar değerli.
-            </p>
-          </div>
-        </section>
-
-        {/* Kapanış */}
-        <section className="text-center py-8 space-y-5">
-          <div className="w-px h-12 bg-gradient-to-b from-transparent via-brand-500/30 to-transparent mx-auto"></div>
-          <Logo />
-          <p className="text-[16px] text-white/50 font-display">
-            Zihninin mutlak hakimi sensin;
-          </p>
-          <p className="text-[15px] text-brand-400/70 italic">
-            Mentoriva ise sadece yol arkadaşın.
-          </p>
-        </section>
-
-        {/* CTA */}
-        <section className="text-center space-y-4 pb-4">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/" className="btn-primary inline-flex">
-              Mentorlarla tanış
-            </Link>
-            <Link href="/geri-bildirim" className="btn-ghost inline-flex text-sm">
-              Geri bildirim ver
-            </Link>
-          </div>
+          </Reveal>
         </section>
       </main>
 

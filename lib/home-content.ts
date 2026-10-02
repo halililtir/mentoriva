@@ -11,7 +11,7 @@ import type { MentorId } from '@/types';
 
 export interface DemoSample {
   question: string;
-  /** Hero örneği bilerek dört mentorla gösterilir ("dört farklı zihin"). */
+  /** Hero örneği bilerek dört mentorla gösterilir; arayüz metinlerinde mentor sayısı geçmez. */
   answers: Partial<Record<MentorId, string>>;
 }
 
@@ -92,11 +92,11 @@ export const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Bir "soru hakkı" neye harcanır?',
-    a: 'Mentorlara sorduğun her yeni soru 1 hak kullanır; tek mentor da seçsen dört mentor da seçsen fark etmez (bir soruya en fazla dört mentor seçilebilir). Bir mentorla sohbete devam ederken gönderdiğin her mesaj da 1 hak kullanır. Bir mentor teknik bir sorun yüzünden cevap veremezse hakkın iade edilir.',
+    a: 'Mentorlara sorduğun her yeni soru 1 hak kullanır; tek mentor da seçsen birkaç mentor da seçsen fark etmez (bir soruya en fazla 4 mentor seçilebilir). Bir mentorla sohbete devam ederken gönderdiğin her mesaj da 1 hak kullanır. Bir mentor teknik bir sorun yüzünden cevap veremezse hakkın iade edilir.',
   },
   {
     q: 'Hangi mentoru seçmeliyim?',
-    a: 'Kararsızsan dört mentor seç ve cevapları yan yana karşılaştır; seni en çok düşündürenle sohbete devam et. Kendini daha iyi tanımak için Jung, cesaret için Nietzsche, kırgınlık ve anlam arayışı için Mevlânâ, kontrol edemediğin şeyler için Marcus, zaman, öfke ve kaygı için Seneca iyi bir başlangıçtır. Kişilik testi de sana en yakın mentoru gösterir.',
+    a: 'Kararsızsan birkaç mentor seç ve cevapları yan yana karşılaştır; seni en çok düşündürenle sohbete devam et. Kendini daha iyi tanımak için Jung, cesaret için Nietzsche, kırgınlık ve anlam arayışı için Mevlânâ, kontrol edemediğin şeyler için Marcus, zaman, öfke ve kaygı için Seneca iyi bir başlangıçtır. Kişilik testi de sana en yakın mentoru gösterir.',
   },
   {
     q: 'Cevaplar gerçekten o düşünürlere mi ait?',

@@ -14,7 +14,7 @@ interface Props {
 }
 
 const PHRASES = [
-  'kararlarını dört farklı zihinle tart.',
+  'kararlarını farklı zihinlerle tart.',
   'tekrar eden kalıplarını fark et.',
   'kırgınlıklarına başka bir pencereden bak.',
   'kendi cevabını bulmanı sağlayacak soruları gör.',
@@ -41,9 +41,8 @@ export function Hero({ user, onStart, onHowItWorks }: Props) {
             </span>
           ))}
           <br className="hidden sm:block" />
-          <span className="inline-block animate-word" style={{ animationDelay: '420ms' }}>dört&nbsp;</span>
-          <span className="inline-block animate-word italic text-gradient" style={{ animationDelay: '520ms' }}>
-            farklı zihin.
+          <span className="inline-block animate-word italic text-gradient" style={{ animationDelay: '440ms' }}>
+            farklı zihinler.
           </span>
         </h1>
 

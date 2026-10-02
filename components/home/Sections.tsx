@@ -111,7 +111,7 @@ const COMPARISON: Array<{ label: string; general: string; mentoriva: string }> =
   {
     label: 'Ne verir?',
     general: 'Konunun her yönünü dengeleyen tek, kapsamlı bir cevap.',
-    mentoriva: 'Birbirinden farklı, zaman zaman çelişen dört net duruş. Farkı sen görürsün.',
+    mentoriva: 'Birbirinden farklı, zaman zaman çelişen net duruşlar. Farkı sen görürsün.',
   },
   {
     label: 'Nasıl konuşur?',
@@ -202,8 +202,8 @@ const STEPS = [
   },
   {
     title: 'Mentorlarını seç',
-    body: 'Derinleşmek istiyorsan tek bir mentor, farklı bakışları görmek istiyorsan 2–4 mentor seç.',
-    note: 'Kararsızsan dört mentor seç',
+    body: 'Derinleşmek istiyorsan tek bir mentor, farklı bakışları görmek istiyorsan birkaç mentor seç.',
+    note: 'Kararsızsan birkaç mentor seç',
     icon: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
   },
   {

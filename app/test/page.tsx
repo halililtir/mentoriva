@@ -48,7 +48,7 @@ const QUESTIONS: Question[] = [
       { text: 'Karanlık ve aydınlık taraflarımızın birleşmesinden doğan bütünlük.', scores: { jung: 3 } },
       { text: 'Zorlukları aşarken hissedilen o güçlü zafer duygusu.', scores: { nietzsche: 3 } },
       { text: '"Ben"liğin eridiği, her şeyde sevgiyi bulma hâli.', scores: { mevlana: 3, jung: 1 } },
-      { text: 'Dış dünyaya bağımlı olmayan, sarsılmaz bir iç dinginlik.', scores: { marcus: 3, mevlana: 1 } },
+      { text: 'Dış dünyaya bağımlı olmayan, sarsılmaz bir iç dinginlik.', scores: { marcus: 3, seneca: 1 } },
       { text: 'Az şeyle yetinebilmek ve zamanımı sevdiklerime ayırabilmek.', scores: { seneca: 3, mevlana: 1 } },
     ],
   },
@@ -57,8 +57,8 @@ const QUESTIONS: Question[] = [
     choices: [
       { text: '"Bu hata bilinçaltımın hangi bastırılmış mesajını taşıyor?"', scores: { jung: 3 } },
       { text: '"Hata diye bir şey yok, sadece beni daha güçlü kılan bir yıkım var."', scores: { nietzsche: 3 } },
-      { text: '"Kusur, olgunlaşmanın kapısıdır. Ham olan, pişmeden anlaşılmaz."', scores: { mevlana: 3 } },
-      { text: '"Oldu, geri dönüş yok. Şimdi ne düzeltebilirim? İleriye bak."', scores: { marcus: 3 } },
+      { text: '"Kusur, olgunlaşmanın kapısıdır. Ham olan, pişmeden anlaşılmaz."', scores: { mevlana: 3, jung: 1 } },
+      { text: '"Oldu, geri dönüş yok. Şimdi ne düzeltebilirim? İleriye bak."', scores: { marcus: 3, nietzsche: 1 } },
       { text: '"Bu akşam günü dürüstçe gözden geçireyim; yarın daha iyisini yaparım."', scores: { seneca: 3, marcus: 1 } },
     ],
   },
@@ -67,7 +67,7 @@ const QUESTIONS: Question[] = [
     choices: [
       { text: 'Maskelerin altında gerçek benliğimi korumam gerekiyor.', scores: { jung: 3, nietzsche: 1 } },
       { text: 'Sürü psikolojisi! Kendi değerlerimi yaratmak için bu kalıpları kırmalıyım.', scores: { nietzsche: 3 } },
-      { text: 'Görünüşe değil manaya bakarım; uyum sağlar ama kalbimde kendi yolumu yürürüm.', scores: { mevlana: 3, marcus: 1 } },
+      { text: 'Görünüşe değil manaya bakarım; uyum sağlar ama kalbimde kendi yolumu yürürüm.', scores: { mevlana: 3, seneca: 1 } },
       { text: 'Sosyal görevlerimi yerine getiririm ama zihnimi kimsenin kölesi yapmam.', scores: { marcus: 3 } },
       { text: 'Kalabalığa karışırım ama zamanımı ve dostlarımı dikkatle seçerim.', scores: { seneca: 3 } },
     ],
@@ -78,8 +78,8 @@ const QUESTIONS: Question[] = [
       { text: 'Semboller, rüyalar ve iç dünyamın sınırsız derinliği.', scores: { jung: 3, mevlana: 1 } },
       { text: 'Kendi potansiyelim ve yaratacağım daha güçlü versiyonum.', scores: { nietzsche: 3 } },
       { text: 'Teslimiyet ve her şeyin sonunda bir anlama çıkacağı inancı.', scores: { mevlana: 3 } },
-      { text: 'Ölümün doğallığı ve elimdeki tek şey olan "şimdiki an".', scores: { marcus: 3, jung: 1 } },
-      { text: 'Korktuğum şeylerin çoğunun hiç yaşanmayacağını kendime hatırlatmak.', scores: { seneca: 3, marcus: 1 } },
+      { text: 'Ölümün doğallığı ve elimdeki tek şey olan "şimdiki an".', scores: { marcus: 3, seneca: 1 } },
+      { text: 'Korktuğum şeylerin çoğunun hiç yaşanmayacağını kendime hatırlatmak.', scores: { seneca: 3 } },
     ],
   },
   {
@@ -104,6 +104,15 @@ const QUESTIONS: Question[] = [
   },
 ];
 
+function shuffle<T>(items: T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
 // -----------------------------------------------------------
 // Sonuç analizi
 // -----------------------------------------------------------
@@ -126,16 +135,22 @@ interface QuizResult {
   insightSlap: string;
 }
 
-function analyzeResults(scores: Record<string, number>): QuizResult {
+function analyzeResults(scores: Record<string, number>, firstChoices: Record<string, number>): QuizResult {
   const totalScore = Object.values(scores).reduce((a, b) => a + b, 0) || 1;
 
+  // Eşitlikte önce ana tercih (3 puanlık şık) sayısına, sonra skordan türeyen
+  // sabit bir sıraya bakılır; böylece listede önde duran mentor kayırılmaz.
+  const seed = scoresToSeed(scores);
   const results: MentorResult[] = ACTIVE_MENTORS
-    .map((m) => ({
+    .map((m, i) => ({
       mentor: m,
       score: scores[m.id] ?? 0,
       percentage: Math.round(((scores[m.id] ?? 0) / totalScore) * 100),
+      firsts: firstChoices[m.id] ?? 0,
+      tie: (seed + i * 7) % ACTIVE_MENTORS.length,
     }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score || b.firsts - a.firsts || a.tie - b.tie)
+    .map(({ mentor, score, percentage }) => ({ mentor, score, percentage }));
 
   const primary = results[0]!;
   const secondary = results[1] && results[1].percentage >= 20 ? results[1] : null;
@@ -153,12 +168,12 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
       blindSpot: 'Merhameti zayıflık sanabilirsin. Her şeyi tek başına sırtlanma isteğin seni duygusal bir tükenmişliğe sürükleyebilir. Güç her zaman direnç değildir; bazen bırakmak da güçtür.',
       growth: 'Mevlânâ seni dengeler. İradeni biraz olsun akışa bırakmak ve şefkati bir güç olarak görmek zihnini rahatlatır.',
       shareEmoji: '🌪️',
-      miniTask: 'Bugün ertelediğin bir şeyi, düşünmeden yap. Sadece yap.',
+      miniTask: 'Bugün uzun zamandır ertelediğin küçük bir işi seç ve bitir. Bahane arama.',
     },
     mevlana: {
       analysis: 'Ruhun bir derviş gibi dönüyor; cevapları akılda değil, kalpte arıyor. Teslimiyet senin için kaçış değil, en derin cesaret biçimi. Sevgiyi, bağlanmayı ve anlamı hayatın merkezine koyuyorsun.',
       blindSpot: 'Teslimiyeti bazen eylemsizlikle karıştırabilirsin. "Her şey bir sebeble olur" düşüncesi, değiştirebileceğin şeylerden de elini çekmene neden olabilir.',
-      growth: 'Nietzsche seni dengeler. Aşkla birlikte irade de gerekir. Bazen kapıyı çalmayı bırakıp kendini kırmak gerekir.',
+      growth: 'Nietzsche seni dengeler. Aşkla birlikte irade de gerekir. Bazen beklemeyi bırakıp kapıyı kendin açman gerekir.',
       shareEmoji: '✨',
       miniTask: 'Bugün tanımadığın birine içten bir iltifat et. Karşılık bekleme.',
     },
@@ -167,7 +182,7 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
       blindSpot: 'Rasyonellik bazen duygularını bastırmanın maskesi olabilir. "Her şey kontrolümde" tavrı, savunmasız kalman gereken anlarda seni uzaklaştırabilir.',
       growth: 'Jung seni dengeler. Mantığın yanına biraz iç dünya keşfi eklemek — rüyalarına, sembollerine dikkat etmek — seni daha bütün kılar.',
       shareEmoji: '🏛️',
-      miniTask: 'Bugün bir kararı 10 saniyede al. Fazla düşünme, hareket et.',
+      miniTask: 'Bugün seni rahatsız eden bir durumu ikiye ayır: elinde olan ve olmayan. Yalnızca elinde olan için küçük bir adım at.',
     },
     seneca: {
       analysis: 'Zihnin bir mektup gibi; sakin, düşünceli ve insana dönük. Hayatın gürültüsü içinde neyin gerçekten önemli olduğunu ayırt etmeye çalışıyorsun. Zamanını, dostlarını ve sözlerini özenle seçiyorsun.',
@@ -181,8 +196,8 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
   const primaryData = analyses[primary.mentor.id] ?? analyses['jung']!;
 
   const shareText = secondary
-    ? `Zihnimin %${primary.percentage}'i ${primary.mentor.shortName}, %${secondary.percentage}'i ${secondary.mentor.shortName} çıktı. ${primaryData.shareEmoji} Sen kiminle yönetiliyorsun? ${SITE_HOST}/test`
-    : `Zihnimin %${primary.percentage}'i ${primary.mentor.shortName} çıktı. ${primaryData.shareEmoji} Sen kiminle yönetiliyorsun? ${SITE_HOST}/test`;
+    ? `Zihnimin %${primary.percentage}'i ${primary.mentor.shortName}, %${secondary.percentage}'i ${secondary.mentor.shortName} çıktı. ${primaryData.shareEmoji} Sen hangi düşünüre yakınsın? ${SITE_HOST}/test`
+    : `Zihnimin %${primary.percentage}'i ${primary.mentor.shortName} çıktı. ${primaryData.shareEmoji} Sen hangi düşünüre yakınsın? ${SITE_HOST}/test`;
 
   return {
     primary,
@@ -249,9 +264,13 @@ export default function QuizPage() {
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
+  // Şıkların gösterim sırası (soru başına karışık). Şıklar hep aynı sırada
+  // dursa ilk şık — ve onun mentoru — kayırılırdı.
+  const [orders, setOrders] = useState<number[][]>(() => QUESTIONS.map((q) => q.choices.map((_, i) => i)));
 
-  const scores = useMemo(() => {
+  const { scores, firstChoices } = useMemo(() => {
     const s: Record<string, number> = Object.fromEntries(ACTIVE_MENTORS.map((m) => [m.id, 0]));
+    const f: Record<string, number> = {};
     answers.forEach((choiceIdx, qIdx) => {
       const q = QUESTIONS[qIdx];
       if (!q) return;
@@ -259,15 +278,22 @@ export default function QuizPage() {
       if (!choice) return;
       Object.entries(choice.scores).forEach(([mid, pts]) => {
         s[mid] = (s[mid] ?? 0) + pts;
+        if (pts >= 3) f[mid] = (f[mid] ?? 0) + 1;
       });
     });
-    return s;
+    return { scores: s, firstChoices: f };
   }, [answers]);
 
   const result = useMemo(() => {
     if (step !== 'result') return null;
-    return analyzeResults(scores);
-  }, [step, scores]);
+    return analyzeResults(scores, firstChoices);
+  }, [step, scores, firstChoices]);
+
+  const start = () => {
+    setOrders(QUESTIONS.map((q) => shuffle(q.choices.map((_, i) => i))));
+    setStep('quiz');
+    track('test_start');
+  };
 
   const handleAnswer = () => {
     if (selectedChoice === null) return;
@@ -279,7 +305,16 @@ export default function QuizPage() {
       setCurrentQ(currentQ + 1);
     } else {
       setStep('result');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  /** Önceki soruya döner; o sorudaki cevap seçili gelir. */
+  const goBack = () => {
+    if (currentQ === 0) return;
+    setSelectedChoice(answers[currentQ - 1] ?? null);
+    setAnswers(answers.slice(0, currentQ - 1));
+    setCurrentQ(currentQ - 1);
   };
 
   const restart = () => {
@@ -312,7 +347,7 @@ export default function QuizPage() {
                 Zihninin mimarı <span className="text-brand-500">kim</span>?
               </h1>
               <p className="text-[15px] text-white/45 leading-relaxed max-w-[440px] mx-auto">
-                7 soru, 5 zihin. Seni en iyi hangi düşünür anlıyor? İçindeki
+                7 soru, birbirinden farklı zihinler. Seni en iyi hangi düşünür anlıyor? İçindeki
                 felsefi pusulayı keşfet.
               </p>
             </div>
@@ -329,12 +364,15 @@ export default function QuizPage() {
               ))}
             </div>
 
-            <button onClick={() => setStep('quiz')} className="btn-primary text-base px-8 py-3.5">
+            <button onClick={start} className="btn-primary text-base px-8 py-3.5">
               Teste başla →
             </button>
 
-            <p className="text-[11px] text-white/20">
-              Yaklaşık 2 dakika · Sonuçlar anlık
+            <p className="text-[11px] text-white/35">
+              Yaklaşık 2 dakika · Sonuçlar anlık · Kayıt gerekmez
+            </p>
+            <p className="mx-auto max-w-[420px] text-[11px] leading-relaxed text-white/30">
+              Bilimsel bir kişilik ölçümü değildir; hangi düşünce tarzına daha yakın olduğunu gösteren eğlenceli bir başlangıçtır.
             </p>
           </div>
         )}
@@ -368,7 +406,10 @@ export default function QuizPage() {
 
             {/* Choices */}
             <div className="space-y-3">
-              {q.choices.map((choice, i) => (
+              {(orders[currentQ] ?? q.choices.map((_, i) => i)).map((i) => {
+                const choice = q.choices[i];
+                if (!choice) return null;
+                return (
                 <button
                   key={i}
                   onClick={() => setSelectedChoice(i)}
@@ -381,16 +422,24 @@ export default function QuizPage() {
                 >
                   {choice.text}
                 </button>
-              ))}
+                );
+              })}
             </div>
 
-            <button
-              onClick={handleAnswer}
-              disabled={selectedChoice === null}
-              className="btn-primary w-full"
-            >
-              {currentQ + 1 < QUESTIONS.length ? 'Sonraki →' : 'Sonuçları gör →'}
-            </button>
+            <div className="flex gap-3">
+              {currentQ > 0 && (
+                <button onClick={goBack} className="btn-secondary shrink-0">
+                  ← Geri
+                </button>
+              )}
+              <button
+                onClick={handleAnswer}
+                disabled={selectedChoice === null}
+                className="btn-primary flex-1"
+              >
+                {currentQ + 1 < QUESTIONS.length ? 'Sonraki →' : 'Sonuçları gör →'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -468,7 +517,7 @@ export default function QuizPage() {
             {/* Analiz */}
             <div className="space-y-5">
               {/* Tek cümlelik tokat */}
-              <div
+              {result.insightSlap && <div
                 className="p-6 rounded-2xl text-center border"
                 style={{
                   borderColor: getAccent(result.primary.mentor.accentColor).border,
@@ -481,7 +530,7 @@ export default function QuizPage() {
                 >
                   {'\u201c'}{result.insightSlap}{'\u201d'}
                 </p>
-              </div>
+              </div>}
 
               <div className="card-surface p-5 space-y-2">
                 <h3 className="font-display text-lg text-white/90">Analiz</h3>

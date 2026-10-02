@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Mentoriva — Tek soru, dört farklı zihin';
+export const alt = 'Mentoriva — Tek soru, farklı zihinler';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -36,10 +36,10 @@ export default function OpengraphImage() {
           <span style={{ color: '#00bcd4' }}>iva</span>
         </div>
         <div style={{ display: 'flex', fontSize: 76, fontWeight: 700, lineHeight: 1.05, marginTop: 36, maxWidth: 900 }}>
-          Tek bir soru, dört farklı zihin.
+          Tek bir soru, farklı zihinler.
         </div>
         <div style={{ display: 'flex', fontSize: 30, color: 'rgba(240,242,245,0.6)', marginTop: 24 }}>
-          Tek bir cevap yerine, dört farklı bakış açısı.
+          Tek bir cevap yerine, farklı bakış açıları.
         </div>
         <div style={{ display: 'flex', gap: 16, marginTop: 56 }}>
           {MENTORS.map((m) => (

@@ -15,7 +15,7 @@ const TICK_MS = 32;
 const HOLD_MS = 4200;
 
 /**
- * Hero'daki canlı ön izleme: örnek bir soru yazılır, dört mentorun cevabı
+ * Hero'daki canlı ön izleme: örnek bir soru yazılır, mentorların cevabı
  * aynı anda akar, ardından sıradaki örneğe geçilir. Gerçek API çağrısı
  * yapılmaz; ziyaretçi ürünü denemeden önce nasıl çalıştığını görür.
  */
@@ -28,7 +28,7 @@ export function DemoPreview() {
 
   const sample = DEMO_SAMPLES[sampleIdx]!;
   const qLen = sample.question.length;
-  // Örnekte cevabı olan mentorlar (hero dört mentorla sınırlı)
+  // Örnekte cevabı olan mentorlar (hero dört mentorla sınırlı; metinde sayı geçmez)
   const mentors = ACTIVE_MENTORS.filter((m) => sample.answers[m.id as MentorId]);
   const answerLen = (id: MentorId) => sample.answers[id]?.length ?? 0;
   const answerProgress = (k: number) => Math.max(0, Math.floor((progress - qLen - 8) * (SPEEDS[k] ?? 1)));
@@ -68,7 +68,7 @@ export function DemoPreview() {
     <div ref={ref} className="relative">
       <div className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_30%,rgba(0,188,212,0.18),transparent_65%)] blur-2xl" />
 
-      <div className="glass relative overflow-hidden rounded-2xl" role="img" aria-label={`Örnek: "${sample.question}" sorusuna dört mentorun cevabı`}>
+      <div className="glass relative overflow-hidden rounded-2xl" role="img" aria-label={`Örnek: "${sample.question}" sorusuna mentorların cevabı`}>
         {/* Pencere çubuğu */}
         <div className="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />

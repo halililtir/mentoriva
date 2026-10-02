@@ -207,7 +207,7 @@ export default function HomePage() {
   const mentorSection = (
     <section ref={galleryRef} id="mentorlar" className="mx-auto max-w-content scroll-mt-24 px-5 py-16 sm:py-20" aria-labelledby="mentors-title">
       <SectionHeading eyebrow="Mentorlar" title="Mentorunu" accent="seç" id="mentors-title">
-        Derinleşmek için birini, farklı bakışları yan yana görmek için 2–4 mentor seç. Kararsızsan dört mentor seç;
+        Derinleşmek için birini, farklı bakışları yan yana görmek için birkaç mentor seç. Kararsızsan birden fazla mentor seç;
         cevaplar geldikten sonra seni en çok düşündürenle devam edersin.
       </SectionHeading>
 

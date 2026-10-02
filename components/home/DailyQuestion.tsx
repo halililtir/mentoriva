@@ -69,7 +69,7 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
   return (
     <section ref={ref} id="gunun-sorusu" className="mx-auto max-w-content scroll-mt-24 px-5 py-16 sm:py-20" aria-labelledby="daily-title">
       <SectionHeading eyebrow={entry ? `Günün sorusu · ${DATE_FMT.format(new Date(`${entry.date}T12:00:00Z`))}` : 'Günün sorusu'} title="Bugün mentorlar" accent="bunu konuşuyor" id="daily-title">
-        Her gün yeni bir soru, beş farklı cevap. Giriş yapmadan oku, beğendiğin cevabı kart olarak paylaş.
+        Her gün yeni bir soru, mentorlardan farklı cevaplar. Giriş yapmadan oku, beğendiğin cevabı kart olarak paylaş.
       </SectionHeading>
 
       <Reveal delay={80} className="mt-10">

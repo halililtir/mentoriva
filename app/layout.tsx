@@ -23,7 +23,7 @@ const sans = Outfit({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Mentoriva — Tek soru, dört farklı zihin',
+    default: 'Mentoriva — Tek soru, farklı zihinler',
     template: '%s · Mentoriva',
   },
   description:
@@ -37,13 +37,13 @@ export const metadata: Metadata = {
     locale: 'tr_TR',
     url: SITE_URL,
     siteName: 'Mentoriva',
-    title: 'Mentoriva — Tek soru, dört farklı zihin',
+    title: 'Mentoriva — Tek soru, farklı zihinler',
     description: 'Aynı soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca\'dan farklı perspektifler.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Mentoriva — Tek soru, dört farklı zihin',
-    description: 'Tek sorunuza dört farklı düşünürden bakış açısı.',
+    title: 'Mentoriva — Tek soru, farklı zihinler',
+    description: 'Tek sorunuza farklı düşünce geleneklerinden bakış açıları.',
   },
   robots: { index: true, follow: true },
   icons: { icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }] },
