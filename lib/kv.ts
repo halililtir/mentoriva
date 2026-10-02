@@ -23,18 +23,31 @@ export interface KV {
 
 let instance: KV | null = null;
 
+/**
+ * Redis bağlantı bilgileri. Vercel'in Upstash entegrasyonu bunları iki farklı
+ * isimle ekleyebiliyor: yeni bağlantılarda UPSTASH_REDIS_REST_*, eski Vercel KV
+ * taşımalarında KV_REST_API_*. Yeni isim önceliklidir.
+ */
+export function kvCredentials(): { url: string; token: string; source: 'UPSTASH_REDIS_REST' | 'KV_REST_API' } | null {
+  const up = { url: process.env['UPSTASH_REDIS_REST_URL'], token: process.env['UPSTASH_REDIS_REST_TOKEN'] };
+  if (up.url && up.token) return { url: up.url, token: up.token, source: 'UPSTASH_REDIS_REST' };
+  const kv = { url: process.env['KV_REST_API_URL'], token: process.env['KV_REST_API_TOKEN'] };
+  if (kv.url && kv.token) return { url: kv.url, token: kv.token, source: 'KV_REST_API' };
+  return null;
+}
+
 export function getKV(): KV {
   if (instance) return instance;
 
-  const url = process.env['KV_REST_API_URL'];
-  const token = process.env['KV_REST_API_TOKEN'];
+  const creds = kvCredentials();
 
-  if (url && token) {
+  if (creds) {
+    const { url, token } = creds;
     const { Redis } = require('@upstash/redis') as typeof import('@upstash/redis');
     instance = new Redis({ url, token }) as unknown as KV;
   } else {
     if (process.env.NODE_ENV === 'production') {
-      console.warn('[KV] KV_REST_API_URL/TOKEN tanımlı değil — bellek deposu kullanılıyor, veri kalıcı DEĞİL.');
+      console.warn('[KV] Redis bağlantı bilgisi yok — bellek deposu kullanılıyor, veri kalıcı DEĞİL.');
     }
     // Next.js her route'u ayrı paketler; modül değişkeni route başına ayrı
     // kopya olur. Bellek deposu globalThis'te tutulur ki tüm route'lar aynı

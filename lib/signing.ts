@@ -4,7 +4,8 @@
  */
 
 function secret(): string | null {
-  const s = process.env['SHARE_CARD_SECRET'] || process.env['KV_REST_API_TOKEN'];
+  const s =
+    process.env['SHARE_CARD_SECRET'] || process.env['UPSTASH_REDIS_REST_TOKEN'] || process.env['KV_REST_API_TOKEN'];
   if (s) return s;
   return process.env.NODE_ENV === 'production' ? null : 'mentoriva-dev-only-signing-secret';
 }
