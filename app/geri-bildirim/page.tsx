@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Logo } from '@/components/shared/Logo';
+import { Header } from '@/components/shared/Header';
+import { Footer } from '@/components/shared/Footer';
 import { cn } from '@/lib/cn';
 
 export default function FeedbackPage() {
@@ -48,15 +49,7 @@ export default function FeedbackPage() {
   return (
     <div className="min-h-dvh">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-ink-200/60 bg-ink-0/80 backdrop-blur-md">
-        <div className="mx-auto max-w-content px-5 py-3.5 flex items-center justify-between">
-          <Link href="/" className="inline-flex"><Logo /></Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/" className="text-muted hover:text-paper transition-colors">Ana Sayfa</Link>
-            <Link href="/hakkimizda" className="text-muted hover:text-paper transition-colors">Hakkımızda</Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="mx-auto max-w-narrow px-5 py-12 sm:py-16 space-y-10">
         <section className="text-center space-y-4">
@@ -170,17 +163,8 @@ export default function FeedbackPage() {
           Bilgileriniz yalnızca geri bildirim değerlendirmesi amacıyla kullanılır
           ve üçüncü şahıslarla paylaşılmaz.
         </p>
-
-        <div className="flex items-center justify-center gap-4 mt-6 text-xs">
-          <a href="mailto:info@mentoriva.com.tr" className="text-white/25 hover:text-white/50 transition-colors">
-            info@mentoriva.com.tr
-          </a>
-          <a href="https://instagram.com/mentoriva_" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-white/25 hover:text-white/50 transition-colors">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-            @mentoriva_
-          </a>
-        </div>
       </main>
+      <Footer />
     </div>
   );
 }

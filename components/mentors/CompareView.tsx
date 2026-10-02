@@ -3,27 +3,30 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
-import { useSSEStream } from '@/lib/useSSEStream';
+import { routeStreamError, useSSEStream, type MentorStreamHandlers } from '@/lib/useSSEStream';
+import { TypingDots } from '@/components/ui/TypingDots';
+import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { cn } from '@/lib/cn';
-import type { MentorId, StreamEvent, MentorResponseState } from '@/types';
+import { ShareCardButton } from '@/components/share/ShareCardDialog';
+import type { MentorId, MentorResponseState, StreamEvent } from '@/types';
 
-interface Props {
+interface Props extends MentorStreamHandlers {
   mentorIds: MentorId[];
   question: string;
   onSelect: (mentorId: MentorId, response: string) => void;
   onBack: () => void;
-  onResponseComplete?: () => void;
 }
 
-export function CompareView({ mentorIds, question, onSelect, onBack, onResponseComplete }: Props) {
-  const [states, setStates] = useState<Record<string, MentorResponseState>>(() => {
-    const s: Record<string, MentorResponseState> = {};
-    mentorIds.forEach((id) => { s[id] = { status: 'pending', content: '' }; });
-    return s;
-  });
+export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, onAuthRequired, onQuotaExceeded }: Props) {
+  const [states, setStates] = useState<Record<string, MentorResponseState>>(() =>
+    Object.fromEntries(mentorIds.map((id) => [id, { status: 'pending', content: '' }])),
+  );
+  const [crisis, setCrisis] = useState<string | null>(null);
+  const [fatal, setFatal] = useState<string | null>(null);
   const { start } = useSSEStream<StreamEvent>();
   const started = useRef(false);
-  const tokenConsumed = useRef(false);
+  const handlers = useRef({ onQuota, onAuthRequired, onQuotaExceeded });
+  handlers.current = { onQuota, onAuthRequired, onQuotaExceeded };
 
   useEffect(() => {
     if (started.current) return;
@@ -33,101 +36,138 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onResponseC
       url: '/api/v1/mentors/respond',
       body: { question, mentorIds },
       onEvent: (ev) => {
-        if (!('mentorId' in ev)) return;
+        if (ev.type === 'quota') return handlers.current.onQuota(ev.remaining);
+        if (ev.type === 'crisis') return setCrisis(ev.message);
         const mid = ev.mentorId;
         setStates((prev) => {
           const cur = prev[mid] ?? { status: 'pending', content: '' };
-          if (ev.type === 'start') return { ...prev, [mid]: { ...cur, status: 'streaming' } };
+          if (ev.type === 'start') return { ...prev, [mid]: { ...cur, status: 'pending' } };
           if (ev.type === 'delta') return { ...prev, [mid]: { ...cur, status: 'streaming', content: cur.content + ev.text } };
           if (ev.type === 'end') return { ...prev, [mid]: { ...cur, status: 'completed' } };
           if (ev.type === 'error') return { ...prev, [mid]: { ...cur, status: 'error', error: ev.message } };
           return prev;
         });
       },
-      onComplete: () => {
-        if (!tokenConsumed.current && onResponseComplete) {
-          tokenConsumed.current = true;
-          onResponseComplete();
-        }
+      onError: (e) => {
+        if (!routeStreamError(e, handlers.current)) setFatal(e.message);
       },
     });
   }, [mentorIds, question, start]);
 
+  const doneCount = Object.values(states).filter((s) => s.status === 'completed' || s.status === 'error').length;
+
   return (
-    <div className="mx-auto max-w-content px-5 py-10 sm:py-12 animate-fade-up">
-      <div className="text-center mb-8">
-        <p className="text-[11px] uppercase tracking-wider text-white/30 mb-2">Sorunuz</p>
-        <h1 className="font-display text-xl sm:text-2xl text-balance">{'\u201c'}{question}{'\u201d'}</h1>
-        <button onClick={onBack} className="btn-ghost text-xs mt-3">Soruyu değiştir</button>
+    <div className="mx-auto w-full max-w-content px-5 py-10 sm:py-14">
+      <div className="text-center animate-fade-up">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Sorun</p>
+        <h1 className="mx-auto mt-3 max-w-3xl font-display text-[clamp(1.4rem,3.4vw,2rem)] leading-snug text-white/90 text-balance">
+          “{question}”
+        </h1>
+        {!crisis && !fatal && (
+          <div className="mx-auto mt-5 flex max-w-xs items-center gap-3">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-300 transition-[width] duration-700 ease-out-expo"
+                style={{ width: `${(doneCount / mentorIds.length) * 100}%` }}
+              />
+            </div>
+            <span className="text-[11px] tabular-nums text-white/40">{doneCount}/{mentorIds.length}</span>
+          </div>
+        )}
       </div>
 
-      <div className={cn(
-        'grid gap-4',
-        mentorIds.length <= 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-      )}>
-        {mentorIds.map((mid, i) => {
-          const m = getActiveMentor(mid);
-          const a = getAccent(m.accentColor);
-          const st = states[mid] ?? { status: 'pending', content: '' };
+      {crisis ? (
+        <CrisisNotice message={crisis} onBack={onBack} />
+      ) : fatal ? (
+        <div className="mx-auto mt-10 max-w-md rounded-2xl border border-red-500/25 bg-red-500/[0.07] p-5 text-center text-sm text-red-200/90 animate-fade-up">
+          {fatal}
+          <div className="mt-4"><button onClick={onBack} className="btn-secondary !py-2 text-sm">Geri dön</button></div>
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'mt-10 grid gap-5',
+            mentorIds.length <= 2 ? 'mx-auto max-w-4xl md:grid-cols-2' : mentorIds.length === 3 ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-4',
+          )}
+        >
+          {mentorIds.map((mid, i) => {
+            const m = getActiveMentor(mid);
+            const a = getAccent(m.accentColor);
+            const st = states[mid] ?? { status: 'pending', content: '' };
+            const active = st.status === 'pending' || st.status === 'streaming';
 
-          return (
-            <article
-              key={mid}
-              className="rounded-2xl border overflow-hidden flex flex-col min-h-[280px] animate-fade-up"
-              style={{ borderColor: a.border, background: 'rgba(15,21,40,0.6)', animationDelay: `${i * 0.08}s`, animationFillMode: 'both' }}
-            >
-              <div className="h-[2px] rounded-t-2xl" style={{ background: a.hex }} />
-              <div className="p-5 flex flex-col gap-3 flex-1">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg overflow-hidden relative flex-shrink-0 border" style={{ borderColor: a.border }}>
-                    <Image src={m.portraitUrl} alt={m.name} fill style={{objectPosition:m.portraitPosition||"center"}} className="object-cover" sizes="32px" />
-                  </div>
-                  <div>
-                    <h3 className="font-display text-sm" style={{ color: a.hex }}>{m.name}</h3>
-                    <p className="text-[8px] uppercase tracking-wider text-white/35">{m.title}</p>
-                  </div>
-                </div>
+            return (
+              <article
+                key={mid}
+                className={cn('glass relative flex min-h-[320px] flex-col overflow-hidden rounded-3xl animate-fade-up', active && 'glow-border')}
+                style={{ animationDelay: `${i * 90}ms`, '--accent': a.hex } as React.CSSProperties}
+              >
+                <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${a.hex}, transparent)` }} />
+                <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-3/4 -translate-x-1/2 rounded-full blur-3xl opacity-70" style={{ background: a.glow }} />
 
-                <div className="flex-1 text-[13px] leading-relaxed text-white/70 min-h-[140px]">
-                  {st.status === 'pending' && (
-                    <div className="space-y-2">
-                      {[100, 92, 85, 70].map((w, i) => (
-                        <div key={i} className="h-2.5 rounded bg-white/[0.04] animate-pulse" style={{ width: `${w}%`, animationDelay: `${i * 0.1}s` }} />
-                      ))}
+                <div className="relative flex flex-1 flex-col p-5 sm:p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border-2" style={{ borderColor: a.hex }}>
+                      <Image src={m.portraitUrl} alt={m.name} fill sizes="44px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
                     </div>
-                  )}
-                  {(st.status === 'streaming' || st.status === 'completed') && (
-                    <span className={st.status === 'streaming' ? 'streaming-cursor' : ''}>{st.content}</span>
-                  )}
-                  {st.status === 'error' && (
-                    <p className="text-red-300/70 text-xs">{st.error ?? 'Bir hata oluştu'}</p>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t border-white/[0.06] mt-auto">
-                  {st.status === 'completed' && (
-                    <button
-                      onClick={() => onSelect(mid, st.content)}
-                      className="w-full py-2 rounded-xl text-xs font-medium transition-colors"
-                      style={{ background: a.bg, borderColor: a.border, color: a.hex, border: '1px solid' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = a.bgHover; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = a.bg; }}
-                    >
-                      Bununla devam et →
-                    </button>
-                  )}
-                  {(st.status === 'pending' || st.status === 'streaming') && (
-                    <div className="flex items-center justify-center gap-1.5 py-2 text-white/25 text-[11px]">
-                      <span className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
-                      <span>{st.status === 'pending' ? 'Düşünüyor' : 'Yazıyor'}…</span>
+                    <div className="min-w-0">
+                      <h3 className="truncate font-display text-base" style={{ color: a.hex }}>{m.name}</h3>
+                      <p className="truncate text-[10px] uppercase tracking-[0.14em] text-white/40">{m.title}</p>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="mt-5 flex-1 text-[14.5px] leading-[1.75] text-white/75" aria-live="polite">
+                    {st.status === 'pending' && (
+                      <div className="space-y-2.5" aria-hidden="true">
+                        {[100, 92, 85, 96, 60].map((w, j) => (
+                          <div key={j} className="skeleton h-2.5" style={{ width: `${w}%`, animationDelay: `${j * 0.1 + i * 0.15}s` }} />
+                        ))}
+                      </div>
+                    )}
+                    {(st.status === 'streaming' || st.status === 'completed' || (st.status === 'error' && st.content)) && (
+                      <p className={cn('whitespace-pre-wrap', st.status === 'streaming' && 'streaming-cursor')}>{st.content}</p>
+                    )}
+                    {st.status === 'error' && (
+                      <p className="mt-2 rounded-xl border border-red-500/20 bg-red-500/[0.06] px-3 py-2 text-xs text-red-200/80">
+                        {st.error ?? 'Bir hata oluştu'}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-5 border-t border-white/[0.06] pt-4">
+                    {st.status === 'completed' ? (
+                      <div className="flex gap-2">
+                      <button
+                        onClick={() => onSelect(mid, st.content)}
+                        className="group/btn flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 animate-fade-in"
+                        style={{ background: a.bg, borderColor: a.border, color: a.hex }}
+                      >
+                        {m.shortName} ile devam et
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform group-hover/btn:translate-x-0.5" aria-hidden="true">
+                          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      <ShareCardButton data={{ source: 'answer', mentorId: mid, question, answer: st.content }} compact />
+                      </div>
+                    ) : active ? (
+                      <div className="flex items-center justify-center gap-2 py-2.5 text-xs text-white/40">
+                        <TypingDots color={a.hex} />
+                        {st.status === 'pending' ? 'düşünüyor' : 'yazıyor'}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {!crisis && (
+        <div className="mt-10 text-center">
+          <button onClick={onBack} className="btn-ghost text-sm">← Soruyu değiştir</button>
+        </div>
+      )}
     </div>
   );
 }

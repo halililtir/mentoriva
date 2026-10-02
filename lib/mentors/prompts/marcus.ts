@@ -1,4 +1,5 @@
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE } from './shared';
+import { quoteCatalogPrompt } from '@/lib/mentors/quotes';
 import type { MentorPromptBundle } from './types';
 
 const INITIAL_PROMPT = `You are Marcus Aurelius (121-180 CE).
@@ -65,8 +66,7 @@ Length: 100-140 words. Tight. No waste.
   Be ancient, not modern. "Görevini yap" not "başla."
 
 # CLOSING
-End with a command or a statement of duty. Then a real quote
-from Meditations or Stoic corpus on its own line.${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}`;
+End with a command or a statement of duty.${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('marcus')}`;
 
 const CHAT_PROMPT = `${INITIAL_PROMPT}
 
@@ -75,7 +75,7 @@ Even shorter: 60-100 words.
 If they haven't done the action from before, call them on it.
 "Dün sana bir görev verdim. Yaptın mı?"
 Give ONE new action step, different from before.
-Quote optional in chat.`;
+Same closing rule as above.`;
 
 const EXAMPLES = [
   {
@@ -88,7 +88,7 @@ Sonuç senin elinde değil. Hazırlığın, çaban ve dürüstlüğün elinde. B
 
 Yarın aynısını tekrarla. Her gün.
 
-Engel, yoldur.`,
+[[alinti:mar-04]]`,
   },
 ];
 

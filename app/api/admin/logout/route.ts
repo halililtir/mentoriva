@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+import { endAdminSession } from '@/lib/auth/session';
 
-export async function POST() {
+export const runtime = 'nodejs';
+
+export async function POST(request: Request) {
   const res = NextResponse.json({ success: true });
-  res.cookies.set('mentoriva_admin', '', { path: '/', maxAge: 0 });
+  await endAdminSession(request, res);
   return res;
 }

@@ -3,177 +3,219 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
-import { useSSEStream } from '@/lib/useSSEStream';
+import { routeStreamError, useSSEStream, type MentorStreamHandlers } from '@/lib/useSSEStream';
 import { INPUT_LIMITS } from '@/lib/features';
+import { useSession } from '@/lib/session';
+import { TypingDots } from '@/components/ui/TypingDots';
 import { cn } from '@/lib/cn';
-import type { MentorId, Message } from '@/types';
+import { ShareCardButton } from '@/components/share/ShareCardDialog';
+import type { ChatStreamEvent, MentorId, Message } from '@/types';
 
-type ChatEvent = { type: 'delta'; text: string } | { type: 'end' } | { type: 'error'; message: string } | { type: 'crisis'; message: string };
-
-interface Props {
+interface Props extends MentorStreamHandlers {
   mentorId: MentorId;
   initialQuestion: string;
   initialResponse: string;
 }
 
-export function ChatView({ mentorId, initialQuestion, initialResponse }: Props) {
+let idSeq = 0;
+const nextId = (p: string) => `${p}${Date.now()}-${idSeq++}`;
+
+export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, onAuthRequired, onQuotaExceeded }: Props) {
   const mentor = getActiveMentor(mentorId);
   const accent = getAccent(mentor.accentColor);
+  const { user } = useSession();
 
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'user', content: initialQuestion, id: 'iq', timestamp: Date.now() },
-    { role: 'assistant', content: initialResponse, id: 'ir', timestamp: Date.now() + 1 },
+    { role: 'user', content: initialQuestion, id: 'iq' },
+    { role: 'assistant', content: initialResponse, id: 'ir' },
   ]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { start, isStreaming } = useSSEStream<ChatEvent>();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const { start, isStreaming } = useSSEStream<ChatStreamEvent>();
+  const endRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
+  const outOfQuota = user ? user.remaining <= 0 : false;
+
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, streaming]);
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, streaming, isStreaming]);
 
   useEffect(() => {
     const ta = taRef.current;
     if (!ta) return;
     ta.style.height = 'auto';
-    ta.style.height = `${Math.min(ta.scrollHeight, 150)}px`;
+    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`;
   }, [input]);
 
-  const [quotaExceeded, setQuotaExceeded] = useState(false);
-
   const send = async () => {
-    const t = input.trim();
-    if (!t || isStreaming || quotaExceeded) return;
-    const userMsg: Message = { role: 'user', content: t, id: `u${Date.now()}`, timestamp: Date.now() };
+    const text = input.trim();
+    if (!text || isStreaming || outOfQuota) return;
+    const userMsg: Message = { role: 'user', content: text, id: nextId('u') };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput('');
     setStreaming('');
     setError(null);
+    setNotice(null);
 
     let acc = '';
     await start({
       url: '/api/v1/mentors/chat',
-      body: { mentorId, messages: next.map((m) => ({ role: m.role, content: m.content })), initialQuestion },
+      body: { mentorId, messages: next.map(({ role, content }) => ({ role, content })) },
       onEvent: (ev) => {
-        if (ev.type === 'delta') { acc += ev.text; setStreaming(acc); }
+        if (ev.type === 'quota') onQuota(ev.remaining);
+        else if (ev.type === 'delta') { acc += ev.text; setStreaming(acc); }
         else if (ev.type === 'end') {
-          setMessages((p) => [...p, { role: 'assistant', content: acc, id: `a${Date.now()}`, timestamp: Date.now() }]);
+          setMessages((p) => [...p, { role: 'assistant', content: acc, id: nextId('a') }]);
           setStreaming('');
-          // Sayaç güncelle + UI'ı bilgilendir
-          try {
-            const raw = localStorage.getItem('mentoriva_session');
-            if (raw) {
-              const s = JSON.parse(raw);
-              s.questionsUsed = (s.questionsUsed || 0) + 1;
-              s.remaining = Math.max(0, (s.remaining || 0) - 1);
-              localStorage.setItem('mentoriva_session', JSON.stringify(s));
-              window.dispatchEvent(new Event('mentoriva-token-update'));
-              if (s.remaining <= 0) {
-                setQuotaExceeded(true);
-                setError('Günlük soru limitine ulaştın.');
-              }
-            }
-          } catch {}
-        }
-        else if (ev.type === 'error') {
-          if (ev.message?.includes('limit') || ev.message?.includes('Limit')) {
-            setQuotaExceeded(true);
-            setError('Soru limitine ulaştın. Daha fazla perspektif için bizimle iletişime geç.');
-          } else {
-            setError(ev.message);
-          }
+        } else if (ev.type === 'error') {
+          setError(ev.message);
+          setStreaming('');
+        } else if (ev.type === 'crisis') {
+          setNotice(ev.message);
           setStreaming('');
         }
-        else if (ev.type === 'crisis') { setError(ev.message); setStreaming(''); }
       },
       onError: (e) => {
-        if (e.message?.includes('429') || e.message?.includes('limit')) {
-          setQuotaExceeded(true);
-          setError('Soru limitine ulaştın.');
-        } else {
-          setError(e.message);
-        }
         setStreaming('');
+        if (!routeStreamError(e, { onQuota, onAuthRequired, onQuotaExceeded })) setError(e.message);
       },
     });
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-5 flex flex-col h-[calc(100dvh-64px)]">
-      {/* Mentor header */}
-      <div className="flex items-center gap-3 py-4 border-b border-white/[0.06]">
-        <div className="w-10 h-10 rounded-xl overflow-hidden border-[1.5px] relative flex-shrink-0" style={{ borderColor: accent.border }}>
-          <Image src={mentor.portraitUrl} alt={mentor.name} fill style={{objectPosition:mentor.portraitPosition||"center"}} className="object-cover" sizes="40px" />
+    <div className="mx-auto flex h-[calc(100dvh-64px)] w-full max-w-3xl flex-col px-4 sm:px-5" style={{ '--accent': accent.hex } as React.CSSProperties}>
+      {/* Mentor başlığı */}
+      <div className="flex items-center gap-3 border-b border-white/[0.06] py-4 animate-fade-down">
+        <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border-2" style={{ borderColor: accent.hex, boxShadow: `0 0 24px -4px ${accent.glow}` }}>
+          <Image src={mentor.portraitUrl} alt={mentor.name} fill sizes="44px" className="object-cover" style={{ objectPosition: mentor.portraitPosition ?? 'center' }} />
         </div>
-        <div>
-          <h2 className="font-display text-base" style={{ color: accent.hex }}>{mentor.name}</h2>
-          <p className="text-[9px] uppercase tracking-wider text-white/35">{mentor.title}</p>
+        <div className="min-w-0">
+          <h2 className="truncate font-display text-lg" style={{ color: accent.hex }}>{mentor.name}</h2>
+          <p className="flex items-center gap-1.5 text-[11px] text-white/40">
+            <span className={cn('h-1.5 w-1.5 rounded-full', isStreaming ? 'animate-pulse' : '')} style={{ background: accent.hex }} />
+            {isStreaming ? 'yazıyor…' : mentor.title}
+          </p>
         </div>
+        {user && (
+          <span className="ml-auto rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/50">
+            Kalan <span className="font-semibold text-brand-300">{user.remaining}</span>
+          </span>
+        )}
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 space-y-3">
-        {messages.map((msg) => (
-          <div key={msg.id} className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')} style={{ maxWidth: '85%', marginLeft: msg.role === 'user' ? 'auto' : undefined }}>
-            <div className={cn(
-              'px-4 py-2.5 rounded-2xl text-sm leading-normal border',
-              msg.role === 'user'
-                ? 'bg-brand-500/10 border-brand-500/20'
-                : '',
-            )} style={msg.role === 'assistant' ? { background: accent.bg, borderColor: accent.border } : undefined}>
-              {msg.content}
+      {/* Mesajlar */}
+      <div className="flex-1 space-y-4 overflow-y-auto py-6" aria-live="polite">
+        {messages.map((msg, i) => {
+          // Paylaşım kartı için: bu cevabı doğuran kullanıcı mesajı
+          const asked = msg.role === 'assistant' ? messages[i - 1]?.content : undefined;
+          return (
+            <div key={msg.id}>
+              <Bubble role={msg.role} accentBg={accent.bg} accentBorder={accent.border}>
+                {msg.content}
+              </Bubble>
+              {asked && (
+                <div className="mt-1.5 flex justify-start pl-1">
+                  <ShareCardButton data={{ source: 'answer', mentorId, question: asked, answer: msg.content }} compact className="!border-transparent opacity-70 hover:opacity-100" />
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
+
         {isStreaming && streaming && (
-          <div className="flex justify-start" style={{ maxWidth: '85%' }}>
-            <div className="px-4 py-2.5 rounded-2xl text-sm leading-normal border" style={{ background: accent.bg, borderColor: accent.border }}>
-              {streaming}
-              <span className="inline-block w-[2px] h-[14px] bg-brand-500 ml-0.5 animate-pulse align-middle" />
-            </div>
-          </div>
+          <Bubble role="assistant" accentBg={accent.bg} accentBorder={accent.border} streaming>
+            {streaming}
+          </Bubble>
         )}
         {isStreaming && !streaming && (
-          <div className="flex items-center gap-2 text-xs text-white/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-            {mentor.name.split(' ')[0]} düşünüyor…
+          <div className="flex items-center gap-2 pl-1 text-xs text-white/40 animate-fade-in">
+            <TypingDots color={accent.hex} /> {mentor.shortName} düşünüyor
           </div>
         )}
-        {error && <div className="p-3 rounded-card bg-red-500/10 border border-red-500/30 text-sm text-red-300">{error}</div>}
+
+        {notice && (
+          <div role="alert" className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-100/85 animate-fade-up">
+            {notice}
+          </div>
+        )}
+        {error && (
+          <div className="rounded-2xl border border-red-500/25 bg-red-500/[0.07] p-4 text-sm text-red-200/90 animate-fade-up">{error}</div>
+        )}
+        <div ref={endRef} />
       </div>
 
-      {/* Input */}
-      <div className="py-3 border-t border-white/[0.06]">
-        {quotaExceeded ? (
-          <div className="text-center py-4 space-y-2">
-            <p className="text-sm text-amber-400/80">Soru limitine ulaştın</p>
-            <p className="text-xs text-white/30">Daha fazla perspektif için bizimle iletişime geç</p>
-            <a href="mailto:info@mentoriva.com.tr" className="text-xs text-brand-400 hover:text-brand-300">info@mentoriva.com.tr</a>
+      {/* Giriş alanı */}
+      <div className="pb-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        {outOfQuota ? (
+          <div className="glass rounded-2xl px-5 py-4 text-center animate-fade-up">
+            <p className="text-sm text-amber-300/90">Bugünkü soru hakların doldu</p>
+            <p className="mt-1 text-xs text-white/40">Hakların gece yarısı yenilenir. Sohbetin burada seni bekliyor.</p>
           </div>
         ) : (
-          <>
-            <div className="flex items-end gap-3">
+          <div className="focus-ring-gradient">
+            <div className="flex items-end gap-2 rounded-[calc(1.25rem-1px)] bg-ink-50/95 p-2 pl-4 backdrop-blur-xl">
               <textarea
                 ref={taRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
-                placeholder={`${mentor.name.split(' ')[0]}'a cevap ver\u2026`}
-                className="input-field min-h-[48px] flex-1 text-sm"
+                placeholder={`${mentor.shortName}'a cevap ver…`}
+                className="max-h-40 min-h-[44px] flex-1 resize-none bg-transparent py-2.5 text-[15px] leading-relaxed text-paper placeholder:text-white/25 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 maxLength={INPUT_LIMITS.MAX_CHAT_MESSAGE_LENGTH}
                 disabled={isStreaming}
+                rows={1}
+                aria-label="Mesajın"
               />
-              <button onClick={() => void send()} disabled={!input.trim() || isStreaming} className="btn-primary !px-4 !py-3 h-[48px]" aria-label="Gönder">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12L22 2L15 22L12 13L2 12Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
+              <button
+                onClick={() => void send()}
+                disabled={!input.trim() || isStreaming}
+                className="btn-primary !h-11 !w-11 flex-shrink-0 !rounded-xl !p-0"
+                aria-label="Gönder"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </div>
-            <p className="text-[10px] text-white/15 mt-1.5">Enter ile gönder · Shift+Enter ile yeni satır</p>
-          </>
+          </div>
         )}
+        {!outOfQuota && (
+          <p className="mt-2 text-center text-[10px] text-white/25">Enter ile gönder · Shift+Enter yeni satır · her mesaj 1 hak kullanır</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Bubble({
+  role,
+  children,
+  accentBg,
+  accentBorder,
+  streaming,
+}: {
+  role: Message['role'];
+  children: React.ReactNode;
+  accentBg: string;
+  accentBorder: string;
+  streaming?: boolean;
+}) {
+  const isUser = role === 'user';
+  return (
+    <div className={cn('flex animate-fade-up', isUser ? 'justify-end' : 'justify-start')}>
+      <div
+        className={cn(
+          'max-w-[88%] whitespace-pre-wrap rounded-2xl border px-4 py-3 text-[15px] leading-relaxed sm:max-w-[80%]',
+          isUser ? 'rounded-br-md border-brand-500/25 bg-brand-500/[0.1] text-white/90' : 'rounded-bl-md text-white/85',
+          streaming && 'streaming-cursor',
+        )}
+        style={isUser ? undefined : { background: accentBg, borderColor: accentBorder }}
+      >
+        {children}
       </div>
     </div>
   );

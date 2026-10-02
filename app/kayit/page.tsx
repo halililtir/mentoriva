@@ -3,11 +3,22 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Logo } from '@/components/shared/Logo';
+import { AuthShell, Field, FormError } from '@/components/shared/AuthShell';
+import { CodeInput } from '@/components/ui/CodeInput';
+import { useSession } from '@/lib/session';
+import { readNextPath } from '@/lib/next-path';
+import { REF_KEY } from '@/lib/flow-keys';
+import { track } from '@/lib/analytics';
+
+const MIN_PASSWORD = 8;
+
+function readRef(): string | null {
+  try { return localStorage.getItem(REF_KEY); } catch { return null; }
+}
 
 export default function KayitPage() {
   const [step, setStep] = useState<'form' | 'verify'>('form');
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accepted, setAccepted] = useState(false);
@@ -15,21 +26,24 @@ export default function KayitPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setUser } = useSession();
 
-  const handleRegister = async () => {
-    if (!username.trim() || !email.trim() || !password.trim() || !accepted) return;
-    if (password.trim().length < 6) { setError('Şifre en az 6 karakter olmalı'); return; }
+  const formValid = name.trim().length >= 2 && email.trim().includes('@') && password.length >= MIN_PASSWORD && accepted;
+
+  const handleRegister = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!formValid || loading) return;
     setLoading(true);
     setError('');
-
     try {
       const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: username.trim(), email: email.trim(), password: password.trim() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), password, ref: readRef() }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error ?? 'Kayıt başarısız'); return; }
+      setCode('');
       setStep('verify');
     } catch {
       setError('Bağlantı hatası');
@@ -38,30 +52,26 @@ export default function KayitPage() {
     }
   };
 
-  const handleVerify = async () => {
-    if (!code.trim()) return;
+  const handleVerify = async (value = code) => {
+    if (value.length !== 6 || loading) return;
     setLoading(true);
     setError('');
-
     try {
       const res = await fetch('/api/v1/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), code: code.trim() }),
+        body: JSON.stringify({ email: email.trim(), code: value }),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? 'Doğrulama başarısız'); return; }
-
-      localStorage.setItem('mentoriva_session', JSON.stringify({
-        username: data.user.username,
-        name: data.user.name,
-        questionLimit: data.user.questionLimit,
-        questionsUsed: data.user.questionsUsed,
-        remaining: data.user.remaining,
-        loginAt: new Date().toISOString(),
-      }));
-
-      router.push('/');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? 'Doğrulama başarısız');
+        setCode(''); // yanlış kod silinsin, yeniden yazmak kolay olsun
+        return;
+      }
+      setUser(data.user);
+      track('signup_completed', { referred: !!data.referred });
+      try { localStorage.removeItem(REF_KEY); } catch {}
+      router.push(readNextPath());
     } catch {
       setError('Bağlantı hatası');
     } finally {
@@ -69,121 +79,101 @@ export default function KayitPage() {
     }
   };
 
-  const formValid = username.trim().length >= 3 && email.trim().includes('@') && password.trim().length >= 6 && accepted;
+  if (step === 'verify') {
+    return (
+      <AuthShell
+        eyebrow="Son adım"
+        title="E-postanı doğrula"
+        subtitle={<><span className="text-white/75">{email}</span> adresine 6 haneli bir kod gönderdik. Gelen kutunu (ve spam klasörünü) kontrol et.</>}
+      >
+        <div className="space-y-5">
+          <CodeInput value={code} onChange={setCode} onComplete={(v) => void handleVerify(v)} disabled={loading} />
+          <FormError>{error}</FormError>
+          <button onClick={() => void handleVerify()} disabled={loading || code.length !== 6} className="btn-primary w-full !py-3.5">
+            {loading ? 'Doğrulanıyor…' : 'Hesabımı oluştur'}
+          </button>
+          <div className="flex items-center justify-between text-xs">
+            <button onClick={() => { setStep('form'); setError(''); }} className="text-white/40 transition-colors hover:text-white/70">
+              ← Bilgileri düzenle
+            </button>
+            <button onClick={() => void handleRegister()} disabled={loading} className="text-brand-300/80 transition-colors hover:text-brand-200">
+              Kodu tekrar gönder
+            </button>
+          </div>
+        </div>
+      </AuthShell>
+    );
+  }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-5">
-      <div className="w-full max-w-sm space-y-8 text-center">
-        <div className="space-y-4">
-          <Logo />
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-medium bg-brand-500/8 border border-brand-500/15 text-brand-400 uppercase tracking-wider">
-              Ücretsiz kayıt
-            </span>
-            <h1 className="font-display text-2xl">
-              {step === 'form' ? 'Mentoriva\'ya Katıl' : 'E-postanı Doğrula'}
-            </h1>
-            <p className="text-sm text-white/35 leading-relaxed">
-              {step === 'form'
-                ? 'Hesap oluştur ve günlük 5 soru hakkıyla mentorlarla konuşmaya başla.'
-                : `${email} adresine 6 haneli bir doğrulama kodu gönderdik.`
-              }
-            </p>
-          </div>
+    <AuthShell
+      eyebrow="Ücretsiz"
+      title="Mentoriva’ya katıl"
+      subtitle="Hesabını oluştur, her gün 5 soru hakkıyla mentorlarınla konuşmaya başla."
+      footer={
+        <>
+          Zaten hesabın var mı?{' '}
+          <Link href="/giris" className="font-medium text-brand-300 hover:text-brand-200">Giriş yap</Link>
+        </>
+      }
+    >
+      <form onSubmit={handleRegister} className="space-y-4" noValidate>
+        <Field label="Adın" value={name} onChange={(e) => setName(e.target.value)} placeholder="Sana nasıl hitap edelim?" autoComplete="given-name" maxLength={40} autoFocus />
+        <Field label="E-posta" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@eposta.com" autoComplete="email" />
+        <div>
+          <Field
+            label="Şifre"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={`En az ${MIN_PASSWORD} karakter`}
+            autoComplete="new-password"
+          />
+          <PasswordMeter value={password} />
         </div>
 
-        {step === 'form' ? (
-          <div className="space-y-3">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Kullanıcı adı (en az 3 karakter)"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
-              autoFocus
-              minLength={3}
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="E-posta adresin"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && formValid && handleRegister()}
-              placeholder="Şifre (en az 6 karakter)"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
-              minLength={6}
-            />
+        <label className="flex cursor-pointer items-start gap-3 py-1 text-left">
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-white/[0.04] accent-brand-500"
+          />
+          <span className="text-xs leading-relaxed text-white/45">
+            <Link href="/kullanim-sartlari" target="_blank" className="text-brand-300/80 underline-offset-2 hover:underline">Kullanım Şartları</Link>
+            {'’'}nı ve{' '}
+            <Link href="/gizlilik" target="_blank" className="text-brand-300/80 underline-offset-2 hover:underline">Gizlilik Politikası</Link>
+            {'’'}nı okudum, kabul ediyorum.
+          </span>
+        </label>
 
-            {/* Onay checkbox */}
-            <label className="flex items-start gap-3 text-left cursor-pointer py-2">
-              <input
-                type="checkbox"
-                checked={accepted}
-                onChange={(e) => setAccepted(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/[0.04] accent-brand-500 flex-shrink-0"
-              />
-              <span className="text-[11px] text-white/30 leading-relaxed">
-                <Link href="/kullanim-sartlari" target="_blank" className="text-brand-400/70 hover:text-brand-400 underline">Kullanım Şartları</Link>
-                {"'"}nı ve{' '}
-                <Link href="/gizlilik" target="_blank" className="text-brand-400/70 hover:text-brand-400 underline">Gizlilik Politikası</Link>
-                {"'"}nı okudum ve kabul ediyorum.
-              </span>
-            </label>
+        <FormError>{error}</FormError>
+        <button type="submit" disabled={loading || !formValid} className="btn-primary w-full !py-3.5">
+          {loading ? 'Gönderiliyor…' : 'Doğrulama kodu gönder'}
+        </button>
+      </form>
+    </AuthShell>
+  );
+}
 
-            {error && <p className="text-sm text-red-400/80">{error}</p>}
-            <button
-              onClick={handleRegister}
-              disabled={loading || !formValid}
-              className="w-full py-3.5 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium hover:bg-brand-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Gönderiliyor...' : 'Doğrulama kodu gönder'}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <input
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-              placeholder="6 haneli kod"
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-lg text-white/90 text-center tracking-[0.3em] placeholder:text-white/20 placeholder:tracking-normal focus:outline-none focus:border-brand-500/40 transition-colors"
-              autoFocus
-              maxLength={6}
-              inputMode="numeric"
-            />
-            {error && <p className="text-sm text-red-400/80">{error}</p>}
-            <button
-              onClick={handleVerify}
-              disabled={loading || code.length !== 6}
-              className="w-full py-3.5 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium hover:bg-brand-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Doğrulanıyor...' : 'Hesabı oluştur'}
-            </button>
-            <button
-              onClick={() => { setStep('form'); setCode(''); setError(''); }}
-              className="text-xs text-white/25 hover:text-white/50 transition-colors"
-            >
-              Geri dön
-            </button>
-          </div>
-        )}
-
-        <div className="space-y-3 pt-2">
-          <p className="text-[12px] text-white/25">
-            Zaten hesabın var mı?{' '}
-            <Link href="/giris" className="text-brand-400/70 hover:text-brand-400 transition-colors font-medium">
-              Giriş yap
-            </Link>
-          </p>
-        </div>
+function PasswordMeter({ value }: { value: string }) {
+  if (!value) return null;
+  const score = [value.length >= MIN_PASSWORD, /[A-ZÇĞİÖŞÜ]/.test(value) && /[a-zçğıöşü]/.test(value), /\d/.test(value), /[^\w\s]/.test(value) || value.length >= 14]
+    .filter(Boolean).length;
+  const labels = ['Çok zayıf', 'Zayıf', 'İdare eder', 'İyi', 'Güçlü'];
+  const colors = ['#ef4444', '#f97316', '#f59e0b', '#22c55e', '#00bcd4'];
+  return (
+    <div className="mt-2 flex items-center gap-2" aria-live="polite">
+      <div className="flex flex-1 gap-1">
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={i}
+            className="h-1 flex-1 rounded-full transition-colors duration-500"
+            style={{ background: i < score ? colors[score] : 'rgba(255,255,255,0.08)' }}
+          />
+        ))}
       </div>
+      <span className="w-20 text-right text-[11px]" style={{ color: colors[score] }}>{labels[score]}</span>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { Header } from '@/components/shared/Header';
 import Link from 'next/link';
+import { Footer } from '@/components/shared/Footer';
 
 export default function GizlilikPage() {
   return (
@@ -14,7 +15,7 @@ export default function GizlilikPage() {
         </div>
 
         <h1 className="font-display text-3xl">Gizlilik Politikası (MVP / Beta)</h1>
-        <p className="text-xs text-white/30">Son güncelleme: Nisan 2026</p>
+        <p className="text-xs text-white/30">Son güncelleme: Ekim 2026</p>
         <p className="text-sm text-white/45 leading-relaxed">
           Bu Gizlilik Politikası, Mentoriva platformu ({'\u201c'}Platform{'\u201d'}) tarafından toplanan verilerin nasıl işlendiğini açıklar. Platform şu an bir geliştirme aşamasında (MVP) olup, verileriniz aşağıda belirtilen şartlar çerçevesinde korunmaktadır.
         </p>
@@ -37,11 +38,15 @@ export default function GizlilikPage() {
           </div>
           <div>
             <h2 className="font-display text-lg text-white/80 mb-2">4. Veri Saklama ve Güvenlik</h2>
-            <p>Kullanıcı verileri Upstash Redis (bulut tabanlı veri tabanı) üzerinde şifrelenmiş bağlantılar aracılığıyla saklanır. Hesap silindiğinde ilgili tüm kişisel veriler kalıcı olarak sistemden kaldırılır.</p>
+            <p>Kullanıcı verileri Upstash Redis (bulut tabanlı veri tabanı) üzerinde şifrelenmiş bağlantılar aracılığıyla saklanır. Şifreler geri döndürülemez biçimde (scrypt ile) özetlenerek tutulur; düz metin olarak saklanmaz. Oturum için yalnızca tarayıcınıza yerleştirilen, JavaScript tarafından okunamayan (httpOnly) tek bir oturum çerezi kullanılır; reklam veya takip çerezi kullanılmaz. Ziyaret istatistikleri için çerez kullanmayan ve kişiyi tanımlamayan Vercel Web Analytics kullanılır; sorularının içeriği istatistiklere eklenmez. Hesap silindiğinde ilgili tüm kişisel veriler kalıcı olarak sistemden kaldırılır.</p>
+          </div>
+          <div>
+            <h2 className="font-display text-lg text-white/80 mb-2">4a. Kendine Yolculuk</h2>
+            <p>Kendine Yolculuk bölümünde yazdığın anlatım ve cevaplar, yalnızca sana soru ve geri bildirim üretmek için yapay zekâ sağlayıcımıza iletilir; sunucularımızda saklanmaz, kayıt dosyalarına yazılmaz ve yönetim panelinde görüntülenmez. Yolculuk sonunda yalnızca sen açıkça &ldquo;kaydet&rdquo; dersen, oluşan geçici düşünce haritası ve seçtiğin küçük adım hesabında saklanır. Bu kayıtları Kendine Yolculuk sayfasından tek tek ya da tamamen silebilirsin; hesabın silindiğinde de kalıcı olarak kaldırılır. Bu bölümde paylaştığın bilgiler duygu ve düşüncelerine ilişkin olabileceğinden, kayıt işlemi yalnızca senin açık tercihinle yapılır.</p>
           </div>
           <div>
             <h2 className="font-display text-lg text-white/80 mb-2">5. Üçüncü Taraflarla Paylaşım</h2>
-            <p>Kişisel verileriniz ticari amaçlarla satılmaz veya kiralanmaz. Sadece teknik altyapı sağlayıcılarımız (Anthropic, Vercel, Upstash) hizmetin sunumu kapsamında bu verilere erişebilir.</p>
+            <p>Kişisel verileriniz ticari amaçlarla satılmaz veya kiralanmaz. Sadece teknik altyapı sağlayıcılarımız (Anthropic, Vercel, Upstash ve doğrulama e-postaları için Resend) hizmetin sunumu kapsamında bu verilere erişebilir.</p>
           </div>
           <div>
             <h2 className="font-display text-lg text-white/80 mb-2">6. KVKK Kapsamındaki Haklarınız</h2>
@@ -53,6 +58,7 @@ export default function GizlilikPage() {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }

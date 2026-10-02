@@ -1,8 +1,5 @@
 /**
- * Feature Flags ve Uygulama Sabitleri
- *
- * Tek değişkenli kararları buradan yönetir — kod içinde magic number kalmaz.
- * Feature flag'ler ileride remote config'e (LaunchDarkly, PostHog) taşınabilir.
+ * Uygulama sabitleri — kod içinde magic number kalmaz.
  */
 
 // -----------------------------------------------------------
@@ -10,29 +7,9 @@
 // -----------------------------------------------------------
 
 export const FEATURES = {
-  /** Chat (devam eden sohbet) aktif mi? */
-  CHAT_ENABLED: true,
-
-  /** Kriz algılama aktif mi? (Production'da asla kapatma) */
-  CRISIS_DETECTION_ENABLED: true,
-
-  /** Rate limiting aktif mi? */
-  RATE_LIMITING_ENABLED: true,
-
   /** Anthropic prompt caching kullanılsın mı? (maliyet optimizasyonu) */
   PROMPT_CACHING_ENABLED: true,
-
-  /** Analytics aktif mi? */
-  ANALYTICS_ENABLED: false,
-
-  /** v1.1 ve sonrası için placeholder'lar */
-  MULTI_LANGUAGE_ENABLED: false,
-  USER_AUTH_ENABLED: false,
-  PREMIUM_TIER_ENABLED: false,
-  INTERJECTION_ENABLED: false, // mentor araya girer
 } as const;
-
-export type FeatureFlag = keyof typeof FEATURES;
 
 // -----------------------------------------------------------
 // API Sabitleri
@@ -75,23 +52,52 @@ export const INPUT_LIMITS = {
   /** Chat mesajı için max karakter. */
   MAX_CHAT_MESSAGE_LENGTH: 2000,
 
-  /** Chat'te tutulacak max mesaj sayısı (sliding window). */
+  /** Chat'te modele gönderilecek max mesaj sayısı (sliding window). */
   MAX_CHAT_HISTORY_MESSAGES: 10,
+
+  /** Chat isteğinde kabul edilen max mesaj sayısı (daha fazlası kırpılır). */
+  MAX_CHAT_REQUEST_MESSAGES: 60,
+
+  /** Geri bildirim mesajı için max karakter. */
+  MAX_FEEDBACK_LENGTH: 3000,
 } as const;
 
 // -----------------------------------------------------------
 // Rate Limit Konfigürasyonu
 // -----------------------------------------------------------
 
+const MINUTE = 60;
+const TEN_MINUTES = 600;
+const HOUR = 3600;
+
 export const RATE_LIMITS = {
-  /** /api/v1/mentors/respond — dakikada kaç istek. */
-  RESPOND_PER_MINUTE: 3,
+  /** /mentors/respond — kullanıcı başına. */
+  RESPOND_USER: { max: 5, windowSec: MINUTE },
+  /** /mentors/chat — kullanıcı başına. */
+  CHAT_USER: { max: 15, windowSec: MINUTE },
+  /** Mentor uçları — IP başına (aynı IP'den çok hesap açılmasına karşı). */
+  MENTOR_IP: { max: 40, windowSec: MINUTE },
 
-  /** /api/v1/mentors/chat — dakikada kaç istek. */
-  CHAT_PER_MINUTE: 10,
+  /** Giriş denemesi — IP ve e-posta başına. */
+  LOGIN_IP: { max: 20, windowSec: TEN_MINUTES },
+  LOGIN_EMAIL: { max: 8, windowSec: TEN_MINUTES },
 
-  /** Günlük toplam API çağrısı limiti (IP başına). */
-  DAILY_LIMIT: 15,
+  /** Kayıt / şifre sıfırlama kodu gönderimi. */
+  CODE_SEND_IP: { max: 6, windowSec: TEN_MINUTES },
+  CODE_SEND_EMAIL: { max: 3, windowSec: TEN_MINUTES },
+
+  /** Bir doğrulama koduna yapılabilecek yanlış deneme sayısı. */
+  CODE_MAX_ATTEMPTS: 5,
+
+  /** Admin giriş denemesi — IP başına. */
+  ADMIN_LOGIN_IP: { max: 5, windowSec: TEN_MINUTES },
+
+  /** Kendine Yolculuk — kullanıcı başına (başlatma ve sonuç ayrı sayılır). */
+  JOURNEY_START_USER: { max: 6, windowSec: HOUR },
+  JOURNEY_RESULT_USER: { max: 12, windowSec: HOUR },
+
+  /** Geri bildirim — IP başına. */
+  FEEDBACK_IP: { max: 5, windowSec: HOUR },
 } as const;
 
 // -----------------------------------------------------------
@@ -99,6 +105,7 @@ export const RATE_LIMITS = {
 // -----------------------------------------------------------
 
 export const CRISIS_RESPONSE = {
-  message:
+  crisis:
     'Bu konu, mentorların felsefi perspektiflerinin ötesinde bir destek gerektirebilir. Lütfen profesyonel bir uzmana danışmayı düşün.',
+  harmful: 'Bu istek mentorların cevaplayabileceği bir konu değil.',
 } as const;

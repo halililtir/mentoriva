@@ -1,30 +1,35 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
+import { Outfit, Playfair_Display } from 'next/font/google';
+import { Atmosphere } from '@/components/shared/Atmosphere';
+import { SessionProvider } from '@/lib/session';
+import { SITE_URL } from '@/lib/site';
+import { ANALYTICS_INIT } from '@/lib/analytics';
 import './globals.css';
 
-const SITE_URL =
-  process.env['NEXT_PUBLIC_SITE_URL'] ?? 'http://localhost:3000';
+const display = Playfair_Display({
+  subsets: ['latin', 'latin-ext'],
+  style: ['normal', 'italic'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const sans = Outfit({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Mentoriva — Düşünce meclisin',
+    default: 'Mentoriva — Tek soru, dört farklı zihin',
     template: '%s · Mentoriva',
   },
   description:
-    'Tek sorunuza Jung, Nietzsche, Mevlânâ ve Marcus Aurelius\'tan dört farklı perspektif. ChatGPT bir cevap verir; Mentoriva bir düşünce meclisi kurar.',
+    'Aklındaki soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca\'nın bakış açısından farklı cevaplar. Kararlar, ilişkiler ve anlam arayışı için yapay zekâ destekli bir düşünme aracı.',
   applicationName: 'Mentoriva',
-  keywords: [
-    'mentor',
-    'felsefe',
-    'Jung',
-    'Nietzsche',
-    'Mevlânâ',
-    'Marcus Aurelius',
-    'yapay zeka',
-    'perspektif',
-    'düşünce',
-    'psikoloji',
-  ],
+  keywords: ['mentor', 'felsefe', 'Jung', 'Nietzsche', 'Mevlânâ', 'Marcus Aurelius', 'Seneca', 'stoacılık', 'yapay zeka', 'perspektif', 'düşünce', 'psikoloji'],
   authors: [{ name: 'Mentoriva' }],
   creator: 'Mentoriva',
   openGraph: {
@@ -32,43 +37,28 @@ export const metadata: Metadata = {
     locale: 'tr_TR',
     url: SITE_URL,
     siteName: 'Mentoriva',
-    title: 'Mentoriva — Düşünce meclisin',
-    description:
-      'Aynı soruya Jung, Nietzsche, Mevlânâ ve Marcus Aurelius\'tan dört farklı perspektif.',
+    title: 'Mentoriva — Tek soru, dört farklı zihin',
+    description: 'Aynı soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca\'dan farklı perspektifler.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Mentoriva — Düşünce meclisin',
-    description:
-      'Tek sorunuza dört farklı düşünürden bakış açısı.',
+    title: 'Mentoriva — Tek soru, dört farklı zihin',
+    description: 'Tek sorunuza dört farklı düşünürden bakış açısı.',
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-    ],
-  },
+  robots: { index: true, follow: true },
+  icons: { icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }] },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#070b14',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   colorScheme: 'dark',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className="dark">
+    <html lang="tr" className={`dark ${display.variable} ${sans.variable}`}>
       <body className="antialiased">
         <a
           href="#main-content"
@@ -76,7 +66,17 @@ export default function RootLayout({
         >
           Ana içeriğe geç
         </a>
-        <main id="main-content">{children}</main>
+        <Atmosphere />
+        <SessionProvider>
+          <main id="main-content">{children}</main>
+        </SessionProvider>
+        {/* Vercel Web Analytics — çerezsiz; yalnızca production'da */}
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Script id="va-init" strategy="afterInteractive">{ANALYTICS_INIT}</Script>
+            <Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
+          </>
+        )}
       </body>
     </html>
   );

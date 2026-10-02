@@ -1,0 +1,109 @@
+'use client';
+
+import Link from 'next/link';
+import { DemoPreview } from '@/components/home/DemoPreview';
+import { RotatingText } from '@/components/ui/RotatingText';
+import type { SessionUser } from '@/lib/session';
+
+interface Props {
+  user: SessionUser | null;
+  /** Mentor seçimine kaydır. */
+  onStart: () => void;
+  /** "Nasıl çalışır" bölümüne kaydır. */
+  onHowItWorks: () => void;
+}
+
+const PHRASES = [
+  'kararlarını dört farklı zihinle tart.',
+  'tekrar eden kalıplarını fark et.',
+  'kırgınlıklarına başka bir pencereden bak.',
+  'kendi cevabını bulmanı sağlayacak soruları gör.',
+];
+
+const TRUST = ['Kredi kartı istenmez', 'Her gün 5 ücretsiz soru', 'Kurulum yok, tarayıcıda çalışır'];
+
+export function Hero({ user, onStart, onHowItWorks }: Props) {
+  return (
+    <section className="relative mx-auto grid max-w-content items-center gap-12 px-5 pb-12 pt-8 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pb-20">
+      <div className="text-center lg:text-left">
+        <span className="eyebrow animate-fade-up">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-400" />
+          </span>
+          Yapay zekâ destekli düşünme aracı
+        </span>
+
+        <h1 className="mt-6 font-display text-[clamp(2.5rem,6.6vw,4.4rem)] leading-[1.03] tracking-[-0.02em] text-balance">
+          {['Tek', 'bir', 'soru,'].map((w, i) => (
+            <span key={i} className="inline-block animate-word" style={{ animationDelay: `${120 + i * 90}ms` }}>
+              {w}&nbsp;
+            </span>
+          ))}
+          <br className="hidden sm:block" />
+          <span className="inline-block animate-word" style={{ animationDelay: '420ms' }}>dört&nbsp;</span>
+          <span className="inline-block animate-word italic text-gradient" style={{ animationDelay: '520ms' }}>
+            farklı zihin.
+          </span>
+        </h1>
+
+        {/* Ne işe yaradığını tek satırda söyleyen dönen cümle */}
+        <p className="mt-5 min-h-[3.2em] text-[17px] leading-snug text-white/80 animate-fade-up sm:min-h-[1.8em] sm:text-lg" style={{ animationDelay: '600ms' }}>
+          Mentoriva ile <RotatingText phrases={PHRASES} className="font-medium text-brand-300" />
+        </p>
+
+        <p className="mx-auto mt-4 max-w-[540px] text-[15px] leading-relaxed text-white/50 animate-fade-up lg:mx-0" style={{ animationDelay: '700ms' }}>
+          Aklındaki soruyu yaz; Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca kendi düşünce sistemleriyle aynı anda
+          cevap versin. Cevapları yan yana koy, seni en çok düşündürenle sohbete devam et.
+        </p>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 animate-fade-up sm:flex-row lg:justify-start" style={{ animationDelay: '800ms' }}>
+          {user ? (
+            <button onClick={onStart} className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
+              Mentorunu seç
+              <Arrow />
+            </button>
+          ) : (
+            <Link href="/kayit" className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
+              Ücretsiz başla
+              <Arrow />
+            </Link>
+          )}
+          <button onClick={onHowItWorks} className="btn-secondary w-full !px-7 !py-3.5 sm:w-auto">
+            Nasıl çalışır?
+          </button>
+        </div>
+
+        {user ? (
+          <p className="mt-6 text-sm text-white/45 animate-fade-up" style={{ animationDelay: '900ms' }}>
+            Hoş geldin <span className="text-white/75">{user.name}</span> · bugün{' '}
+            <span className="font-semibold text-brand-300">{user.remaining}</span> soru hakkın var.
+          </p>
+        ) : (
+          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 animate-fade-up lg:justify-start" style={{ animationDelay: '900ms' }}>
+            {TRUST.map((t) => (
+              <li key={t} className="flex items-center gap-1.5 text-[13px] text-white/45">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8l3.5 3.5L13 5" stroke="#33d4dc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {t}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="animate-scale-in" style={{ animationDelay: '300ms' }}>
+        <DemoPreview />
+      </div>
+    </section>
+  );
+}
+
+function Arrow() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

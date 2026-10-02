@@ -12,41 +12,42 @@ interface Toast {
 }
 
 let _show: ((message: string, type?: ToastType) => void) | null = null;
+let _seq = 0;
 
 export function showToast(message: string, type: ToastType = 'info') {
   _show?.(message, type);
 }
 
+const STYLES: Record<ToastType, { dot: string; ring: string }> = {
+  info: { dot: 'bg-brand-400', ring: 'border-brand-500/25' },
+  success: { dot: 'bg-emerald-400', ring: 'border-emerald-500/25' },
+  error: { dot: 'bg-red-400', ring: 'border-red-500/30' },
+  warning: { dot: 'bg-amber-400', ring: 'border-amber-500/30' },
+};
+
 export function ToastProvider() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const show = useCallback((message: string, type: ToastType = 'info') => {
-    const id = Date.now();
+    const id = ++_seq;
     setToasts((prev) => [...prev.slice(-2), { id, message, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
   }, []);
 
-  useEffect(() => { _show = show; return () => { _show = null; }; }, [show]);
-
-  if (toasts.length === 0) return null;
-
-  const colors: Record<ToastType, string> = {
-    info: 'bg-brand-500/15 border-brand-500/30 text-brand-300',
-    success: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300',
-    error: 'bg-red-500/15 border-red-500/30 text-red-300',
-    warning: 'bg-amber-500/15 border-amber-500/30 text-amber-300',
-  };
+  useEffect(() => {
+    _show = show;
+    return () => { _show = null; };
+  }, [show]);
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+    <div className="pointer-events-none fixed left-1/2 top-20 z-50 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 flex-col items-center gap-2" aria-live="polite">
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={cn(
-            'px-4 py-3 rounded-card border text-sm animate-fade-up pointer-events-auto',
-            colors[t.type],
-          )}
+          role="status"
+          className={cn('glass pointer-events-auto flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-white/85 animate-fade-down', STYLES[t.type].ring)}
         >
+          <span className={cn('h-2 w-2 flex-shrink-0 rounded-full', STYLES[t.type].dot)} />
           {t.message}
         </div>
       ))}

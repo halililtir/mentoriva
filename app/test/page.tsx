@@ -3,10 +3,17 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Logo } from '@/components/shared/Logo';
 import { StoryCard } from '@/components/shared/StoryCard';
-import { ACTIVE_MENTORS, getAccent, type MentorMetadata } from '@/lib/mentors/metadata';
+import { ACTIVE_MENTORS, getAccent, isActiveMentor, type MentorMetadata } from '@/lib/mentors/metadata';
+import { getRandomSlap, scoresToSeed } from '@/lib/mentors/slaps';
+import { SITE_HOST } from '@/lib/site';
+import { Header } from '@/components/shared/Header';
+import { Footer } from '@/components/shared/Footer';
 import { cn } from '@/lib/cn';
+import { useRouter } from 'next/navigation';
+import { useSession } from '@/lib/session';
+import { track } from '@/lib/analytics';
+import { PRESELECT_KEY } from '@/lib/flow-keys';
 
 // -----------------------------------------------------------
 // Soru & puanlama verisi
@@ -32,6 +39,7 @@ const QUESTIONS: Question[] = [
       { text: 'Bu kaosu bir sınav olarak görür, irademle ezip geçmeye odaklanırım.', scores: { nietzsche: 3, marcus: 1 } },
       { text: 'Direnmeyi bırakır, bu fırtınanın beni götüreceği yere güvenirim.', scores: { mevlana: 3 } },
       { text: 'Duygularımı bir kenara koyar, sadece kontrol edebildiğim şeylere bakarım.', scores: { marcus: 3, nietzsche: 1 } },
+      { text: 'Önce sakinleşir, gerçekten olanla kafamda büyüttüğümü birbirinden ayırırım.', scores: { seneca: 3, marcus: 1 } },
     ],
   },
   {
@@ -41,6 +49,7 @@ const QUESTIONS: Question[] = [
       { text: 'Zorlukları aşarken hissedilen o güçlü zafer duygusu.', scores: { nietzsche: 3 } },
       { text: '"Ben"liğin eridiği, her şeyde sevgiyi bulma hâli.', scores: { mevlana: 3, jung: 1 } },
       { text: 'Dış dünyaya bağımlı olmayan, sarsılmaz bir iç dinginlik.', scores: { marcus: 3, mevlana: 1 } },
+      { text: 'Az şeyle yetinebilmek ve zamanımı sevdiklerime ayırabilmek.', scores: { seneca: 3, mevlana: 1 } },
     ],
   },
   {
@@ -48,8 +57,9 @@ const QUESTIONS: Question[] = [
     choices: [
       { text: '"Bu hata bilinçaltımın hangi bastırılmış mesajını taşıyor?"', scores: { jung: 3 } },
       { text: '"Hata diye bir şey yok, sadece beni daha güçlü kılan bir yıkım var."', scores: { nietzsche: 3 } },
-      { text: '"Kusur, güzelliğin kapısıdır. Bu yara, ışığın içeri girdiği yerdir."', scores: { mevlana: 3 } },
+      { text: '"Kusur, olgunlaşmanın kapısıdır. Ham olan, pişmeden anlaşılmaz."', scores: { mevlana: 3 } },
       { text: '"Oldu, geri dönüş yok. Şimdi ne düzeltebilirim? İleriye bak."', scores: { marcus: 3 } },
+      { text: '"Bu akşam günü dürüstçe gözden geçireyim; yarın daha iyisini yaparım."', scores: { seneca: 3, marcus: 1 } },
     ],
   },
   {
@@ -59,6 +69,7 @@ const QUESTIONS: Question[] = [
       { text: 'Sürü psikolojisi! Kendi değerlerimi yaratmak için bu kalıpları kırmalıyım.', scores: { nietzsche: 3 } },
       { text: 'Görünüşe değil manaya bakarım; uyum sağlar ama kalbimde kendi yolumu yürürüm.', scores: { mevlana: 3, marcus: 1 } },
       { text: 'Sosyal görevlerimi yerine getiririm ama zihnimi kimsenin kölesi yapmam.', scores: { marcus: 3 } },
+      { text: 'Kalabalığa karışırım ama zamanımı ve dostlarımı dikkatle seçerim.', scores: { seneca: 3 } },
     ],
   },
   {
@@ -68,6 +79,7 @@ const QUESTIONS: Question[] = [
       { text: 'Kendi potansiyelim ve yaratacağım daha güçlü versiyonum.', scores: { nietzsche: 3 } },
       { text: 'Teslimiyet ve her şeyin sonunda bir anlama çıkacağı inancı.', scores: { mevlana: 3 } },
       { text: 'Ölümün doğallığı ve elimdeki tek şey olan "şimdiki an".', scores: { marcus: 3, jung: 1 } },
+      { text: 'Korktuğum şeylerin çoğunun hiç yaşanmayacağını kendime hatırlatmak.', scores: { seneca: 3, marcus: 1 } },
     ],
   },
   {
@@ -77,6 +89,7 @@ const QUESTIONS: Question[] = [
       { text: '"Affetmek zayıflık değil, ama o kişiyi hayatımdan çıkarmak da güç göstergesi."', scores: { nietzsche: 3, marcus: 1 } },
       { text: '"Affetmek benim yükümü bırakmam. Sevgi, öfkeden daha güçlü bir ateştir."', scores: { mevlana: 3 } },
       { text: '"Başkasının davranışı benim kontrolümde değil. Kendi tepkime odaklanayım."', scores: { marcus: 3 } },
+      { text: '"Öfkeyle karar vermeyeyim; biraz bekleyip sonra konuşayım."', scores: { seneca: 3 } },
     ],
   },
   {
@@ -86,6 +99,7 @@ const QUESTIONS: Question[] = [
       { text: 'Sınırlarımı aşmak — dünkü halimden daha güçlü, daha cesur olmak.', scores: { nietzsche: 3 } },
       { text: 'Huzur — kalbimin sesini dinleyip, sevgiyle dolu bir hayat sürmek.', scores: { mevlana: 3 } },
       { text: 'Erdemli yaşamak — doğru olanı, koşullar ne olursa olsun yapmak.', scores: { marcus: 3, jung: 1 } },
+      { text: 'Zaman — ömrümü başkalarının beklentilerine değil, kendi seçtiklerime harcamak.', scores: { seneca: 3, nietzsche: 1 } },
     ],
   },
 ];
@@ -126,14 +140,13 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
   const primary = results[0]!;
   const secondary = results[1] && results[1].percentage >= 20 ? results[1] : null;
 
-  const analyses: Record<string, { analysis: string; blindSpot: string; growth: string; shareEmoji: string; miniTask: string; insightSlap: string }> = {
+  const analyses: Record<string, { analysis: string; blindSpot: string; growth: string; shareEmoji: string; miniTask: string }> = {
     jung: {
       analysis: 'Zihnin bir arkeolog gibi çalışıyor; yüzeyde değil, derinlerde arıyor cevapları. Bilinçdışının dilini — sembolleri, rüyaları, gölgeleri — okumaya doğal bir eğilimin var. Kendini tanıma yolculuğu senin için süs değil, varoluşsal bir zorunluluk.',
       blindSpot: 'İç dünyanda çok kaybolabilirsin. Analiz felci — sürekli "bu ne anlama geliyor?" sorusu — seni hareketsiz bırakabilir. Bazen bir şeyin sadece olduğu gibi olduğunu kabul etmek de yeter.',
       growth: 'Marcus Aurelius seni dengeler. Derinliğini kaybetmeden, "şimdi ne yapabilirim?" sorusunu daha sık sorman seni rahatlatır.',
       shareEmoji: '🌑',
       miniTask: 'Bugün gece rüyanı hatırlamaya çalış. Uyanınca ilk aklına gelen 3 kelimeyi yaz.',
-      insightSlap: 'Anlamak ile yaşamak arasında kaybolmuş birisin.',
     },
     nietzsche: {
       analysis: 'Zihnin bir fırtına gibi; statükoyu reddediyor ve sürekli bir inşa hâlinde. Kendi kurallarını koyan, gücü ve iradeyi kutsayan bir yapın var. Sıradan olmayı içine sindiremezsin — ya yaratırsın, ya yıkarsın.',
@@ -141,7 +154,6 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
       growth: 'Mevlânâ seni dengeler. İradeni biraz olsun akışa bırakmak ve şefkati bir güç olarak görmek zihnini rahatlatır.',
       shareEmoji: '🌪️',
       miniTask: 'Bugün ertelediğin bir şeyi, düşünmeden yap. Sadece yap.',
-      insightSlap: 'Güçlü görünmek için harcadığın enerji, seni zayıflatıyor.',
     },
     mevlana: {
       analysis: 'Ruhun bir derviş gibi dönüyor; cevapları akılda değil, kalpte arıyor. Teslimiyet senin için kaçış değil, en derin cesaret biçimi. Sevgiyi, bağlanmayı ve anlamı hayatın merkezine koyuyorsun.',
@@ -149,7 +161,6 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
       growth: 'Nietzsche seni dengeler. Aşkla birlikte irade de gerekir. Bazen kapıyı çalmayı bırakıp kendini kırmak gerekir.',
       shareEmoji: '✨',
       miniTask: 'Bugün tanımadığın birine içten bir iltifat et. Karşılık bekleme.',
-      insightSlap: 'Teslim oluyorum derken, aslında kaçıyorsun.',
     },
     marcus: {
       analysis: 'Zihnin bir kale gibi; sağlam, disiplinli, rasyonel. Kontrol edemediğin şeylere enerji harcamayı reddediyorsun. Duygular gelip geçer, ama erdem kalır — bu senin motton.',
@@ -157,15 +168,21 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
       growth: 'Jung seni dengeler. Mantığın yanına biraz iç dünya keşfi eklemek — rüyalarına, sembollerine dikkat etmek — seni daha bütün kılar.',
       shareEmoji: '🏛️',
       miniTask: 'Bugün bir kararı 10 saniyede al. Fazla düşünme, hareket et.',
-      insightSlap: 'Kontrol ettiğini sanıyorsun, ama sadece hissetmekten kaçıyorsun.',
+    },
+    seneca: {
+      analysis: 'Zihnin bir mektup gibi; sakin, düşünceli ve insana dönük. Hayatın gürültüsü içinde neyin gerçekten önemli olduğunu ayırt etmeye çalışıyorsun. Zamanını, dostlarını ve sözlerini özenle seçiyorsun.',
+      blindSpot: 'Fazla düşünüp tartarken anı kaçırabilirsin. "Doğru zamanı" beklemek, bazen yaşamayı ertelemenin kibar bir adı olur.',
+      growth: 'Nietzsche seni dengeler. Her şeyi tartmak yerine bazen bir adım atıp sonucuyla yüzleşmek seni özgürleştirir.',
+      shareEmoji: '📜',
+      miniTask: 'Bu akşam yatmadan önce günü baştan sona gözden geçir: hangi saat gerçekten senindi?',
     },
   };
 
   const primaryData = analyses[primary.mentor.id] ?? analyses['jung']!;
 
   const shareText = secondary
-    ? `Zihnimin %${primary.percentage}'i ${primary.mentor.name.split(' ').pop()}, %${secondary.percentage}'i ${secondary.mentor.name.split(' ').pop()} çıktı. ${primaryData.shareEmoji} Sen kiminle yönetiliyorsun? mentoriva.com/test`
-    : `Zihnimin %${primary.percentage}'i ${primary.mentor.name.split(' ').pop()} çıktı. ${primaryData.shareEmoji} Sen kiminle yönetiliyorsun? mentoriva.com/test`;
+    ? `Zihnimin %${primary.percentage}'i ${primary.mentor.shortName}, %${secondary.percentage}'i ${secondary.mentor.shortName} çıktı. ${primaryData.shareEmoji} Sen kiminle yönetiliyorsun? ${SITE_HOST}/test`
+    : `Zihnimin %${primary.percentage}'i ${primary.mentor.shortName} çıktı. ${primaryData.shareEmoji} Sen kiminle yönetiliyorsun? ${SITE_HOST}/test`;
 
   return {
     primary,
@@ -176,8 +193,51 @@ function analyzeResults(scores: Record<string, number>): QuizResult {
     growth: primaryData.growth,
     shareText,
     miniTask: primaryData.miniTask,
-    insightSlap: primaryData.insightSlap,
+    // Aynı skor her zaman aynı cümleyi verir (paylaşılan sonuç tutarlı kalsın)
+    insightSlap: isActiveMentor(primary.mentor.id) ? getRandomSlap(primary.mentor.id, scoresToSeed(scores)) : '',
   };
+}
+
+// -----------------------------------------------------------
+// Testten soru akışına geçiş
+// -----------------------------------------------------------
+
+function AskMentorCta({ mentor, compact }: { mentor: MentorMetadata; compact?: boolean }) {
+  const router = useRouter();
+  const { status } = useSession();
+  const a = getAccent(mentor.accentColor);
+
+  const go = () => {
+    try { sessionStorage.setItem(PRESELECT_KEY, mentor.id); } catch {}
+    track('test_to_ask', { mentor: mentor.id, guest: status !== 'user' });
+    router.push(status === 'user' ? '/' : '/kayit?next=/');
+  };
+
+  return (
+    <div
+      className={cn('rounded-2xl border text-center', compact ? 'p-5' : 'p-7 space-y-4')}
+      style={{ borderColor: a.border, background: a.bg }}
+    >
+      {!compact && (
+        <p className="font-display text-xl text-white/85">
+          {mentor.shortName} seni bekliyor.
+        </p>
+      )}
+      <p className={cn('text-sm text-white/55', compact && 'mb-3')}>
+        Sonucun bir başlangıç. Aklındaki gerçek soruyu {mentor.shortName}&apos;a sor, sana kendi felsefesiyle cevap versin.
+      </p>
+      <button onClick={go} className="btn-primary w-full sm:w-auto">
+        {mentor.shortName}&apos;a ilk sorunu sor →
+      </button>
+      {status !== 'user' && <p className="mt-2 text-[11px] text-white/35">Ücretsiz · kredi kartı istenmez · günde 5 soru</p>}
+      {!compact && (
+        <p className="mt-4 text-xs text-white/45">
+          Bu test eğlenceli bir başlangıç. Kendini daha derinden tanımak istersen{' '}
+          <Link href="/yolculuk" className="text-brand-300 hover:text-brand-200">Kendine Yolculuk</Link>’a çık.
+        </p>
+      )}
+    </div>
+  );
 }
 
 // -----------------------------------------------------------
@@ -191,7 +251,7 @@ export default function QuizPage() {
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
 
   const scores = useMemo(() => {
-    const s: Record<string, number> = { jung: 0, nietzsche: 0, mevlana: 0, marcus: 0 };
+    const s: Record<string, number> = Object.fromEntries(ACTIVE_MENTORS.map((m) => [m.id, 0]));
     answers.forEach((choiceIdx, qIdx) => {
       const q = QUESTIONS[qIdx];
       if (!q) return;
@@ -239,15 +299,7 @@ export default function QuizPage() {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#070b14]/80 backdrop-filter backdrop-blur-md">
-        <div className="mx-auto max-w-content px-5 py-3.5 flex items-center justify-between">
-          <Link href="/" className="inline-flex"><Logo /></Link>
-          <nav className="flex gap-3 text-sm">
-            <Link href="/" className="text-white/35 hover:text-white/60 transition-colors text-xs">Ana Sayfa</Link>
-            <Link href="/hakkimizda" className="text-white/35 hover:text-white/60 transition-colors text-xs">Hakkımızda</Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="mx-auto max-w-[640px] px-5 py-10 sm:py-16">
 
@@ -260,7 +312,7 @@ export default function QuizPage() {
                 Zihninin mimarı <span className="text-brand-500">kim</span>?
               </h1>
               <p className="text-[15px] text-white/45 leading-relaxed max-w-[440px] mx-auto">
-                7 soru, 4 zihin. Seni en iyi hangi düşünür anlıyor? İçindeki
+                7 soru, 5 zihin. Seni en iyi hangi düşünür anlıyor? İçindeki
                 felsefi pusulayı keşfet.
               </p>
             </div>
@@ -411,6 +463,8 @@ export default function QuizPage() {
               })}
             </div>
 
+            <AskMentorCta mentor={result.primary.mentor} compact />
+
             {/* Analiz */}
             <div className="space-y-5">
               {/* Tek cümlelik tokat */}
@@ -450,17 +504,7 @@ export default function QuizPage() {
             </div>
 
             {/* CTA */}
-            <div className="card-surface p-6 text-center space-y-4" style={{ borderColor: getAccent(result.primary.mentor.accentColor).border }}>
-              <p className="text-sm text-white/50">
-                {result.primary.mentor.name} ile konuşmaya hazır mısın?
-              </p>
-              <Link
-                href="/"
-                className="btn-primary inline-flex"
-              >
-                Mentorunla konuşmaya başla →
-              </Link>
-            </div>
+            <AskMentorCta mentor={result.primary.mentor} />
 
             {/* Paylaş */}
             <div className="card-surface p-5 space-y-4">
@@ -495,19 +539,10 @@ export default function QuizPage() {
                 Ana sayfaya dön
               </Link>
             </div>
-
-            <div className="flex items-center justify-center gap-4 mt-6 text-xs">
-              <a href="mailto:info@mentoriva.com.tr" className="text-white/25 hover:text-white/50 transition-colors">
-                info@mentoriva.com.tr
-              </a>
-              <a href="https://instagram.com/mentoriva_" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-white/25 hover:text-white/50 transition-colors">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                @mentoriva_
-              </a>
-            </div>
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

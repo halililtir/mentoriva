@@ -2,6 +2,7 @@
 
 import { Header } from '@/components/shared/Header';
 import Link from 'next/link';
+import { Footer } from '@/components/shared/Footer';
 
 export default function KullanimSartlariPage() {
   return (
@@ -43,11 +44,24 @@ export default function KullanimSartlariPage() {
             <p>Geliştiriciler, hizmeti önceden bildirim yapmaksızın değiştirme, kısıtlama veya sonlandırma hakkını saklı tutar. Ücretsiz kullanım limitleri her zaman güncellenebilir.</p>
           </div>
           <div>
-            <h2 className="font-display text-lg text-white/80 mb-2">7. İletişim</h2>
+            <h2 className="font-display text-lg text-white/80 mb-2">7. Davet ve Bonus Haklar</h2>
+            <p>Davet linkiyle kayıt olan ve e-posta adresini doğrulayan her yeni kullanıcı için davet eden kişiye ve yeni kullanıcıya bonus soru hakkı tanımlanır. Bonus haklar nakde çevrilemez, devredilemez ve günlük haklar bittikten sonra kullanılır. Kişi başı ödüllendirilen davet sayısı sınırlıdır. Sahte veya toplu hesap açılması gibi kötüye kullanım tespit edildiğinde ilgili bonus haklar iptal edilebilir ve hesaplar askıya alınabilir.</p>
+          </div>
+          <div>
+            <h2 className="font-display text-lg text-white/80 mb-2">8. Paylaşım Kartları ve Alıntılar</h2>
+            <p>Paylaşım kartları yalnızca platformun ürettiği mentor cevaplarından oluşturulabilir. Kartlardaki ve cevaplardaki alıntılar, düşünürlerin eserlerinin orijinal metinlerinden doğrulanmış olup Mentoriva tarafından Türkçeye çevrilmiştir; kaynak eser ve bölüm bilgisiyle birlikte gösterilir. Mentor cevaplarının kendisi yapay zekâ üretimidir ve düşünürlerin gerçek sözleri olarak alıntılanmamalıdır.</p>
+          </div>
+          <div>
+            <h2 className="font-display text-lg text-white/80 mb-2">9. Kendine Yolculuk</h2>
+            <p>Kendine Yolculuk bir öz-gözlem ve düşünme aracıdır; psikolojik danışmanlık, terapi veya tıbbi hizmet değildir, tanı koymaz. Sonuçlar kullanıcının yazdıklarına dayanan geçici değerlendirmelerdir ve kesin kişilik veya ruh sağlığı yorumu olarak kabul edilmemelidir. Kriz belirtisi taşıyan yazılarda yolculuk durdurulur ve kullanıcı profesyonel desteğe yönlendirilir. Bir yolculuk, sorular aşamasında belirtilen sayıda soru hakkı kullanır.</p>
+          </div>
+          <div>
+            <h2 className="font-display text-lg text-white/80 mb-2">10. İletişim</h2>
             <p>Kullanım şartları hakkındaki geri bildirimleriniz için: <a href="mailto:info@mentoriva.com.tr" className="text-brand-400 hover:text-brand-300">info@mentoriva.com.tr</a></p>
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }

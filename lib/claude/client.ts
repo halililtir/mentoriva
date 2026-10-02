@@ -15,6 +15,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { API, FEATURES } from '@/lib/features';
 import type { MentorId, Message } from '@/types';
 import { buildMentorRequest } from '@/lib/mentors/prompts';
+import { isMockEnabled, mockStream } from './mock';
+import { QuoteTagFilter } from '@/lib/mentors/quote-stream';
 
 // -----------------------------------------------------------
 // SDK Singleton
@@ -80,7 +82,40 @@ export interface StreamChunk {
 export async function* streamMentorResponse(
   params: StreamMentorResponseParams,
 ): AsyncGenerator<StreamChunk, void, unknown> {
+  // Modelin seçtiği [[alinti:<id>]] etiketleri doğrulanmış alıntıyla değiştirilir;
+  // model alıntı metnini kendisi üretmez (lib/mentors/quotes.ts).
+  const filter = new QuoteTagFilter(params.mentorId);
+  let fullText = '';
+  for await (const chunk of rawMentorStream(params)) {
+    if (chunk.type === 'text_delta' && chunk.text) {
+      const text = filter.push(chunk.text);
+      if (text) {
+        fullText += text;
+        yield { type: 'text_delta', text };
+      }
+    } else if (chunk.type === 'complete') {
+      const rest = filter.flush();
+      if (rest) {
+        fullText += rest;
+        yield { type: 'text_delta', text: rest };
+      }
+      yield { type: 'complete', fullText };
+    } else {
+      yield chunk;
+    }
+  }
+}
+
+async function* rawMentorStream(
+  params: StreamMentorResponseParams,
+): AsyncGenerator<StreamChunk, void, unknown> {
   const { mentorId, userMessage, chatHistory, mode, abortSignal } = params;
+
+  if (isMockEnabled()) {
+    yield* mockStream(mentorId, abortSignal);
+    return;
+  }
+
   const client = getClient();
 
   const { system, messages } = buildMentorRequest({
@@ -149,7 +184,9 @@ export async function* streamMentorResponse(
       return;
     } catch (error) {
       attempt += 1;
-      const isLastAttempt = attempt >= maxAttempts;
+      // Client'a metin akmaya başladıysa retry yapma: fallback model baştan
+      // yazacağı için kullanıcı aynı cevabın iki farklı başlangıcını görürdü.
+      const isLastAttempt = attempt >= maxAttempts || fullText.length > 0;
       const errorMessage =
         error instanceof Error ? error.message : 'Bilinmeyen hata';
 
@@ -172,4 +209,46 @@ export async function* streamMentorResponse(
       await new Promise((resolve) => setTimeout(resolve, backoffMs));
     }
   }
+}
+
+// -----------------------------------------------------------
+// Tek seferlik (akışsız) çağrı — yapılandırılmış JSON üreten özellikler için
+// -----------------------------------------------------------
+
+export interface CompleteParams {
+  system: string;
+  user: string;
+  maxTokens: number;
+  temperature?: number;
+  /** MENTORIVA_MOCK_AI açıkken API yerine dönecek metin. */
+  mock: () => string;
+}
+
+/**
+ * Tek mesajlık istek atar, metni döner. Ana model hata verirse bir kez
+ * fallback modeli dener. Hata mesajları kullanıcı metnini içermez.
+ */
+export async function completeText({ system, user, maxTokens, temperature = 0.6, mock }: CompleteParams): Promise<string> {
+  if (isMockEnabled()) {
+    await new Promise((r) => setTimeout(r, 900));
+    return mock();
+  }
+  const client = getClient();
+  let lastError: unknown;
+  for (const model of [API.MODEL, API.FALLBACK_MODEL]) {
+    try {
+      const res = await client.messages.create({
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+        messages: [{ role: 'user', content: user }],
+      });
+      return res.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
+    } catch (e) {
+      lastError = e;
+      console.error(`[Claude] completeText ${model} başarısız:`, e instanceof Error ? e.message : 'bilinmeyen hata');
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Yapay zekâ isteği başarısız');
 }

@@ -16,6 +16,8 @@ export type MentorAccentColor = 'cyan' | 'amber' | 'gold' | 'slate' | 'purple' |
 export interface MentorMetadata {
   id: string;
   name: string;
+  /** Dar alanlarda kullanılan kısa ad (Jung, Mevlânâ…). */
+  shortName: string;
   title: string;
   shortBio: string;
   traitTags: readonly string[];
@@ -25,6 +27,14 @@ export interface MentorMetadata {
   /** CSS object-position — görselin yüze odaklanması için. Default: 'center' */
   portraitPosition?: string;
   status: MentorStatus;
+  /** Ziyaretçiye "bu mentoru ne zaman seçmeli" sorusunun kısa cevabı. */
+  bestFor?: string;
+  /** Temsil ettiği düşünce geleneği (ör. Stoacılık). */
+  tradition?: string;
+  /** Yaşadığı dönem, gösterim için (ör. "121–180"). */
+  lifespan?: string;
+  /** Cevap tarzının tek cümlelik özeti. */
+  voice?: string;
 }
 
 export interface AccentTheme {
@@ -50,70 +60,90 @@ export const ACCENT_THEMES: Record<MentorAccentColor, AccentTheme> = {
 
 export const ACTIVE_MENTORS: MentorMetadata[] = [
   {
-    id: 'jung', name: 'Carl Gustav Jung', title: 'Analitik Psikolog',
+    id: 'jung', name: 'Carl Gustav Jung', shortName: 'Jung', title: 'Analitik Psikolog',
     shortBio: 'Bilinçdışının, gölgenin ve arketipin haritasını çıkaran İsviçreli psikiyatrist.',
     traitTags: ['Psikoloji', 'Gölge', 'Arketip', 'Semboller'],
     accentColor: 'cyan', closingStyle: 'question',
     portraitUrl: '/mentors/jung.jpg', portraitPosition: 'center 20%', status: 'active',
+    bestFor: 'Tekrar eden kalıpları, rüyaları ve kendini anlamak istediğinde.',
+    tradition: 'Analitik psikoloji',
+    lifespan: '1875–1961',
+    voice: 'Soruyu sana geri çevirir; altında yatanı sorgular.',
   },
   {
-    id: 'nietzsche', name: 'Friedrich Nietzsche', title: 'Değer Sorgulaştırıcı',
+    id: 'nietzsche', name: 'Friedrich Nietzsche', shortName: 'Nietzsche', title: 'Değer Sorgulaştırıcı',
     shortBio: 'Sürü ahlâkını parçalayan, kendi değerlerini yaratmaya çağıran Alman filozof.',
     traitTags: ['Güç İstenci', 'Übermensch', 'Cesaret', 'Felsefe'],
     accentColor: 'amber', closingStyle: 'challenge',
     portraitUrl: '/mentors/nietzsche.png', portraitPosition: 'center 15%', status: 'active',
+    bestFor: 'Cesaret, irade ve kendi yolunu çizmen gerektiğinde.',
+    tradition: 'Varoluşçu felsefe',
+    lifespan: '1844–1900',
+    voice: 'Sert ve kışkırtıcıdır; seni rahat bölgenden iter.',
   },
   {
-    id: 'mevlana', name: 'Mevlânâ Rûmî', title: 'Tasavvufî Şair',
+    id: 'mevlana', name: 'Mevlânâ Rûmî', shortName: 'Mevlânâ', title: 'Tasavvufî Şair',
     shortBio: 'Aşkı, teslimiyeti ve benlikten geçişi Mesnevi\'nin ritminde öğreten sûfî bilge.',
     traitTags: ['Aşk', 'Teslimiyet', 'Nefs', 'Şiir'],
     accentColor: 'gold', closingStyle: 'invitation',
     portraitUrl: '/mentors/mevlana.jpg', portraitPosition: 'center 10%', status: 'active',
+    bestFor: 'Kayıp, sevgi, kırgınlık ve anlam arayışında.',
+    tradition: 'Tasavvuf',
+    lifespan: '1207–1273',
+    voice: 'Şiirsel ve şefkatlidir; kalpten konuşur.',
   },
   {
-    id: 'marcus', name: 'Marcus Aurelius', title: 'Stoik İmparator',
+    id: 'marcus', name: 'Marcus Aurelius', shortName: 'Marcus', title: 'Stoik İmparator',
     shortBio: 'Roma\'yı yönetirken kendine notlar yazan imparator-filozof.',
     traitTags: ['Stoacılık', 'Disiplin', 'Dikotomi', 'Erdem'],
     accentColor: 'slate', closingStyle: 'action',
     portraitUrl: '/mentors/marcus.jpg', portraitPosition: 'center 20%', status: 'active',
+    bestFor: 'Kontrol edemediğin şeylerle boğuşurken ve karar anlarında.',
+    tradition: 'Stoacılık',
+    lifespan: '121–180',
+    voice: 'Sakin ve pratiktir; bugün ne yapacağını söyler.',
+  },
+  {
+    id: 'seneca', name: 'Seneca', shortName: 'Seneca', title: 'Stoacı Bilge',
+    shortBio: 'Bir dostuna mektup yazar gibi konuşan Romalı filozof; zamanı, öfkeyi ve kaygıyı anlatır.',
+    traitTags: ['Zaman', 'Öfke', 'Dostluk', 'Mektuplar'],
+    accentColor: 'terra', closingStyle: 'invitation',
+    portraitUrl: '/mentors/seneca.jpeg', portraitPosition: 'center 20%', status: 'active',
+    bestFor: 'Zamanın yetmediğinde, öfke ve kaygıyla başa çıkmakta, dostluk sorularında.',
+    voice: 'Sıcak ve sohbet eder; bir dosta mektup yazar gibi konuşur.',
+    tradition: 'Stoacı ahlak',
+    lifespan: 'MÖ 4 – MS 65',
   },
 ];
 
 export const COMING_SOON_MENTORS: MentorMetadata[] = [
   {
-    id: 'arabi', name: 'İbn Arabî', title: 'Şeyh-i Ekber',
+    id: 'arabi', name: 'İbn Arabî', shortName: 'İbn Arabî', title: 'Şeyh-i Ekber',
     shortBio: 'Vahdet-i Vücud felsefesiyle varlığın birliğini öğreten tasavvuf bilgesi.',
     traitTags: ['Vahdet-i Vücud', 'İrfan', 'Fütuhat'],
     accentColor: 'purple', closingStyle: 'invitation',
     portraitUrl: '/mentors/arabi.webp', portraitPosition: 'center 15%', status: 'coming_soon',
   },
   {
-    id: 'freud', name: 'Sigmund Freud', title: 'Psikanalizin Kurucusu',
+    id: 'freud', name: 'Sigmund Freud', shortName: 'Freud', title: 'Psikanalizin Kurucusu',
     shortBio: 'Bilinçdışını, rüyaları ve bastırılmış dürtüleri keşfeden Viyanalı psikiyatrist.',
     traitTags: ['Psikanaliz', 'Bilinçdışı', 'Rüya Yorumu'],
     accentColor: 'sky', closingStyle: 'question',
     portraitUrl: '/mentors/freud.jpg', portraitPosition: 'center 15%', status: 'coming_soon',
   },
   {
-    id: 'platon', name: 'Platon', title: 'İdealar Filozofu',
+    id: 'platon', name: 'Platon', shortName: 'Platon', title: 'İdealar Filozofu',
     shortBio: 'Mağara alegorisinden idealar dünyasına — hakikati arayan Atinalı düşünür.',
     traitTags: ['İdealar', 'Devlet', 'Diyalog'],
     accentColor: 'sage', closingStyle: 'question',
     portraitUrl: '/mentors/platon.jpg', portraitPosition: 'center 20%', status: 'coming_soon',
   },
   {
-    id: 'sokrates', name: 'Sokrates', title: 'Sorgulayıcı',
+    id: 'sokrates', name: 'Sokrates', shortName: 'Sokrates', title: 'Sorgulayıcı',
     shortBio: 'Kendini bil. Her şeyi sorgula. Gerçek bilgelik, cehaletini bilmektir.',
     traitTags: ['Diyalektik', 'Öz-Bilgi', 'Erdem'],
     accentColor: 'honey', closingStyle: 'question',
     portraitUrl: '/mentors/sokrates.jpg', portraitPosition: 'center 20%', status: 'coming_soon',
-  },
-  {
-    id: 'seneca', name: 'Seneca', title: 'Stoik Devlet Adamı',
-    shortBio: 'Nero\'nun danışmanı, sürgünlerin bilgesi. Hayatın kısalığını yazdı.',
-    traitTags: ['Stoacılık', 'Mektuplar', 'Erdem'],
-    accentColor: 'terra', closingStyle: 'action',
-    portraitUrl: '/mentors/seneca.jpeg', portraitPosition: 'center 20%', status: 'coming_soon',
   },
 ];
 

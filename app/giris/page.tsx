@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Logo } from '@/components/shared/Logo';
+import { AuthShell, Field, FormError } from '@/components/shared/AuthShell';
+import { useSession } from '@/lib/session';
+import { readNextPath } from '@/lib/next-path';
 
 export default function GirisPage() {
   const [email, setEmail] = useState('');
@@ -11,91 +13,78 @@ export default function GirisPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setUser } = useSession();
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) return;
+  const canSubmit = email.trim().length > 3 && password.length > 0 && !loading;
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
     setLoading(true);
     setError('');
-
     try {
-      const res = await fetch('/api/v1/users', {
+      const res = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', username: email.trim().toLowerCase(), password: password.trim() }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
-
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? 'Giriş başarısız'); return; }
-
-      localStorage.setItem('mentoriva_session', JSON.stringify({
-        username: data.user.username,
-        name: data.user.name || data.user.username,
-        questionLimit: data.user.questionLimit,
-        questionsUsed: data.user.questionsUsed,
-        remaining: data.user.remaining,
-        loginAt: new Date().toISOString(),
-      }));
-
-      router.push('/');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? 'Giriş başarısız');
+        return;
+      }
+      setUser(data.user);
+      router.push(readNextPath());
     } catch {
-      setError('Bağlantı hatası');
+      setError('Bağlantı hatası. İnternetini kontrol edip tekrar dene.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-5">
-      <div className="w-full max-w-sm space-y-8 text-center">
-        <div className="space-y-4">
-          <Logo />
-          <div className="space-y-2">
-            <h1 className="font-display text-2xl">Giriş Yap</h1>
-            <p className="text-sm text-white/35 leading-relaxed">
-              Hesabınla giriş yap ve mentorlarla konuşmaya devam et.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            placeholder="E-posta adresin"
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
-            autoFocus
-            autoComplete="email"
-          />
-          <input
+    <AuthShell
+      title="Tekrar hoş geldin"
+      subtitle="Mentorların seni bekliyor. Kaldığın yerden devam et."
+      footer={
+        <>
+          Hesabın yok mu?{' '}
+          <Link href="/kayit" className="font-medium text-brand-300 hover:text-brand-200">Ücretsiz kayıt ol</Link>
+        </>
+      }
+    >
+      <form onSubmit={handleLogin} className="space-y-4" noValidate>
+        <Field
+          label="E-posta"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="ornek@eposta.com"
+          autoComplete="email"
+          autoFocus
+          required
+        />
+        <div>
+          <Field
+            label="Şifre"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-            placeholder="Şifre"
-            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40 transition-colors"
+            placeholder="••••••••"
             autoComplete="current-password"
+            required
           />
-          {error && <p className="text-sm text-red-400/80">{error}</p>}
-          <button
-            onClick={handleLogin}
-            disabled={loading || !email.trim() || !password.trim()}
-            className="w-full py-3.5 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium hover:bg-brand-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Giriş yapılıyor...' : 'Giriş yap'}
-          </button>
-        </div>
-
-        <div className="space-y-3 pt-2">
-          <p className="text-[12px] text-white/25">
-            Hesabın yok mu?{' '}
-            <Link href="/kayit" className="text-brand-400/70 hover:text-brand-400 transition-colors font-medium">
-              Ücretsiz kayıt ol
+          <div className="mt-2 text-right">
+            <Link href="/sifremi-unuttum" className="text-xs text-white/40 transition-colors hover:text-brand-300">
+              Şifremi unuttum
             </Link>
-          </p>
+          </div>
         </div>
-      </div>
-    </div>
+        <FormError>{error}</FormError>
+        <button type="submit" disabled={!canSubmit} className="btn-primary w-full !py-3.5">
+          {loading ? 'Giriş yapılıyor…' : 'Giriş yap'}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

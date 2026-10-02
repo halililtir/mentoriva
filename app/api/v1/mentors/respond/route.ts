@@ -1,37 +1,31 @@
 /**
  * POST /api/v1/mentors/respond
  *
- * 4 mentora paralel çağrı yapar, cevapları SSE (Server-Sent Events) ile
- * streaming olarak döner.
+ * Seçili mentorlara paralel çağrı yapar, cevapları SSE (Server-Sent Events)
+ * ile streaming olarak döner.
  *
  * Event formatı (StreamEvent, types/index.ts):
+ *   data: {"type":"quota","remaining":4}
  *   data: {"type":"start","mentorId":"jung"}
  *   data: {"type":"delta","mentorId":"jung","text":"Bu "}
- *   data: {"type":"delta","mentorId":"jung","text":"soru "}
  *   data: {"type":"end","mentorId":"jung"}
  *   data: {"type":"error","mentorId":"nietzsche","message":"timeout"}
+ *   data: {"type":"crisis","message":"..."}   (moderation; mentor çağrısı yapılmaz)
  *
- * Özel event'ler:
- *   - crisis: moderation kriz tespit ettiğinde (mentor çağrısı yapılmaz)
- *   - rate_limit: kullanıcı limiti aştığında
+ * Akış: oturum → rate limit → doğrulama → moderasyon → kota ayır → stream.
+ * Hiçbir mentor cevap üretemezse ayrılan kota iade edilir.
  */
 
-import { NextResponse } from 'next/server';
 import { getKV } from '@/lib/kv';
 import { streamMentorResponse } from '@/lib/claude/client';
-import { checkRateLimit } from '@/lib/claude/rate-limit';
-import { INPUT_LIMITS } from '@/lib/features';
+import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
+import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
+import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
+import { todayKey } from '@/lib/time';
+import { recordAnswer } from '@/lib/share/answers';
 import { MENTOR_IDS } from '@/types';
-import type { MentorId, RespondRequest, StreamEvent } from '@/types';
-
-function getClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]!.trim();
-  const real = request.headers.get('x-real-ip');
-  if (real) return real.trim();
-  return 'unknown';
-}
+import type { MentorId, StreamEvent } from '@/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel hobby tier için 60sn
@@ -41,7 +35,7 @@ export const maxDuration = 60; // Vercel hobby tier için 60sn
 // -----------------------------------------------------------
 
 function validateRequest(body: unknown):
-  | { ok: true; data: Required<Pick<RespondRequest, 'question'>> & { mentorIds: MentorId[] } }
+  | { ok: true; data: { question: string; mentorIds: MentorId[] } }
   | { ok: false; error: string } {
   if (!body || typeof body !== 'object') {
     return { ok: false, error: 'Geçersiz istek gövdesi' };
@@ -50,25 +44,17 @@ function validateRequest(body: unknown):
   const question = typeof b['question'] === 'string' ? b['question'].trim() : '';
 
   if (question.length < INPUT_LIMITS.MIN_QUESTION_LENGTH) {
-    return {
-      ok: false,
-      error: `Soru en az ${INPUT_LIMITS.MIN_QUESTION_LENGTH} karakter olmalı`,
-    };
+    return { ok: false, error: `Soru en az ${INPUT_LIMITS.MIN_QUESTION_LENGTH} karakter olmalı` };
   }
   if (question.length > INPUT_LIMITS.MAX_QUESTION_LENGTH) {
-    return {
-      ok: false,
-      error: `Soru en fazla ${INPUT_LIMITS.MAX_QUESTION_LENGTH} karakter olabilir`,
-    };
+    return { ok: false, error: `Soru en fazla ${INPUT_LIMITS.MAX_QUESTION_LENGTH} karakter olabilir` };
   }
 
-  // Hangi mentorlere soralım? Default: hepsi.
-  const requestedIds = Array.isArray(b['mentorIds']) ? b['mentorIds'] : null;
-  const mentorIds: MentorId[] = requestedIds
-    ? (requestedIds.filter((id): id is MentorId =>
-        MENTOR_IDS.includes(id as MentorId),
-      ))
-    : [...MENTOR_IDS];
+  // Hangi mentorlere soralım? Default: hepsi. Tekrarlar elenir.
+  const requested = Array.isArray(b['mentorIds']) ? b['mentorIds'] : [...MENTOR_IDS];
+  const mentorIds = [...new Set(requested)].filter((id): id is MentorId =>
+    MENTOR_IDS.includes(id as MentorId),
+  );
 
   if (mentorIds.length === 0) {
     return { ok: false, error: 'En az bir mentor seçilmeli' };
@@ -78,142 +64,72 @@ function validateRequest(body: unknown):
 }
 
 // -----------------------------------------------------------
-// SSE formatting
-// -----------------------------------------------------------
-
-function formatSSE(event: StreamEvent): string {
-  return `data: ${JSON.stringify(event)}\n\n`;
-}
-
-// -----------------------------------------------------------
 // Route Handler
 // -----------------------------------------------------------
 
 export async function POST(request: Request): Promise<Response> {
-  // 1. Rate limit kontrolü
-  const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(ip, 'respond', request.headers.get('x-mentoriva-user') || undefined);
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      {
-        error: {
-          code: 'RATE_LIMITED',
-          message: rateLimit.message,
-        },
-      },
-      { status: 429 },
-    );
-  }
-
-  // 1b. Kullanıcı kota kontrolü (beta)
-  const username = request.headers.get('x-mentoriva-user');
-  if (username) {
-    try {
-      const redis = getKV();
-      if (redis) {
-        const raw = await redis.get(`user:${username}`);
-        if (raw) {
-          const user = typeof raw === 'string' ? JSON.parse(raw) : raw as Record<string, number>;
-          if (user.questionsUsed >= user.questionLimit) {
-            return NextResponse.json(
-              { error: { code: 'QUOTA_EXCEEDED', message: 'Soru limitine ulaştın.' } },
-              { status: 429 },
-            );
-          }
-        }
-      }
-    } catch {}
-  }
+  // 1. Oturum + rate limit
+  const auth = await authorizeMentorRequest(request, 'respond');
+  if ('response' in auth) return auth.response;
+  const { user } = auth;
 
   // 2. Request parsing & validation
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: { code: 'INVALID_REQUEST', message: 'Geçersiz JSON' } },
-      { status: 400 },
-    );
+    return apiError(400, 'INVALID_REQUEST', 'Geçersiz JSON');
   }
-
   const validation = validateRequest(body);
-  if (!validation.ok) {
-    return NextResponse.json(
-      { error: { code: 'INVALID_REQUEST', message: validation.error } },
-      { status: 400 },
-    );
-  }
-
+  if (!validation.ok) return apiError(400, 'INVALID_REQUEST', validation.error);
   const { question, mentorIds } = validation.data;
 
-  // Analytics: mentor popülerlik + soru kaydet
-  try {
-    const redis = getKV();
-    if (redis) {
-      const today = new Date().toISOString().slice(0, 10);
-      // Mentor popülerlik sayacı
-      for (const mid of mentorIds) {
-        await redis.incr(`stats:mentor:${mid}`);
-        await redis.incr(`stats:mentor:${mid}:${today}`);
-      }
-      // Son soruları kaydet (max 100)
-      const questionEntry = JSON.stringify({
-        q: question.slice(0, 200),
-        mentors: mentorIds,
-        user: request.headers.get('x-mentoriva-user') || 'anon',
-        at: new Date().toISOString(),
-      });
-      await redis.lpush('stats:recent-questions', questionEntry);
-      await redis.ltrim('stats:recent-questions', 0, 99);
-    }
-  } catch {}
-
-  // 3. Moderation
+  // 3. Moderation — kriz/zararlı içerikte kota düşülmez, analitiğe yazılmaz
   const moderation = moderateInput(question);
   if (!moderation.allowed) {
-    // Kriz durumunda özel SSE event ile dön — client helpline gösterecek
-    const event: StreamEvent = {
-      type: 'crisis',
-      message:
-        moderation.reason === 'crisis'
-          ? 'Bu konu, mentorların felsefi perspektiflerinin ötesinde bir destek gerektirebilir. Lütfen profesyonel bir uzmana danışmayı düşün.'
-          : 'Bu istek mentorların cevaplayabileceği bir konu değil.',
-    };
-
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode(formatSSE(event)));
-        controller.close();
-      },
-    });
-
-    return new Response(stream, {
-      headers: sseHeaders(),
-    });
+    const event: StreamEvent = { type: 'crisis', message: CRISIS_RESPONSE[moderation.reason] };
+    return singleEventResponse(event);
   }
 
-  // 4. 4 mentora paralel streaming
-  const encoder = new TextEncoder();
-  const abortController = new AbortController();
+  // 4. Kota ayır (bir soru = bir hak, kaç mentor seçildiğinden bağımsız)
+  const reservation = await reserveQuestion(user);
+  if (!reservation) {
+    return apiError(429, 'QUOTA_EXCEEDED', 'Bugünkü soru hakkın doldu. Yarın yeniden görüşmek üzere.');
+  }
 
-  // Client disconnect olursa upstream request'leri iptal et
+  void recordAnalytics(question, mentorIds, user.username);
+
+  // 5. Mentorlara paralel streaming
+  const abortController = new AbortController();
   request.signal.addEventListener('abort', () => abortController.abort());
 
   const stream = new ReadableStream({
     async start(controller) {
-      // Her mentor için ayrı async task — paralel çalışacak
-      const tasks = mentorIds.map((mentorId) =>
-        runMentor(mentorId, question, abortController.signal, (event) => {
-          try {
-            controller.enqueue(encoder.encode(formatSSE(event)));
-          } catch {
-            // Controller closed — client disconnected
-          }
-        }),
-      );
+      const emit = (event: StreamEvent) => {
+        try {
+          controller.enqueue(encodeSSE(event));
+        } catch {
+          // Controller closed — client disconnected
+        }
+      };
 
-      // Hepsi bitince stream'i kapat
-      await Promise.allSettled(tasks);
+      emit({ type: 'quota', remaining: reservation.remaining });
+
+      const results = await Promise.allSettled(
+        mentorIds.map((mentorId) => runMentor(mentorId, question, abortController.signal, emit)),
+      );
+      const completed = results.flatMap((r, i) => (r.status === 'fulfilled' && r.value !== null ? [{ mentorId: mentorIds[i]!, text: r.value }] : []));
+      const anySucceeded = completed.length > 0;
+      // Paylaşım kartı yalnızca gerçekten üretilmiş cevaplardan cümle basabilsin
+      await Promise.all(completed.map((c) => recordAnswer(user.username, { mentorId: c.mentorId, question, text: c.text })));
+
+      if (anySucceeded) {
+        await recordQuestion(user.username).catch(() => {});
+      } else {
+        await releaseQuestion(user, reservation).catch(() => {});
+        emit({ type: 'quota', remaining: reservation.remaining + 1 });
+      }
+
       try {
         controller.close();
       } catch {
@@ -225,13 +141,11 @@ export async function POST(request: Request): Promise<Response> {
     },
   });
 
-  return new Response(stream, {
-    headers: sseHeaders(),
-  });
+  return new Response(stream, { headers: sseHeaders() });
 }
 
 // -----------------------------------------------------------
-// Tek mentor task'ı
+// Tek mentor task'ı — başarıyla bittiyse üretilen metni, yoksa null döner
 // -----------------------------------------------------------
 
 async function runMentor(
@@ -239,10 +153,11 @@ async function runMentor(
   question: string,
   signal: AbortSignal,
   emit: (event: StreamEvent) => void,
-): Promise<void> {
+): Promise<string | null> {
   emit({ type: 'start', mentorId });
 
   try {
+    let text = '';
     for await (const chunk of streamMentorResponse({
       mentorId,
       userMessage: question,
@@ -250,35 +165,44 @@ async function runMentor(
       abortSignal: signal,
     })) {
       if (chunk.type === 'text_delta' && chunk.text) {
+        text += chunk.text;
         emit({ type: 'delta', mentorId, text: chunk.text });
       } else if (chunk.type === 'error') {
-        emit({
-          type: 'error',
-          mentorId,
-          message: chunk.error ?? 'Bilinmeyen hata',
-        });
-        return;
+        emit({ type: 'error', mentorId, message: publicError(chunk.error) });
+        return null;
       }
     }
     emit({ type: 'end', mentorId });
+    return text || null;
   } catch (error) {
-    emit({
-      type: 'error',
-      mentorId,
-      message: error instanceof Error ? error.message : 'Bilinmeyen hata',
-    });
+    emit({ type: 'error', mentorId, message: publicError(error instanceof Error ? error.message : undefined) });
+    return null;
   }
 }
 
+/** Upstream hata detayları (API anahtarı, model adı vb.) kullanıcıya gösterilmez. */
+function publicError(detail?: string): string {
+  if (detail) console.error('[respond] mentor hatası:', detail);
+  return 'Bu mentor şu an cevap veremiyor. Biraz sonra tekrar dene.';
+}
+
 // -----------------------------------------------------------
-// SSE Headers
+// Admin analitiği (en iyi çaba — hata akışı bozmaz)
 // -----------------------------------------------------------
 
-function sseHeaders(): HeadersInit {
-  return {
-    'Content-Type': 'text/event-stream; charset=utf-8',
-    'Cache-Control': 'no-cache, no-transform',
-    'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no', // Vercel/Nginx buffering'i kapat
-  };
+async function recordAnalytics(question: string, mentorIds: MentorId[], username: string) {
+  try {
+    const kv = getKV();
+    const today = todayKey();
+    await Promise.all(
+      mentorIds.flatMap((mid) => [kv.incr(`stats:mentor:${mid}`), kv.incr(`stats:mentor:${mid}:${today}`)]),
+    );
+    await kv.lpush(
+      'stats:recent-questions',
+      JSON.stringify({ q: question.slice(0, 200), mentors: mentorIds, user: username, at: new Date().toISOString() }),
+    );
+    await kv.ltrim('stats:recent-questions', 0, 99);
+  } catch (e) {
+    console.error('[respond] analitik yazılamadı:', e);
+  }
 }

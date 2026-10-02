@@ -1,26 +1,135 @@
 /**
  * KV — Upstash Redis bağlantısı.
  * Tüm projede tek giriş noktası.
+ *
+ * KV_REST_API_URL / KV_REST_API_TOKEN tanımlı değilse süreç içi bir bellek
+ * deposuna düşer. Bu yalnızca yerel geliştirme ve testler içindir:
+ * serverless ortamda her instance kendi belleğini tutar, veri kalıcı değildir.
  */
 
-let instance: any = null;
-let tried = false;
+export interface KV {
+  get<T = unknown>(key: string): Promise<T | null>;
+  set(key: string, value: unknown, opts?: { ex?: number }): Promise<unknown>;
+  del(...keys: string[]): Promise<number>;
+  incr(key: string): Promise<number>;
+  incrby(key: string, by: number): Promise<number>;
+  decr(key: string): Promise<number>;
+  expire(key: string, seconds: number): Promise<number>;
+  keys(pattern: string): Promise<string[]>;
+  lpush(key: string, ...values: string[]): Promise<number>;
+  ltrim(key: string, start: number, stop: number): Promise<unknown>;
+  lrange<T = string>(key: string, start: number, stop: number): Promise<T[]>;
+}
 
-export function getKV(): any {
+let instance: KV | null = null;
+
+export function getKV(): KV {
   if (instance) return instance;
-  if (tried) return null;
-  tried = true;
 
   const url = process.env['KV_REST_API_URL'];
   const token = process.env['KV_REST_API_TOKEN'];
 
-  if (!url || !token) return null;
-
-  try {
-    const { Redis } = require('@upstash/redis');
-    instance = new Redis({ url, token });
-    return instance;
-  } catch {
-    return null;
+  if (url && token) {
+    const { Redis } = require('@upstash/redis') as typeof import('@upstash/redis');
+    instance = new Redis({ url, token }) as unknown as KV;
+  } else {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[KV] KV_REST_API_URL/TOKEN tanımlı değil — bellek deposu kullanılıyor, veri kalıcı DEĞİL.');
+    }
+    // Next.js her route'u ayrı paketler; modül değişkeni route başına ayrı
+    // kopya olur. Bellek deposu globalThis'te tutulur ki tüm route'lar aynı
+    // veriyi görsün (ör. kayıt kodunu yazan ve doğrulayan route).
+    const g = globalThis as typeof globalThis & { __mentorivaMemoryKV?: KV };
+    instance = g.__mentorivaMemoryKV ??= createMemoryKV();
   }
+  return instance;
+}
+
+/** Yalnızca testler için: bellek deposunu sıfırlar. */
+export function _resetKVForTesting(): void {
+  const g = globalThis as typeof globalThis & { __mentorivaMemoryKV?: KV };
+  instance = g.__mentorivaMemoryKV = createMemoryKV();
+}
+
+// -----------------------------------------------------------
+// Bellek deposu (Upstash Redis'in kullandığımız alt kümesi)
+// -----------------------------------------------------------
+
+function createMemoryKV(): KV {
+  const store = new Map<string, { value: unknown; expiresAt: number | null }>();
+
+  const read = (key: string) => {
+    const entry = store.get(key);
+    if (!entry) return undefined;
+    if (entry.expiresAt !== null && entry.expiresAt <= Date.now()) {
+      store.delete(key);
+      return undefined;
+    }
+    return entry;
+  };
+
+  // Upstash JSON string'leri otomatik parse eder; aynı davranışı taklit et.
+  const decode = (value: unknown) => {
+    if (typeof value !== 'string') return value;
+    try { return JSON.parse(value); } catch { return value; }
+  };
+
+  const addNumber = (key: string, delta: number) => {
+    const entry = read(key);
+    const next = Number(entry?.value ?? 0) + delta;
+    store.set(key, { value: next, expiresAt: entry?.expiresAt ?? null });
+    return next;
+  };
+
+  const list = (key: string): string[] => {
+    const entry = read(key);
+    return Array.isArray(entry?.value) ? (entry!.value as string[]) : [];
+  };
+
+  return {
+    async get<T>(key: string) {
+      const entry = read(key);
+      return entry ? (decode(entry.value) as T) : null;
+    },
+    async set(key, value, opts) {
+      store.set(key, { value, expiresAt: opts?.ex ? Date.now() + opts.ex * 1000 : null });
+      return 'OK';
+    },
+    async del(...keys) {
+      let n = 0;
+      for (const k of keys) if (store.delete(k)) n++;
+      return n;
+    },
+    async incr(key) { return addNumber(key, 1); },
+    async incrby(key, by) { return addNumber(key, by); },
+    async decr(key) { return addNumber(key, -1); },
+    async expire(key, seconds) {
+      const entry = read(key);
+      if (!entry) return 0;
+      entry.expiresAt = Date.now() + seconds * 1000;
+      return 1;
+    },
+    async keys(pattern) {
+      const re = new RegExp('^' + pattern.split('*').map(escapeRegex).join('.*') + '$');
+      return [...store.keys()].filter((k) => read(k) && re.test(k));
+    },
+    async lpush(key, ...values) {
+      const next = [...values.reverse(), ...list(key)];
+      store.set(key, { value: next, expiresAt: read(key)?.expiresAt ?? null });
+      return next.length;
+    },
+    async ltrim(key, start, stop) {
+      const entry = read(key);
+      if (entry) entry.value = list(key).slice(start, stop + 1);
+      return 'OK';
+    },
+    async lrange<T>(key: string, start: number, stop: number) {
+      const items = list(key);
+      return items.slice(start, stop < 0 ? items.length + stop + 1 : stop + 1).map(decode) as T[];
+    },
+  };
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

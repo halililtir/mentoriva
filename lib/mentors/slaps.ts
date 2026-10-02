@@ -79,6 +79,23 @@ const SLAPS: Record<MentorId, string[]> = {
     'Rahatsızlıktan kaçmak, seni rahat ettirmiyor.',
     'Güçlü olan dayanıklı değil, doğru anda hareket edendir.',
   ],
+  seneca: [
+    'Meşgulsün ama hiçbir şey yapmıyorsun.',
+    'Zamanını herkese dağıtıyorsun, kendine bir saat bile ayırmıyorsun.',
+    'Henüz yaşanmamış felaketlerin yükünü bugünden taşıyorsun.',
+    'Öfkeni haklı sanıyorsun; oysa önce seni yakıyor.',
+    'Daha fazlasını istedikçe sahip olduklarını göremiyorsun.',
+    'Kaçtığın yer değil, yanında taşıdığın sensin.',
+    'Herkesle tanışıyorsun ama kimseyle dost olmuyorsun.',
+    'Yaşamayı hep yarına erteliyorsun.',
+    'Başkalarının ne düşüneceği, kendi düşüncenden önce geliyor.',
+    'Az şeyle mutlu olabileceğini unuttun.',
+    'Sevinç sandığın şey çoğu zaman sadece gürültü.',
+    'Korktuğun şeyler, başına gelenlerden hep daha fazla.',
+    'Kendini düzeltmeden önce dünyayı düzeltmeye çalışıyorsun.',
+    'Her gün biraz ölüyorsun ve bunu fark etmiyorsun bile; gününü yaşa.',
+    'Dostlarını seçerken acele ediyor, onları korurken ihmal ediyorsun.',
+  ],
 };
 
 /**

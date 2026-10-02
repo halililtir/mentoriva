@@ -1,179 +1,121 @@
 # Mentoriva
 
-> **Düşünce meclisini kur.** ChatGPT sana bir cevap verir; Mentoriva sana bir düşünce meclisi kurar.
+> **Tek bir soru, dört farklı zihin.** Kişisel sorularına tek bir cevap yerine dört farklı düşünce geleneğinden bakış.
 
-Mentoriva, tek bir soruya **Carl Jung**, **Friedrich Nietzsche**, **Mevlânâ Celâleddîn-i Rûmî** ve **Marcus Aurelius**'tan dört farklı perspektif sunan çoklu-mentor platformudur.
+Mentoriva, tek bir soruya **Carl Jung**, **Friedrich Nietzsche**, **Mevlânâ Celâleddîn-i Rûmî** ve **Marcus Aurelius** karakterlerinden ayrı ayrı perspektif sunan çoklu-mentor platformudur. Kullanıcı 1–4 mentor seçer, cevaplar aynı anda akar, ardından seçtiği mentorla sohbete devam eder.
 
-## ✨ Özellikler
+## Özellikler
 
-- **4 paralel mentor cevabı** — Server-Sent Events ile streaming
-- **Devam eden sohbet** — Seçtiğin mentor ile derinleş
-- **Prompt caching** — Her mentor için system prompt cache'lenir, maliyet %90 düşer
-- **Rate limiting** — Vercel KV ile IP-based
-- **Kriz algılama** — Aktif intihar niyeti tespitinde helpline'a yönlendirme
-- **Responsive tasarım** — Mobilden 4K'ya kadar
-- **Erişilebilirlik** — Klavye navigasyonu, ARIA labels, reduced motion
+- **Paralel mentor cevapları** — Server-Sent Events ile streaming
+- **Devam eden sohbet** — seçilen mentorla derinleşme
+- **Üyelik** — e-posta doğrulamalı kayıt, şifre sıfırlama, httpOnly çerezle sunucu tarafı oturum
+- **Günlük kota** — kullanıcı başına günlük soru hakkı (Türkiye saatiyle gece yarısı yenilenir), sunucuda tutulur
+- **Kişilik testi** (`/test`) — "Zihninin mimarı kim?"
+- **Admin paneli** (`/admin`) — kullanıcılar, hak tanımlama, geri bildirimler, mentor popülerliği
+- **Kriz algılama** — aktif intihar/kendine zarar niyetinde mentor cevabı yerine destek mesajı
+- **Doğrulanmış alıntılar** — mentorlar cevabı orijinal metinden doğrulanmış kendi sözleriyle bitirir; `/alintilar` sayfaları
+- **Paylaşım kartı** — cevaptan seçilen cümle hikâye boyutunda görsel olarak paylaşılır
+- **Günün sorusu** — her gün dört mentorun cevabı, giriş gerektirmez (Vercel cron)
+- **Davet et, kazan** — davet eden ve yeni üye bonus soru hakkı kazanır
+- **Prompt caching** — her mentorun system prompt'u cache'lenir
 
-## 🏗️ Teknoloji
+## Teknoloji
 
-- **Next.js 14** (App Router)
-- **TypeScript** (strict mode)
-- **Tailwind CSS 3**
-- **Anthropic Claude SDK** (`claude-sonnet-4-6`)
-- **Vercel KV** (rate limiting — opsiyonel, yoksa atlanır)
+- **Next.js 14** (App Router) · **React 18** · **TypeScript** (strict)
+- **Tailwind CSS 3** — animasyonlar CSS ile, ek animasyon kütüphanesi yok
+- **Anthropic Claude SDK** (`claude-sonnet-4-6`, hata durumunda `claude-haiku-4-5`)
+- **Upstash Redis** — kullanıcılar, oturumlar, kota, rate limit, geri bildirim
+- **Resend** — doğrulama ve şifre sıfırlama e-postaları
+- **Vitest** — birim ve route testleri
 
-## 📁 Proje Yapısı
-
-```
-mentoriva/
-├── app/
-│   ├── api/v1/mentors/
-│   │   ├── respond/route.ts   # 4 paralel streaming SSE
-│   │   └── chat/route.ts      # Tek mentor streaming SSE
-│   ├── layout.tsx             # Root, metadata, fonts
-│   ├── page.tsx               # State machine (landing/responses/chat)
-│   ├── not-found.tsx
-│   └── globals.css
-├── components/
-│   ├── shared/                # Logo, Header
-│   ├── landing/               # LandingView, QuestionForm
-│   ├── mentors/               # MentorCard, ResponseCard, ResponsesView
-│   └── chat/                  # ChatView
-├── lib/
-│   ├── mentors/
-│   │   ├── metadata.ts        # UI metadata
-│   │   └── prompts/           # 4 mentor system prompt + few-shot
-│   ├── claude/
-│   │   ├── client.ts          # SDK wrapper + streaming + caching
-│   │   └── rate-limit.ts      # Vercel KV rate limiting
-│   ├── safety/
-│   │   └── moderation.ts      # Kriz algılama
-│   ├── features.ts            # Feature flags + sabitler
-│   ├── cn.ts                  # className utility
-│   └── useSSEStream.ts        # SSE consumer hook
-├── types/
-│   └── index.ts               # Merkezi tip sistemi
-└── public/
-    └── favicon.svg
-```
-
-## 🚀 Kurulum
-
-### 1. Bağımlılıkları yükle
+## Kurulum
 
 ```bash
 npm install
+cp .env.example .env.local   # değerleri doldur
+npm run dev                   # http://localhost:3000
 ```
 
-### 2. Environment değişkenlerini ayarla
+### API anahtarı olmadan yerel geliştirme
 
-```bash
-cp .env.example .env.local
+`.env.local` içine `MENTORIVA_MOCK_AI=1` yazarsan Claude API çağrılmaz, mentorlar sahte cevaplar akıtır. `KV_*` değişkenleri boşsa veriler bellekte tutulur. `RESEND_API_KEY` yoksa doğrulama kodu sunucu konsoluna yazılır. Böylece kayıt → soru → sohbet akışının tamamı yerelde denenebilir.
+
+### Komutlar
+
+| Komut | Ne yapar |
+|---|---|
+| `npm run dev` | Geliştirme sunucusu |
+| `npm run build` | Production build (tip ve lint kontrolü dahil) |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest testleri |
+
+## Ortam değişkenleri
+
+Ayrıntılı açıklamalar `.env.example` içinde.
+
+| Değişken | Zorunlu | Not |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | evet | Yalnızca sunucuda kullanılır |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | production'da evet | Yoksa bellek deposu (kalıcı değil) |
+| `ADMIN_SECRET` | admin için | En az 12 karakter; yoksa `/admin` kapalı |
+| `RESEND_API_KEY` | kayıt için | |
+| `RESEND_FROM` | önerilir | Resend'de doğrulanmış alan adından gönderici |
+| `NEXT_PUBLIC_SITE_URL` | hayır | Varsayılan `https://mentoriva.com.tr` |
+
+## Proje yapısı
+
+```
+app/
+├── page.tsx                  # Ana sayfa: galeri → soru → cevap(lar) → sohbet
+├── giris, kayit, sifremi-unuttum, test, hakkimizda, geri-bildirim, admin …
+├── api/v1/auth/*             # register, verify, login, logout, me, reset-request, reset-confirm
+├── api/v1/mentors/respond    # Paralel mentor cevapları (SSE)
+├── api/v1/mentors/chat       # Tek mentorla sohbet (SSE)
+├── api/v1/users|feedback|stats  # Admin uçları (+ herkese açık geri bildirim POST)
+└── api/admin/*               # Admin oturumu
+components/
+├── home/                     # Hero, CouncilOrbit, HowItWorks, SelectionDock
+├── mentors/                  # Galeri kartı, soru, tekli/karşılaştırma cevap, limit, kriz
+├── chat/ChatView.tsx
+├── shared/                   # Header, Footer, Logo, Atmosphere, AuthShell, Toast
+└── ui/                       # Reveal, TypingDots, CodeInput
+lib/
+├── auth/                     # password (scrypt), session, users + kota, codes
+├── claude/                   # SDK wrapper, mock
+├── mentors/                  # metadata, prompts, slaps
+├── safety/moderation.ts
+├── kv.ts, rate-limit.ts, sse.ts, session.tsx, useSSEStream.ts, features.ts, site.ts
+tests/                        # Vitest
 ```
 
-`.env.local` dosyasını düzenle:
+## Production deploy (Vercel)
 
-```bash
-# Zorunlu
-ANTHROPIC_API_KEY=sk-ant-api03-...
+1. Repoyu Vercel'e bağla (Next.js otomatik algılanır).
+2. **Storage → Upstash for Redis** ekle; `KV_REST_API_URL` / `KV_REST_API_TOKEN` otomatik gelir.
+3. Environment Variables: `ANTHROPIC_API_KEY`, `ADMIN_SECRET`, `RESEND_API_KEY`, `RESEND_FROM`, `NEXT_PUBLIC_SITE_URL`.
+4. Resend panelinde gönderici alan adını doğrula (SPF/DKIM kayıtları).
+5. Vercel panelinde **Analytics** sekmesini aç (çerezsiz ölçüm).
+6. Deploy. Günün sorusu cron'u `vercel.json` ile otomatik kurulur.
 
-# Opsiyonel (rate limiting için)
-KV_REST_API_URL=...
-KV_REST_API_TOKEN=...
+## Güvenlik
 
-# Opsiyonel
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
+- `ANTHROPIC_API_KEY` ve diğer anahtarlar yalnızca sunucuda kullanılır.
+- Şifreler scrypt ile tuzlanıp hash'lenir. Eski düz metin kayıtlar ilk girişte otomatik hash'e çevrilir.
+- Oturum httpOnly + SameSite çerezle tutulur; Redis'te yalnızca token özeti saklanır.
+- Kota ve yetki kontrolü sunucuda yapılır, istemciye güvenilmez.
+- Rate limit: mentor uçları (kullanıcı + IP), giriş, kod gönderimi, admin girişi, geri bildirim.
+- Doğrulama kodları kriptografik rastgele üretilir, hash'lenerek saklanır, 5 yanlış denemede geçersiz olur.
+- CSP, HSTS, X-Frame-Options ve diğer güvenlik başlıkları `next.config.js` içinde.
 
-**API anahtarı nereden alınır?**
-[console.anthropic.com](https://console.anthropic.com/settings/keys) → API Keys → Create Key
+## Kriz politikası
 
-### 3. Geliştirme sunucusunu başlat
+`lib/safety/moderation.ts` aktif intihar veya kendine zarar niyeti ifadelerini (Türkçe büyük/küçük harf ve Türkçe karaktersiz yazımlar dahil) yakalar. Bu durumda mentor çağrılmaz, kota düşülmez ve kullanıcıya bir uzmana danışmasını öneren destekleyici bir mesaj gösterilir. Mentor prompt'ları (`prompts/shared.ts`) da aynı durumda karakteri bırakıp profesyonel desteğe yönlendirir. Bilinçli bir ürün kararıyla belirli telefon numarası verilmez.
 
-```bash
-npm run dev
-```
-
-`http://localhost:3000` adresini aç.
-
-### 4. TypeScript doğrulama
-
-```bash
-npm run typecheck
-```
-
-## 🌐 Production Deploy (Vercel)
-
-### 1. GitHub'a push et
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <repo-url>
-git push -u origin main
-```
-
-### 2. Vercel'e bağla
-
-1. [vercel.com/new](https://vercel.com/new) → Repository'yi import et
-2. Framework otomatik algılanır (Next.js)
-3. **Environment Variables**:
-   - `ANTHROPIC_API_KEY` — zorunlu
-   - `NEXT_PUBLIC_SITE_URL` — `https://your-domain.vercel.app`
-
-### 3. Vercel KV ekle (rate limiting için)
-
-1. Vercel Dashboard → **Storage** → **Create Database** → **KV**
-2. Proje ile ilişkilendir → 4 env var otomatik eklenir
-3. Redeploy
-
-### 4. Domain bağla (opsiyonel)
-
-Settings → Domains → Add.
-
-## 🎨 Tasarım Sistemi
-
-**Renkler** (`tailwind.config.ts`):
-- **Brand** — `#00bcd4` (logodan cyan)
-- **Jung** — `#00bcd4` (cyan, bilinçdışı derinliği)
-- **Nietzsche** — `#e89a3c` (amber, ateş)
-- **Mevlânâ** — `#d4a574` (altın, tasavvuf)
-- **Marcus** — `#8b9bb4` (soğuk slate, stoacılık)
-
-**Tipografi**:
-- **Display** — Playfair Display (serif, editorial hissi)
-- **Body** — Outfit (sans, çağdaş)
-
-## 🧠 Yeni Mentor Eklemek
-
-1. `types/index.ts` → `MENTOR_IDS` array'ine ID ekle
-2. `lib/mentors/metadata.ts` → `MENTORS` objesine metadata gir
-3. `lib/mentors/prompts/` altında yeni dosya: system prompt + few-shot
-4. `lib/mentors/prompts/index.ts` → `MENTOR_PROMPTS`'e register et
-
-## 🛡️ Güvenlik
-
-- **`ANTHROPIC_API_KEY` asla client'a sızmaz** — sadece API route'larında kullanılır
-- **Kriz algılama** — `lib/safety/moderation.ts` aktif intihar niyeti ifadelerini yakalar ve helpline gösterir
-- **Rate limiting** — dakikada 5 respond / 20 chat per IP
-- **Input validation** — min/max uzunluk, son mesaj role kontrolü
-- **Security headers** — `next.config.ts` içinde X-Frame-Options, CSP basics
-
-## ⚠️ Disclaimer
+## Disclaimer
 
 > Mentoriva, profesyonel psikolojik destek veya tıbbi tavsiye yerine geçmez. Cevaplar, tarihî figürlerin felsefi perspektiflerini yansıtan yapay zekâ üretimleridir.
->
-> **Kriz anında: 182 (İntihar Önleme Hattı) veya 112 (Acil Servis).**
 
-## 🗺️ Roadmap
-
-- **v1.1** — MongoDB ile session kalıcılığı
-- **v1.2** — Google OAuth
-- **v1.3** — Interjection (mentor araya girer)
-- **v1.4** — Feedback 👍👎 + analiz paneli
-- **v2.0** — Premium tier (Opus modeli, daha uzun sohbet, daha fazla mentor)
-
-## 📄 Lisans
+## Lisans
 
 Proprietary — tüm hakları saklıdır.

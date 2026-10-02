@@ -13,6 +13,7 @@ import { JUNG_PROMPT } from './jung';
 import { MARCUS_PROMPT } from './marcus';
 import { MEVLANA_PROMPT } from './mevlana';
 import { NIETZSCHE_PROMPT } from './nietzsche';
+import { SENECA_PROMPT } from './seneca';
 import type { MentorPromptBundle } from './types';
 
 export const MENTOR_PROMPTS: Record<MentorId, MentorPromptBundle> = {
@@ -20,6 +21,7 @@ export const MENTOR_PROMPTS: Record<MentorId, MentorPromptBundle> = {
   nietzsche: NIETZSCHE_PROMPT,
   mevlana: MEVLANA_PROMPT,
   marcus: MARCUS_PROMPT,
+  seneca: SENECA_PROMPT,
 };
 
 /**

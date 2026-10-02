@@ -1,83 +1,40 @@
 import { NextResponse } from 'next/server';
-import { getKV } from '@/lib/kv';
+import { getClientIp, isValidEmail, jsonError, normalizeEmail, readJson, str } from '@/lib/http';
+import { hitAll, RATE_LIMITS } from '@/lib/rate-limit';
+import { hashPassword, validatePassword } from '@/lib/auth/password';
+import { issueCode, type PendingRegistration } from '@/lib/auth/codes';
+import { getUser } from '@/lib/auth/users';
+import { sendCodeEmail } from '@/lib/email';
+import { normalizeReferralCode } from '@/lib/auth/referral';
+
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const email = String(body.email ?? '').trim().toLowerCase();
-    const password = String(body.password ?? '').trim();
-    const name = String(body.name ?? '').trim();
+  const body = await readJson(req);
+  if (!body) return jsonError(400, 'Geçersiz istek');
 
-    if (!email || !email.includes('@') || !email.includes('.')) {
-      return NextResponse.json({ error: 'Geçerli bir e-posta adresi girin' }, { status: 400 });
-    }
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Şifre en az 6 karakter olmalı' }, { status: 400 });
-    }
-    if (name.length < 3) {
-      return NextResponse.json({ error: 'Kullanıcı adı en az 3 karakter olmalı' }, { status: 400 });
-    }
+  const email = normalizeEmail(body['email']);
+  const password = typeof body['password'] === 'string' ? body['password'] : '';
+  const name = str(body['name'], 40);
 
-    const kv = getKV();
+  if (!isValidEmail(email)) return jsonError(400, 'Geçerli bir e-posta adresi gir');
+  if (name.length < 2) return jsonError(400, 'Adın en az 2 karakter olmalı');
+  const pwError = validatePassword(password);
+  if (pwError) return jsonError(400, pwError);
 
-    if (kv) {
-      const existing = await kv.get(`user:${email}`);
-      if (existing) {
-        return NextResponse.json({ error: 'Bu e-posta adresi zaten kayıtlı' }, { status: 409 });
-      }
-    }
+  const allowed = await hitAll([
+    ['code-ip', getClientIp(req), RATE_LIMITS.CODE_SEND_IP],
+    ['code-email', email, RATE_LIMITS.CODE_SEND_EMAIL],
+  ]);
+  if (!allowed) return jsonError(429, 'Çok fazla deneme yaptın. Birkaç dakika sonra tekrar dene.');
 
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+  if (await getUser(email)) return jsonError(409, 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı dene.');
 
-    if (kv) {
-      await kv.set(`verify:${email}`, JSON.stringify({ email, password, name, code }), { ex: 600 });
-    }
+  const pending: PendingRegistration = { name, passwordHash: await hashPassword(password), ref: normalizeReferralCode(body['ref']) };
+  const code = await issueCode('verify', email, pending);
 
-    // Resend HTTP API ile mail gönder
-    const resendKey = process.env['RESEND_API_KEY'];
-
-    if (resendKey) {
-      try {
-        const res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${resendKey}`,
-          },
-          body: JSON.stringify({
-            from: 'Mentoriva <onboarding@resend.dev>',
-            to: [email],
-            subject: 'Mentoriva - Doğrulama Kodu',
-            html: `
-              <div style="font-family: -apple-system, sans-serif; max-width: 420px; margin: 0 auto; padding: 32px; background: #0a0e1a; color: #e0e0e0; border-radius: 16px;">
-                <h2 style="color: #5ce1e6; margin: 0 0 4px 0; font-size: 20px;">Mentoriva</h2>
-                <p style="color: #666; font-size: 13px; margin: 0 0 24px 0;">Düşünce meclisine hoş geldin.</p>
-                <div style="background: #12182a; border: 1px solid #1a2340; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
-                  <p style="color: #888; font-size: 13px; margin: 0 0 12px 0;">Doğrulama kodun:</p>
-                  <p style="font-size: 36px; font-weight: bold; color: #5ce1e6; letter-spacing: 8px; margin: 0;">${code}</p>
-                </div>
-                <p style="color: #444; font-size: 11px; margin: 0;">Bu kod 10 dakika geçerlidir.</p>
-              </div>
-            `,
-          }),
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          console.error('[Auth] Resend API hatası:', res.status, JSON.stringify(errData));
-          return NextResponse.json({ error: 'Doğrulama kodu gönderilemedi. Lütfen tekrar deneyin.' }, { status: 500 });
-        }
-      } catch (mailErr) {
-        console.error('[Auth] Mail gönderim hatası:', mailErr);
-        return NextResponse.json({ error: 'Doğrulama kodu gönderilemedi.' }, { status: 500 });
-      }
-    } else {
-      console.log('[Auth] RESEND_API_KEY yok. Kod:', code, 'Email:', email);
-    }
-
-    return NextResponse.json({ success: true, message: 'Doğrulama kodu gönderildi' });
-  } catch (e) {
-    console.error('[Auth Register]', e);
-    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
+  if (!(await sendCodeEmail(email, code, 'verify'))) {
+    return jsonError(502, 'Doğrulama kodu gönderilemedi. Lütfen biraz sonra tekrar dene.');
   }
+  return NextResponse.json({ success: true });
 }

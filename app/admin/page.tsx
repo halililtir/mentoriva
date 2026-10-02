@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/shared/Logo';
+import { ACTIVE_MENTORS, getAccent } from '@/lib/mentors/metadata';
 
 interface User {
   username: string;
-  password: string;
-  questionLimit: number;
-  questionsUsed: number;
-  dailyLimit?: number;
-  dailyUsed?: number;
+  dailyLimit: number;
+  usedToday: number;
+  questionsUsed?: number;
   isActive: boolean;
   createdAt: string;
   lastSeen: string | null;
@@ -51,10 +50,13 @@ export default function AdminPage() {
   async function load() {
     setLoading(true);
     try {
+      const [ur, fr, sr] = await Promise.all([fetch('/api/v1/users'), fetch('/api/v1/feedback'), fetch('/api/v1/stats')]);
+      // Admin oturumu süresi dolduysa giriş ekranına dön
+      if ([ur, fr, sr].some((r) => r.status === 401)) { setAuthed(false); return; }
       const [u, f, s] = await Promise.all([
-        fetch('/api/v1/users?key=121017').then(r => r.json()).catch(() => ({ users: [] })),
-        fetch('/api/v1/feedback?key=121017').then(r => r.json()).catch(() => ({ feedbacks: [] })),
-        fetch('/api/v1/stats?key=121017').then(r => r.json()).catch(() => ({ mentorStats: {}, recentQuestions: [] })),
+        ur.json().catch(() => ({ users: [] })),
+        fr.json().catch(() => ({ feedbacks: [] })),
+        sr.json().catch(() => ({ mentorStats: {}, recentQuestions: [] })),
       ]);
       setUsers(u.users ?? []);
       setFbs(f.feedbacks ?? []);
@@ -81,9 +83,9 @@ export default function AdminPage() {
   async function create() {
     setMsg('');
     try {
-      const r = await fetch('/api/v1/users?key=121017', {
+      const r = await fetch('/api/v1/users', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create', username: nu.username.trim(), password: nu.password.trim(), questionLimit: Number(nu.limit) || 5, notes: nu.notes.trim() }),
+        body: JSON.stringify({ username: nu.username.trim(), password: nu.password, dailyLimit: Number(nu.limit) || 5, notes: nu.notes.trim() }),
       });
       const d = await r.json();
       if (!r.ok) { setMsg(d.error ?? 'Hata'); return; }
@@ -95,29 +97,29 @@ export default function AdminPage() {
     setTokenMsg('');
     if (!tokenUser.trim()) { setTokenMsg('Kullanıcı seçin'); return; }
     try {
-      const r = await fetch('/api/v1/users?key=121017', {
+      const r = await fetch('/api/v1/users', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: tokenUser.trim().toLowerCase(), dailyLimit: Number(tokenAmount) || 10, dailyUsed: 0, dailyResetDate: new Date().toISOString().slice(0, 10) }),
+        body: JSON.stringify({ username: tokenUser.trim().toLowerCase(), dailyLimit: Number(tokenAmount) || 10, resetToday: true }),
       });
-      if (!r.ok) { setTokenMsg('Hata oluştu'); return; }
+      if (!r.ok) { const d = await r.json().catch(() => ({})); setTokenMsg(d.error ?? 'Hata oluştu'); return; }
       setTokenMsg(`${tokenUser} için günlük ${tokenAmount} hak tanımlandı`);
       setTokenUser(''); setTokenAmount('10'); load();
     } catch { setTokenMsg('Bağlantı hatası'); }
   }
 
   async function toggle(u: User) {
-    await fetch('/api/v1/users?key=121017', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u.username, isActive: !u.isActive }) });
+    await fetch('/api/v1/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u.username, isActive: !u.isActive }) });
     load();
   }
 
   async function resetDaily(u: User) {
-    await fetch('/api/v1/users?key=121017', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u.username, dailyUsed: 0, dailyResetDate: new Date().toISOString().slice(0, 10) }) });
+    await fetch('/api/v1/users', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u.username, resetToday: true }) });
     load();
   }
 
   async function remove(username: string) {
     if (!confirm(`"${username}" silinecek?`)) return;
-    await fetch(`/api/v1/users?key=121017&username=${encodeURIComponent(username)}`, { method: 'DELETE' });
+    await fetch(`/api/v1/users?username=${encodeURIComponent(username)}`, { method: 'DELETE' });
     load();
   }
 
@@ -197,12 +199,9 @@ export default function AdminPage() {
               <div className="space-y-3">
                 {(() => {
                   const totalMentorQ = Object.values(mentorStats).reduce((a, b) => a + b, 0) || 1;
-                  const mentorNames: Record<string, {name: string; color: string}> = {
-                    jung: { name: 'Carl Gustav Jung', color: '#00bcd4' },
-                    nietzsche: { name: 'Friedrich Nietzsche', color: '#f59e0b' },
-                    mevlana: { name: 'Mevlânâ Rûmî', color: '#d4a574' },
-                    marcus: { name: 'Marcus Aurelius', color: '#8b9bb4' },
-                  };
+                  const mentorNames: Record<string, { name: string; color: string }> = Object.fromEntries(
+                    ACTIVE_MENTORS.map((m) => [m.id, { name: m.name, color: getAccent(m.accentColor).hex }]),
+                  );
                   return Object.entries(mentorStats)
                     .sort((a, b) => b[1] - a[1])
                     .map(([id, count]) => {
@@ -289,8 +288,8 @@ export default function AdminPage() {
             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 space-y-4">
               <h2 className="font-display text-lg">Yeni kullanıcı</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <input value={nu.username} onChange={e => setNu({ ...nu, username: e.target.value })} placeholder="Kullanıcı adı / email" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
-                <input value={nu.password} onChange={e => setNu({ ...nu, password: e.target.value })} placeholder="Şifre" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
+                <input value={nu.username} onChange={e => setNu({ ...nu, username: e.target.value })} placeholder="E-posta" type="email" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
+                <input value={nu.password} onChange={e => setNu({ ...nu, password: e.target.value })} placeholder="Şifre (en az 8)" type="password" autoComplete="new-password" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
                 <input value={nu.limit} onChange={e => setNu({ ...nu, limit: e.target.value })} placeholder="Günlük limit" type="number" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
                 <input value={nu.notes} onChange={e => setNu({ ...nu, notes: e.target.value })} placeholder="Not" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
               </div>
@@ -310,7 +309,7 @@ export default function AdminPage() {
                       {!u.isActive && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">Pasif</span>}
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-[11px] text-white/30 flex-wrap">
-                      <span>Günlük: <span className="text-white/50">{u.dailyUsed || 0}/{u.dailyLimit || u.questionLimit || 5}</span></span>
+                      <span>Bugün: <span className="text-white/50">{u.usedToday}/{u.dailyLimit}</span></span>
                       <span>Toplam: <span className="text-white/50">{u.questionsUsed || 0}</span></span>
                       <span>Son: {fmt(u.lastSeen)}</span>
                       <span>Kayıt: {fmt(u.createdAt)}</span>
