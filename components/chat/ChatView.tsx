@@ -217,7 +217,7 @@ function Bubble({
     <div className={cn('flex animate-fade-up', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[88%] whitespace-pre-wrap rounded-2xl border px-4 py-3 text-[15px] leading-relaxed sm:max-w-[80%]',
+          'max-w-[88%] whitespace-pre-wrap break-words rounded-2xl border px-4 py-3 text-[15px] leading-relaxed sm:max-w-[80%]',
           isUser ? 'rounded-br-md border-brand-500/25 bg-brand-500/[0.1] text-white/90' : 'rounded-bl-md text-white/85',
           streaming && 'streaming-cursor',
         )}

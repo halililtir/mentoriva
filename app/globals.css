@@ -470,3 +470,14 @@
   }
   .glass { background-color: rgb(var(--ink-50) / 0.88); }
 }
+
+/* iOS Safari, 16px'ten küçük yazılı bir alana dokunulunca sayfayı yakınlaştırır
+   ve geri almaz (sohbette mesaj gönderdikten sonra sayfa taşıyordu). Dokunmatik
+   ekranlarda form alanları 16px (zaten büyük olanlar .keep-font ile hariç); kullanıcının kendi yakınlaştırması açık kalır. */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not(.keep-font),
+  textarea:not(.keep-font),
+  select:not(.keep-font) {
+    font-size: 16px !important;
+  }
+}

@@ -85,7 +85,7 @@ export function CodeInput({ value, onChange, onComplete, length = 6, disabled }:
             else e.target.select();
           }}
           className={cn(
-            'h-14 w-11 rounded-xl border bg-ink-0/60 text-center font-display text-2xl text-paper transition-all duration-300 sm:w-12',
+            'keep-font h-14 w-11 rounded-xl border bg-ink-0/60 text-center font-display text-2xl text-paper transition-all duration-300 sm:w-12',
             'focus:border-brand-500/70 focus:outline-none focus:shadow-[0_0_0_4px_rgba(0,188,212,0.14)]',
             d ? 'border-brand-500/40' : 'border-white/10',
             'disabled:opacity-50',
