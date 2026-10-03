@@ -120,8 +120,11 @@ export async function POST(request: Request): Promise<Response> {
   const abortController = new AbortController();
   request.signal.addEventListener('abort', () => abortController.abort());
 
-  // Sliding window: son N mesajı al (son user mesajı hariç, o zaten userMessage)
-  const history = messages.slice(-INPUT_LIMITS.MAX_CHAT_HISTORY_MESSAGES, -1);
+  // Sliding window (son user mesajı hariç, o zaten userMessage). Uzun sohbette
+  // ilk soru ve ilk cevap korunur, aradakiler düşer.
+  const past = messages.slice(0, -1);
+  const limit = INPUT_LIMITS.MAX_CHAT_HISTORY_MESSAGES;
+  const history = past.length <= limit ? past : [...past.slice(0, 2), ...past.slice(-(limit - 2))];
 
   const stream = new ReadableStream({
     async start(controller) {

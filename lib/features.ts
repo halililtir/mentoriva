@@ -20,10 +20,12 @@ export const API = {
   MODEL: 'claude-sonnet-5-5',
 
   /**
-   * Ana modelin düşünme derinliği. 'low' sohbet için önerilen başlangıç: basit
-   * isteklerde düşünmeyi atlar, ilk kelime hızlı gelir. Kalite yetmezse 'medium'.
+   * Ana modelin düşünme derinliği. İlk cevapta mentor sorunun alt metnini
+   * okuyup kendine özgü tezini seçsin diye 'medium'; sohbette hız için 'low'.
+   * Yapılandırılmış JSON çağrıları (completeText) varsayılan olarak 'low'.
    */
-  EFFORT: 'low',
+  EFFORT_INITIAL: 'medium',
+  EFFORT_CHAT: 'low',
 
   /** Fallback model (ana model hata verirse). */
   FALLBACK_MODEL: 'claude-haiku-4-5-20251001',
@@ -33,16 +35,16 @@ export const API = {
    * çok token sayar ve düşünme de bu sınıra dahildir; o yüzden pay bırakıldı.
    * Uzunluğu sınır değil prompt belirler.
    */
-  MAX_TOKENS_INITIAL: 2000,
+  MAX_TOKENS_INITIAL: 3000,
 
   /** Chat cevapları için max token. */
-  MAX_TOKENS_CHAT: 1600,
+  MAX_TOKENS_CHAT: 2000,
 
   /** Yalnızca fallback (Haiku) için; Sonnet 5.5 varsayılan dışı değeri 400 ile reddeder. */
   TEMPERATURE: 0.7,
 
   /** Tek bir mentor çağrısı için timeout. */
-  REQUEST_TIMEOUT_MS: 30_000,
+  REQUEST_TIMEOUT_MS: 50_000,
 
   /** Hata durumunda retry sayısı. */
   MAX_RETRIES: 1,
@@ -62,8 +64,11 @@ export const INPUT_LIMITS = {
   /** Chat mesajı için max karakter. */
   MAX_CHAT_MESSAGE_LENGTH: 2000,
 
-  /** Chat'te modele gönderilecek max mesaj sayısı (sliding window). */
-  MAX_CHAT_HISTORY_MESSAGES: 10,
+  /**
+   * Chat'te modele gönderilecek max geçmiş mesaj sayısı. Pencere kayarken ilk
+   * soru ve ilk cevap her zaman korunur (chat route), mentor konunun başını unutmaz.
+   */
+  MAX_CHAT_HISTORY_MESSAGES: 24,
 
   /** Chat isteğinde kabul edilen max mesaj sayısı (daha fazlası kırpılır). */
   MAX_CHAT_REQUEST_MESSAGES: 60,

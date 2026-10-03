@@ -27,9 +27,8 @@ export const MENTOR_PROMPTS: Record<MentorId, MentorPromptBundle> = {
 /**
  * Bir mentor için Claude API'ye gönderilecek mesajları oluşturur.
  *
- * Few-shot örnekleri Claude'un karakteri tutturmasına yardımcı olur,
- * ama her çağrıda ~800-1200 input token ekler. Prompt caching ile
- * (lib/claude/client.ts) bu maliyet tek sefere düşer.
+ * Örnek cevaplar system prompt'ta durur; prompt caching ile
+ * (lib/claude/client.ts) her çağrıda yeniden faturalanmaz.
  *
  * @param mentorId - Hangi mentor
  * @param userMessage - Kullanıcının son mesajı
@@ -49,17 +48,13 @@ export function buildMentorRequest(params: {
   const bundle = MENTOR_PROMPTS[mentorId];
   const systemPrompt = mode === 'chat' ? bundle.chat : bundle.initial;
 
-  // Few-shot örneklerini messages array'inin başına yerleştir.
-  const fewShotMessages = bundle.examples.flatMap(
-    (ex) =>
-      [
-        { role: 'user' as const, content: ex.user },
-        { role: 'assistant' as const, content: ex.assistant },
-      ] as const,
-  );
+  // Örnek cevaplar artık system prompt'un içinde (prompts/shared.ts → examplesBlock);
+  // sahte konuşma turu olarak verilmez.
 
-  // Chat geçmişini role/content formatına çevir.
-  const historyMessages = chatHistory.map((m) => ({
+  // Chat geçmişini role/content formatına çevir. Kayan pencere bir mentor
+  // cevabıyla başlayabilir; konuşma kullanıcıyla başlamalı.
+  const firstUser = chatHistory.findIndex((m) => m.role === 'user');
+  const historyMessages = (firstUser === -1 ? [] : chatHistory.slice(firstUser)).map((m) => ({
     role: m.role,
     content: m.content,
   }));
@@ -67,7 +62,6 @@ export function buildMentorRequest(params: {
   return {
     system: systemPrompt,
     messages: [
-      ...fewShotMessages,
       ...historyMessages,
       { role: 'user', content: userMessage },
     ],

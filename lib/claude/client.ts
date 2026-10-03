@@ -49,8 +49,10 @@ function getClient(): Anthropic {
  * temperature'ı 400 ile reddeder, düşünmeyi effort ile ayarlar; fallback
  * (Haiku 4.5) eski usul temperature ile çalışır.
  */
-function modelParams(model: string, temperature: number) {
-  return model === API.MODEL ? { output_config: { effort: API.EFFORT } } : { temperature };
+type Effort = typeof API.EFFORT_INITIAL | typeof API.EFFORT_CHAT;
+
+function modelParams(model: string, temperature: number, effort: Effort) {
+  return model === API.MODEL ? { output_config: { effort } } : { temperature };
 }
 
 /**
@@ -201,7 +203,7 @@ async function* rawMentorStream(
         {
           model: modelToUse,
           max_tokens: maxTokens,
-          ...modelParams(modelToUse, API.TEMPERATURE),
+          ...modelParams(modelToUse, API.TEMPERATURE, mode === 'initial' ? API.EFFORT_INITIAL : API.EFFORT_CHAT),
           system: systemParam,
           messages,
         },
@@ -274,6 +276,8 @@ export interface CompleteParams {
   user: string;
   maxTokens: number;
   temperature?: number;
+  /** Ana modelin düşünme derinliği (varsayılan 'low'). */
+  effort?: Effort;
   /** MENTORIVA_MOCK_AI açıkken API yerine dönecek metin. */
   mock: () => string;
   /** Maliyet raporundaki özellik. */
@@ -284,7 +288,7 @@ export interface CompleteParams {
  * Tek mesajlık istek atar, metni döner. Ana model hata verirse bir kez
  * fallback modeli dener. Hata mesajları kullanıcı metnini içermez.
  */
-export async function completeText({ system, user, maxTokens, temperature = 0.6, mock, feature = 'other' }: CompleteParams): Promise<string> {
+export async function completeText({ system, user, maxTokens, temperature = 0.6, effort = 'low', mock, feature = 'other' }: CompleteParams): Promise<string> {
   if (isMockEnabled()) {
     await new Promise((r) => setTimeout(r, 900));
     return mock();
@@ -296,7 +300,7 @@ export async function completeText({ system, user, maxTokens, temperature = 0.6,
       const res = await client.messages.create({
         model,
         max_tokens: tokenBudget(model, maxTokens),
-        ...modelParams(model, temperature),
+        ...modelParams(model, temperature, effort),
         system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: user }],
       });

@@ -59,7 +59,9 @@ export async function POST(req: Request) {
     const text = await completeText({
       system: RESULT_SYSTEM,
       user: resultUserMessage(payload.sp, payload.story, payload.questions.map((q, i) => ({ q, a: answers[i] ?? '' }))),
-      maxTokens: 1600,
+      maxTokens: 2400,
+      // Kişiye özel üç pencere: düşünme derinliği ilk mentor cevabıyla aynı.
+      effort: 'medium',
       feature: 'journey',
       mock: mockResult,
     });

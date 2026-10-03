@@ -70,6 +70,9 @@ Next.js 14 (App Router) · React 18 · TypeScript (strict + `noUncheckedIndexedA
 ### Mentor prompt'ları
 
 - `lib/mentors/prompts/<mentor>.ts` → `MentorPromptBundle` (`initial`, `chat`, `examples`); ortak bloklar `prompts/shared.ts`.
+- Yapı: karakter (kim, nasıl düşünür, ses, esnek biçim; düz yazı, büyük harfle bağırma ve "o Jung'un işi" gibi karşıtlık yasakları yok) + `POSITIONS` (eserlere dayalı düşünce haritası) + `DEPTH` (alt metni oku, tek tez, uzunluk sorunun ağırlığına göre, genel öğüt yasağı) + kimlik/dil/güvenlik + alıntı kataloğu + `examplesBlock` (3 farklı örnek, system prompt içinde "şablon değil" diye). Sohbet: + `CONVERSATION` (genişleme değil derinleşme) + mentora özel not. Örnekler sahte konuşma turu olarak **verilmez**.
+- Sohbet geçmişi: son 24 mesaj, ilk soru + ilk cevap her zaman korunur (chat route); pencere kullanıcı mesajıyla başlar (`buildMentorRequest`).
+- Talimat değişikliğini admin "Mentor laboratuvarı" ile sına (`lib/admin/lab.ts` sabit soru seti, `/api/admin/lab`; kota düşmez, maliyet "Diğer").
 - Ortak kurallar (`shared.ts`): karakterde kal, ama kullanıcı ciddi olarak sorarsa yapay zekâ olduğunu söyle; fikirleri yalnızca figürün belgelenmiş eserlerine dayandır.
 - **Kapanış alıntıları:** model alıntı metnini yazmaz. `lib/mentors/quotes.ts` içindeki doğrulanmış katalogdan `[[alinti:<id>]]` etiketi seçer; `lib/mentors/quote-stream.ts` akışta etiketi kaynaklı metinle değiştirir, bilinmeyen kimliği düşürür. Katalogdaki her alıntı orijinal dilde birebir doğrulanmış olmalı (`verifiedFrom`) ve Türkçesi Mentoriva'nın kendi çevirisi olmalı (yayınlanmış çeviriler telifli). Kataloğu olanlar: Seneca (12, Latince; 2026-10-02'den beri aktif mentor), Marcus (10, Yunanca + Long çevirisi), Nietzsche (9, Almanca), Mevlânâ (12, Farsça, Ney-nâme). Yalnızca Jung'un kataloğu yok (eserleri 2031'e kadar telifli); `quoteCatalogPrompt` onlara "hiç alıntı yazma" talimatı verir. "Ne olursan ol yine gel" ve "Yara ışığın girdiği yerdir" Mevlânâ'ya yanlış atfedilir; kullanma.
 - Hero'daki canlı örnek (`DEMO_SAMPLES`) bilerek dört mentorla sınırlıdır; bir soruya en fazla dört mentor seçilir (`MAX_SELECTED`).
@@ -138,4 +141,4 @@ Moderasyon (`lib/safety/moderation.ts`) girdiyi Türkçe küçültüp ASCII'ye k
 - Resend'de gönderici alan adı doğrulanıp `RESEND_FROM` ayarlanmalı.
 - Üye listesi SCAN + MGET ile okunuyor; on binlerce üyede set tabanlı indeks ve sayfalama gerekir.
 - Hata izleme (ör. Sentry) yok.
-- Model `claude-sonnet-5-5` (effort `low`, temperature yok; Haiku fallback temperature ile). Effort ayarı canlı testle doğrulanmalı; kalite yetmezse `medium`.
+- Model `claude-sonnet-5-5`: ilk cevap effort `medium`, sohbet `low`, yolculuk sonucu `medium`; temperature yok (Haiku fallback temperature ile). Effort'u laboratuvarla doğrula.

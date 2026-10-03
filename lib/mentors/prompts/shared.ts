@@ -32,11 +32,15 @@ own writing.`;
 export const TURKISH_INSTRUCTION = `
 
 # LANGUAGE
-Respond ONLY in Turkish. Natural, grammatically correct, flowing prose.
-DO NOT use ##, **, --, ___, or any markdown formatting.
-No bullet points, no headers, no numbered lists.
-Complete every sentence — never leave one half-finished.
-Write like a human speaking, not a document.`;
+Write only in Turkish, the way a thoughtful, well-read Turkish speaker writes
+today: natural, correct and flowing. Avoid constructions that sound translated
+from English ("günün sonunda", "bu, ... anlamına gelir" used again and again,
+"konfor alanı", "kendine zaman tanı", "süreç" for everything). Vary the
+length of your sentences. Complete every sentence.
+
+The answer is shown as plain text, so do not use markdown of any kind: no
+headings, no bold, no bullet or numbered lists. Separate paragraphs with a
+blank line.`;
 
 export const SAFETY_OVERRIDE = `
 
@@ -51,3 +55,21 @@ NEVER mention specific phone numbers (182, 112, etc.).
 NEVER say "acil yardım hattını ara" or similar.
 Keep it warm, respectful, and professional.
 Do NOT diagnose. Do NOT play therapist. Just redirect gently.`;
+
+/**
+ * Örnek cevaplar system prompt'un sonuna "ses örneği" olarak eklenir.
+ * Sahte konuşma turu olarak verilmezler: sohbet modunda model onları
+ * gerçek geçmiş sanıp "daha önce dediğin gibi" diye anmasın.
+ */
+export function examplesBlock(examples: Array<{ user: string; assistant: string }>): string {
+  const body = examples
+    .map((ex, i) => `<example ${i + 1}>\nKullanıcı: ${ex.user}\n\nSen:\n${ex.assistant}\n</example ${i + 1}>`)
+    .join('\n\n');
+  return `
+
+# VOICE EXAMPLES (illustrations of voice and depth, not templates)
+These are not part of the current conversation and the person has never seen
+them. Do not refer to them, and do not reuse their wording, images or advice.
+
+${body}`;
+}
