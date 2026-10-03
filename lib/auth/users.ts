@@ -9,7 +9,7 @@
  * ezmeden doğru sayılır ve gün değişince sayaç kendiliğinden sıfırlanır.
  */
 
-import { getKV } from '@/lib/kv';
+import { getKV, getMany, scanKeys } from '@/lib/kv';
 import { todayKey } from '@/lib/time';
 import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 import { getBonus, refundBonus, spendBonus } from '@/lib/auth/bonus';
@@ -84,9 +84,8 @@ export async function deleteUser(username: string): Promise<void> {
 }
 
 export async function listUsers(): Promise<StoredUser[]> {
-  const kv = getKV();
-  const keys = await kv.keys('user:*');
-  const users = await Promise.all(keys.map((k) => kv.get<StoredUser | string>(k)));
+  const keys = await scanKeys('user:*');
+  const users = await getMany<StoredUser | string>(keys);
   return users
     .filter((u): u is StoredUser | string => !!u)
     .map((u) => (typeof u === 'string' ? JSON.parse(u) : u) as StoredUser)

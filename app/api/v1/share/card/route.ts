@@ -20,6 +20,7 @@ import { isActiveMentor } from '@/lib/mentors/metadata';
 import { findQuoteInText } from '@/lib/mentors/quotes';
 import { moderateInput } from '@/lib/safety/moderation';
 import { todayKey } from '@/lib/time';
+import { recordEvent } from '@/lib/admin/metrics';
 
 export const runtime = 'nodejs';
 
@@ -73,5 +74,6 @@ export async function POST(req: Request) {
     label: source === 'daily' ? 'Günün sorusu' : undefined,
   });
   if (!token) return jsonError(503, 'Paylaşım kartı şu an kullanılamıyor.');
+  await recordEvent('share');
   return NextResponse.json({ token });
 }

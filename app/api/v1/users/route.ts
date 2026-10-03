@@ -1,18 +1,27 @@
 /**
  * /api/v1/users — yalnızca admin.
  *
- * Kullanıcı girişi/kaydı artık /api/v1/auth/* altında.
+ * GET    → tüm üyeler (parolasız) + bugünkü kullanım, bonus, davet sayısı
+ * POST   → yeni üye (doğrulanmış olarak)
+ * PUT    → { username, dailyLimit?, isActive?, notes?, password?, resetToday?, addBonus? }
+ * DELETE → ?username=… (üyeye bağlı tüm kişisel veriyle birlikte)
+ *
+ * Her değişiklik admin işlem kaydına yazılır (lib/admin/audit.ts).
+ * Kullanıcı girişi/kaydı /api/v1/auth/* altında.
  */
 
 import { NextResponse } from 'next/server';
 import { isValidEmail, jsonError, normalizeEmail, readJson, str } from '@/lib/http';
 import { isAdmin } from '@/lib/auth/session';
 import { hashPassword, validatePassword } from '@/lib/auth/password';
+import { addBonus } from '@/lib/auth/bonus';
+import { getMany } from '@/lib/kv';
+import { todayKey } from '@/lib/time';
+import { logAdminAction } from '@/lib/admin/audit';
 import {
   DEFAULT_DAILY_LIMIT,
   dailyLimitOf,
   deleteUser,
-  getUsedToday,
   getUser,
   listUsers,
   resetUsageToday,
@@ -33,14 +42,21 @@ function parseLimit(value: unknown): number | null {
 export async function GET(req: Request) {
   if (!(await isAdmin(req))) return jsonError(401, 'Yetkisiz');
   const users = await listUsers();
-  const rows = await Promise.all(
-    users.map(async (u) => ({
-      ...withoutPassword(u),
-      dailyLimit: dailyLimitOf(u),
-      usedToday: await getUsedToday(u.username),
-    })),
-  );
-  return NextResponse.json({ users: rows, total: rows.length });
+  const day = todayKey();
+  // Kullanıcı başına ayrı istek yerine üç toplu okuma
+  const [usage, bonus, refs] = await Promise.all([
+    getMany<number | string>(users.map((u) => `usage:${u.username}:${day}`)),
+    getMany<number | string>(users.map((u) => `bonus:${u.username}`)),
+    getMany<number | string>(users.map((u) => `ref-count:${u.username}`)),
+  ]);
+  const rows = users.map((u, i) => ({
+    ...withoutPassword(u),
+    dailyLimit: dailyLimitOf(u),
+    usedToday: Number(usage[i]) || 0,
+    bonus: Number(bonus[i]) || 0,
+    referrals: Number(refs[i]) || 0,
+  }));
+  return NextResponse.json({ users: rows, total: rows.length }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 /* ---- POST: yeni kullanıcı ---- */
@@ -71,6 +87,7 @@ export async function POST(req: Request) {
     notes: str(body['notes'], 200),
   };
   await saveUser(user);
+  await logAdminAction('Üye oluşturuldu', username, `günlük ${user.dailyLimit}`);
   return NextResponse.json({ success: true, user: withoutPassword(user) });
 }
 
@@ -83,25 +100,50 @@ export async function PUT(req: Request) {
   const user = await getUser(normalizeEmail(body['username']));
   if (!user) return jsonError(404, 'Kullanıcı bulunamadı');
 
+  // Önce hepsini doğrula, sonra yaz: yarım kalmış güncelleme olmasın
+  let bonusAmount = 0;
+  if ('addBonus' in body) {
+    const n = Number(body['addBonus']);
+    if (!Number.isInteger(n) || n < 1 || n > 500) return jsonError(400, 'Bonus 1–500 arası bir tam sayı olmalı');
+    bonusAmount = n;
+  }
+  let newLimit: number | null = null;
+  if ('dailyLimit' in body) {
+    newLimit = parseLimit(body['dailyLimit']);
+    if (newLimit === null) return jsonError(400, 'Günlük limit 0–1000 arası bir tam sayı olmalı');
+  }
+  let newPassword: string | null = null;
   if ('password' in body) {
     const password = typeof body['password'] === 'string' ? body['password'] : '';
     const pwError = validatePassword(password);
     if (pwError) return jsonError(400, pwError);
-    user.password = await hashPassword(password);
+    newPassword = await hashPassword(password);
   }
-  if ('dailyLimit' in body) {
-    const limit = parseLimit(body['dailyLimit']);
-    if (limit === null) return jsonError(400, 'Günlük limit 0–1000 arası bir tam sayı olmalı');
-    user.dailyLimit = limit;
+
+  const changes: string[] = [];
+  if (newPassword) { user.password = newPassword; changes.push('şifre değişti'); }
+  if (newLimit !== null && newLimit !== dailyLimitOf(user)) {
+    changes.push(`günlük limit ${dailyLimitOf(user)} → ${newLimit}`);
+    user.dailyLimit = newLimit;
     delete user.questionLimit;
   }
-  if ('isActive' in body) user.isActive = Boolean(body['isActive']);
-  if ('notes' in body) user.notes = str(body['notes'], 200);
+  if ('isActive' in body) {
+    const active = Boolean(body['isActive']);
+    if (active !== user.isActive) changes.push(active ? 'aktif edildi' : 'donduruldu');
+    user.isActive = active;
+  }
+  if ('notes' in body) {
+    const notes = str(body['notes'], 200);
+    if (notes !== (user.notes ?? '')) changes.push('not güncellendi');
+    user.notes = notes;
+  }
 
   await saveUser(user);
-  if (body['resetToday'] === true) await resetUsageToday(user.username);
+  if (body['resetToday'] === true) { await resetUsageToday(user.username); changes.push('bugünkü kullanım sıfırlandı'); }
+  if (bonusAmount) { await addBonus(user.username, bonusAmount); changes.push(`+${bonusAmount} bonus`); }
 
-  return NextResponse.json({ success: true, user: withoutPassword(user) });
+  if (changes.length) await logAdminAction('Üye güncellendi', user.username, changes.join(', '));
+  return NextResponse.json({ success: true, user: withoutPassword(user), changes });
 }
 
 /* ---- DELETE ---- */
@@ -109,6 +151,8 @@ export async function DELETE(req: Request) {
   if (!(await isAdmin(req))) return jsonError(401, 'Yetkisiz');
   const username = normalizeEmail(new URL(req.url).searchParams.get('username'));
   if (!username) return jsonError(400, 'username gerekli');
+  if (!(await getUser(username))) return jsonError(404, 'Kullanıcı bulunamadı');
   await deleteUser(username);
+  await logAdminAction('Üye silindi', username);
   return NextResponse.json({ success: true });
 }

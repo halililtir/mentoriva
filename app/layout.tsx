@@ -51,7 +51,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#070b14',
+  themeColor: '#f4f8fb',
   width: 'device-width',
   initialScale: 1,
   colorScheme: 'dark light',
@@ -73,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <Atmosphere />
         <SessionProvider>
-          <main id="main-content">{children}</main>
+          <div id="main-content">{children}</div>
         </SessionProvider>
         {/* Vercel Web Analytics — çerezsiz; yalnızca production'da */}
         {process.env.NODE_ENV === 'production' && (

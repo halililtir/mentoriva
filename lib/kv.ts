@@ -19,6 +19,8 @@ export interface KV {
   lpush(key: string, ...values: string[]): Promise<number>;
   ltrim(key: string, start: number, stop: number): Promise<unknown>;
   lrange<T = string>(key: string, start: number, stop: number): Promise<T[]>;
+  mget<T = unknown>(...keys: string[]): Promise<(T | null)[]>;
+  scan(cursor: string | number, opts: { match: string; count?: number }): Promise<[string | number, string[]]>;
 }
 
 let instance: KV | null = null;
@@ -50,26 +52,59 @@ export function getKV(): KV {
       console.warn('[KV] Redis bağlantı bilgisi yok — bellek deposu kullanılıyor, veri kalıcı DEĞİL.');
     }
     // Next.js her route'u ayrı paketler; modül değişkeni route başına ayrı
-    // kopya olur. Bellek deposu globalThis'te tutulur ki tüm route'lar aynı
-    // veriyi görsün (ör. kayıt kodunu yazan ve doğrulayan route).
-    const g = globalThis as typeof globalThis & { __mentorivaMemoryKV?: KV };
-    instance = g.__mentorivaMemoryKV ??= createMemoryKV();
+    // kopya olur. Verinin kendisi (Map) globalThis'te tutulur ki tüm route'lar
+    // aynı veriyi görsün; metotlar her modül yüklenişinde yeniden kurulur,
+    // böylece kod değişince (HMR) eski bir kopya yeni metotları kaçırmaz.
+    instance = createMemoryKV(memoryStore());
   }
   return instance;
 }
 
+/**
+ * Desene uyan tüm anahtarlar. KEYS yerine SCAN kullanır: Redis'i tek seferde
+ * kilitlemez, anahtar sayısı büyüdükçe güvenle çalışır.
+ */
+export async function scanKeys(pattern: string, max = 10_000): Promise<string[]> {
+  const kv = getKV();
+  const found = new Set<string>();
+  let cursor: string | number = 0;
+  do {
+    const [next, keys]: [string | number, string[]] = await kv.scan(cursor, { match: pattern, count: 500 });
+    for (const k of keys) found.add(k);
+    cursor = next;
+  } while (String(cursor) !== '0' && found.size < max);
+  return [...found];
+}
+
+/** Çok sayıda anahtarı tek istekte okur (100'lük parçalar hâlinde). */
+export async function getMany<T>(keys: string[]): Promise<(T | null)[]> {
+  const kv = getKV();
+  const out: (T | null)[] = [];
+  for (let i = 0; i < keys.length; i += 100) {
+    const chunk = keys.slice(i, i + 100);
+    if (chunk.length) out.push(...(await kv.mget<T>(...chunk)));
+  }
+  return out;
+}
+
 /** Yalnızca testler için: bellek deposunu sıfırlar. */
 export function _resetKVForTesting(): void {
-  const g = globalThis as typeof globalThis & { __mentorivaMemoryKV?: KV };
-  instance = g.__mentorivaMemoryKV = createMemoryKV();
+  memoryStore().clear();
+  instance = createMemoryKV(memoryStore());
+}
+
+type MemoryStore = Map<string, { value: unknown; expiresAt: number | null }>;
+
+function memoryStore(): MemoryStore {
+  const g = globalThis as typeof globalThis & { __mentorivaMemoryStore?: MemoryStore };
+  return (g.__mentorivaMemoryStore ??= new Map());
 }
 
 // -----------------------------------------------------------
 // Bellek deposu (Upstash Redis'in kullandığımız alt kümesi)
 // -----------------------------------------------------------
 
-function createMemoryKV(): KV {
-  const store = new Map<string, { value: unknown; expiresAt: number | null }>();
+function createMemoryKV(store: MemoryStore): KV {
 
   const read = (key: string) => {
     const entry = store.get(key);
@@ -135,6 +170,16 @@ function createMemoryKV(): KV {
       const entry = read(key);
       if (entry) entry.value = list(key).slice(start, stop + 1);
       return 'OK';
+    },
+    async mget<T>(...keys: string[]) {
+      return keys.map((k) => {
+        const entry = read(k);
+        return entry ? (decode(entry.value) as T) : null;
+      });
+    },
+    async scan(_cursor, opts) {
+      const re = new RegExp('^' + opts.match.split('*').map(escapeRegex).join('.*') + '$');
+      return [0, [...store.keys()].filter((k) => read(k) && re.test(k))] as [number, string[]];
     },
     async lrange<T>(key: string, start: number, stop: number) {
       const items = list(key);

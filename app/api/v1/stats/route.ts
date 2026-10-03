@@ -17,7 +17,11 @@ export async function GET(req: Request) {
   const raw = await kv.lrange<unknown>('stats:recent-questions', 0, 49);
   const recentQuestions = raw
     .map((r) => {
-      try { return typeof r === 'string' ? JSON.parse(r) : r; } catch { return null; }
+      try {
+        // Eski kayıtlardaki kullanıcı alanı panele gönderilmez
+        const v = (typeof r === 'string' ? JSON.parse(r) : r) as { q?: string; mentors?: string[]; at?: string };
+        return v?.q ? { q: v.q, mentors: v.mentors ?? [], at: v.at ?? null } : null;
+      } catch { return null; }
     })
     .filter(Boolean);
 

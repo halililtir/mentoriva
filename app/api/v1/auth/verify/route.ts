@@ -4,6 +4,7 @@ import { CODE_ERROR_MESSAGES, consumeCode, type PendingRegistration } from '@/li
 import { DEFAULT_DAILY_LIMIT, getUser, saveUser, toPublicUser, type StoredUser } from '@/lib/auth/users';
 import { startUserSession } from '@/lib/auth/session';
 import { applyReferral } from '@/lib/auth/referral';
+import { recordEvent } from '@/lib/admin/metrics';
 
 export const runtime = 'nodejs';
 
@@ -41,6 +42,8 @@ export async function POST(req: Request) {
   });
 
   const res = NextResponse.json({ success: true, referred, user: await toPublicUser(user) });
+  await recordEvent('signup');
+  if (referred) await recordEvent('referral');
   await startUserSession(res, email);
   return res;
 }

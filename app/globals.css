@@ -11,7 +11,7 @@
   /* --- Temalar ------------------------------------------
    * Renkler "R G B" üçlüsü olarak tutulur; Tailwind bunları
    * rgb(var(--x) / alfa) biçiminde kullanır (tailwind.config.ts).
-   * Tema html[data-theme] ile seçilir: gece (varsayılan) ya da gunduz.
+   * Tema html[data-theme] ile seçilir: gunduz (varsayılan) ya da gece.
    * Seçim lib/theme.ts → ThemeSwitcher ile değişir. */
   :root,
   [data-theme='gece'] {
@@ -62,7 +62,7 @@
     --fg: 16 24 38;
     --paper: 18 27 42;
     --muted: 78 90 110;
-    --faint: 128 140 158;
+    --faint: 100 112 130;
     --brand-200: 0 84 96;
     --brand-300: 0 98 112;
     --brand-400: 0 112 126;
@@ -114,12 +114,23 @@
   [data-theme='gunduz'] .text-amber-100,
   [data-theme='gunduz'] .text-amber-200,
   [data-theme='gunduz'] .text-amber-300,
-  [data-theme='gunduz'] .text-amber-400 { color: #9a5200; }
+  [data-theme='gunduz'] .text-amber-400,
+  [data-theme='gunduz'] .text-amber-100\/85,
+  [data-theme='gunduz'] .text-amber-200\/90,
+  [data-theme='gunduz'] .text-amber-300\/70,
+  [data-theme='gunduz'] .text-amber-300\/80,
+  [data-theme='gunduz'] .text-amber-300\/90,
+  [data-theme='gunduz'] .text-amber-400\/70 { color: #9a5200; }
   [data-theme='gunduz'] .text-red-200,
   [data-theme='gunduz'] .text-red-300,
-  [data-theme='gunduz'] .text-red-400 { color: #b42318; }
+  [data-theme='gunduz'] .text-red-400,
+  [data-theme='gunduz'] .text-red-200\/80,
+  [data-theme='gunduz'] .text-red-200\/90,
+  [data-theme='gunduz'] .text-red-300\/80,
+  [data-theme='gunduz'] .text-red-300\/90 { color: #b42318; }
   [data-theme='gunduz'] .text-emerald-300,
-  [data-theme='gunduz'] .text-emerald-400 { color: #0f7a4f; }
+  [data-theme='gunduz'] .text-emerald-400,
+  [data-theme='gunduz'] .text-emerald-300\/90 { color: #0f7a4f; }
   [data-theme='gunduz'] .text-brand-300\/80,
   [data-theme='gunduz'] .text-brand-300\/85,
   [data-theme='gunduz'] .text-brand-300\/90,

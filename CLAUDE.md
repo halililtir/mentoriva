@@ -51,7 +51,14 @@ Next.js 14 (App Router) · React 18 · TypeScript (strict + `noUncheckedIndexedA
 
 ### Admin
 
-`/admin` → `/api/admin/login` (ADMIN_SECRET, en az 12 karakter). `/api/v1/users`, `/api/v1/stats` ve `/api/v1/feedback` GET yalnızca admin çereziyle çalışır. `/api/v1/users` PUT: `dailyLimit`, `isActive`, `notes`, `password`, `resetToday: true`.
+`/admin` → `/api/admin/login` (ADMIN_SECRET, en az 12 karakter; 12 saatlik çerez). Panel `app/admin/page.tsx` + `components/admin/*` (Genel bakış, Üyeler, Geri bildirim, İşlem kaydı); tüm çağrılar `adminFetch` ile, 401 gelince giriş ekranına döner.
+
+- `GET /api/admin/overview`: sistem durumu (`lib/health.ts`, `/api/health` ile ortak), üye özetleri, son 30 günün olay serileri, mentor tercihleri, son 7 günün konuları, **anonim** son sorular, okunmamış geri bildirim sayısı.
+- `/api/v1/users` (admin): GET üyeleri bugünkü kullanım/bonus/davet sayısıyla toplu okur (`getMany`). PUT: `dailyLimit`, `isActive`, `notes`, `password`, `resetToday: true`, `addBonus` (1–500). Önce tüm alanlar doğrulanır, sonra yazılır. DELETE kişisel veriyle birlikte siler.
+- `/api/v1/feedback` (admin): GET, PATCH `{id, status: 'new'|'read'}`, DELETE `?id=`. Kimlik `feedback:<ms>:<token>` desenine uymazsa reddedilir (başka anahtar silinemez).
+- Metrikler `lib/admin/metrics.ts → recordEvent()`: `stats:day:<tarih>:<olay>` (question, chat, signup, journey, share, referral, feedback, crisis, mentor_error; 120 gün TTL). Konular `lib/admin/topics.ts` (anahtar kelime, ASCII katlanmış; `stats:topic:<tarih>:<konu>`). Soru metni ve kullanıcı eşleşmesi metriklere yazılmaz; `stats:recent-questions` kullanıcısızdır.
+- Sunucusuz ortamda yanıt sonrası iş kesilebildiği için metrik yazımları `await` edilir; fonksiyonlar hata fırlatmaz.
+- Her admin değişikliği `lib/admin/audit.ts` ile `admin-log` listesine yazılır (son 300), `GET /api/admin/log`.
 
 ### Mentor prompt'ları
 
@@ -67,7 +74,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ### Redis anahtarları
 
-`user:*`, `usage:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:recent-questions`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa `globalThis` üzerinde bellek deposu).
+`user:*`, `usage:*`, `bonus:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
 
 ## Büyüme özellikleri
 
@@ -89,7 +96,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 ## Tasarım sistemi
 
 - Renkler `tailwind.config.ts` (`ink`, `brand`, mentor aksanları `lib/mentors/metadata.ts → ACCENT_THEMES`). Fontlar `next/font` ile (`--font-display` Playfair Display, `--font-sans` Outfit).
-- **İki tema: Gece (varsayılan) ve Gündüz.** Renkler `app/globals.css` içinde `[data-theme='gece' | 'gunduz']` altında "R G B" CSS değişkenleridir; Tailwind `ink-*`, `brand-*`, `paper`, `muted`, `faint`, `onbrand` ve **`white`** bunları okur. `white` ön plan rengidir: gündüzde koyulaşır, böylece `text-white/50` gibi sınıflar her iki temada çalışır. Yeni renk yazarken sabit hex/`rgba(255,255,255,…)` yerine bu sınıfları ya da `rgb(var(--fg) / x)` kullan. Mentor adı gibi aksan **metinleri** `getAccent(..).text` ile (gündüzde koyu ton), çizgi/arka plan `hex` ile boyanır. Gündüzde düşük alfalı metinler ve `text-amber-*`/`text-red-*` globals.css'te okunur tonlara çekilir. Portre kartları `data-theme="gece"` ile her temada koyu kalır. Ana sayfada `.band` sarmalayıcısı gündüzde açık mavi şerit çizer. Seçim `lib/theme.ts` (localStorage + ilk boyamadan önce çalışan `THEME_INIT`), düğme `components/shared/ThemeSwitcher.tsx`. Paylaşım görselleri (OG, StoryCard, share/card) bilerek hep koyudur.
+- **İki tema: Gündüz (varsayılan) ve Gece.** Renkler `app/globals.css` içinde `[data-theme='gece' | 'gunduz']` altında "R G B" CSS değişkenleridir; Tailwind `ink-*`, `brand-*`, `paper`, `muted`, `faint`, `onbrand` ve **`white`** bunları okur. `white` ön plan rengidir: gündüzde koyulaşır, böylece `text-white/50` gibi sınıflar her iki temada çalışır. Yeni renk yazarken sabit hex/`rgba(255,255,255,…)` yerine bu sınıfları ya da `rgb(var(--fg) / x)` kullan. Mentor adı gibi aksan **metinleri** `getAccent(..).text` ile (gündüzde koyu ton), çizgi/arka plan `hex` ile boyanır. Gündüzde düşük alfalı metinler ve `text-amber-*`/`text-red-*` globals.css'te okunur tonlara çekilir. Portre kartları `data-theme="gece"` ile her temada koyu kalır. Ana sayfada `.band` sarmalayıcısı gündüzde açık mavi şerit çizer. Seçim `lib/theme.ts` (localStorage + ilk boyamadan önce çalışan `THEME_INIT`), düğme `components/shared/ThemeSwitcher.tsx`. Paylaşım görselleri (OG, StoryCard, share/card) bilerek hep koyudur.
 - Ortak sınıflar `app/globals.css`: `btn-primary/secondary/ghost`, `glass`, `input-field`, `eyebrow`, `text-gradient`, `skeleton`, `glow-border` (akış sırasında dönen çerçeve, `--accent` değişkeniyle), `focus-ring-gradient`, `reveal`, `typing-dots`, `streaming-cursor`.
 - Animasyon keyframe'leri Tailwind config'te (`animate-fade-up`, `animate-word`, `animate-orbit`, `animate-dock-in`…). Hepsi `prefers-reduced-motion` altında kapanır.
 - **Aynı elemanda hem animasyon hem hover transform kullanma**: `animation-fill-mode: both` hover'daki `translate/scale`'i ezer. Animasyonu dış, hover'ı iç elemana koy (bkz. `MentorGalleryCard`).
@@ -104,6 +111,6 @@ Moderasyon (`lib/safety/moderation.ts`) girdiyi Türkçe küçültüp ASCII'ye k
 
 - `ADMIN_SECRET` production'da en az 12 karakterlik yeni bir değerle değiştirilmeli; eskisi kodda ve git geçmişinde açıkta kaldığı için kullanılmamalı.
 - Resend'de gönderici alan adı doğrulanıp `RESEND_FROM` ayarlanmalı.
-- Upstash'te `KEYS` taraması (`listUsers`, feedback listesi) kullanıcı sayısı büyüyünce SCAN veya set tabanlı indekse taşınmalı.
+- Üye listesi SCAN + MGET ile okunuyor; on binlerce üyede set tabanlı indeks ve sayfalama gerekir.
 - Hata izleme (ör. Sentry) yok.
 - Anthropic SDK `^0.35` eski; model ve SDK güncellemesi ayrı bir iş olarak ele alınmalı.

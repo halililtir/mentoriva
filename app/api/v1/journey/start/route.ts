@@ -15,9 +15,9 @@ import { CRISIS_RESPONSE, RATE_LIMITS } from '@/lib/features';
 import { getSessionUser } from '@/lib/auth/session';
 import { releaseQuestion, reserveQuestion, type Reservation } from '@/lib/auth/users';
 import { moderateInput } from '@/lib/safety/moderation';
+import { recordEvent } from '@/lib/admin/metrics';
 import { completeText } from '@/lib/claude/client';
 import { signJson } from '@/lib/signing';
-import { getKV } from '@/lib/kv';
 import { JOURNEY_COST, STARTING_POINTS, STORY_MAX, STORY_MIN } from '@/lib/journey/content';
 import { QUESTIONS_SYSTEM, questionsUserMessage } from '@/lib/journey/prompts';
 import { extractJson, parseQuestions, type JourneyTokenPayload } from '@/lib/journey/schema';
@@ -45,6 +45,7 @@ export async function POST(req: Request) {
 
   const moderation = moderateInput(`${startingPoint}\n${story}`);
   if (!moderation.allowed) {
+    await recordEvent('crisis');
     return NextResponse.json({ crisis: true, message: CRISIS_RESPONSE[moderation.reason] });
   }
 
@@ -95,7 +96,7 @@ export async function POST(req: Request) {
   }
 
   // Yalnızca sayı — içerik yok
-  void getKV().incr('stats:journeys').catch(() => {});
+  await recordEvent('journey');
 
   return NextResponse.json({ questions, token, remaining: reservations[reservations.length - 1]!.remaining });
 }

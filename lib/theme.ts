@@ -11,7 +11,7 @@ export const THEMES = [
 
 export type ThemeId = (typeof THEMES)[number]['id'];
 
-export const DEFAULT_THEME: ThemeId = 'gece';
+export const DEFAULT_THEME: ThemeId = 'gunduz';
 export const THEME_KEY = 'mentoriva_theme';
 
 /** Tarayıcı çubuğu rengi (meta theme-color). */

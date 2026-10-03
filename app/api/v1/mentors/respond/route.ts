@@ -20,6 +20,8 @@ import { getKV } from '@/lib/kv';
 import { streamMentorResponse } from '@/lib/claude/client';
 import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
+import { recordEvent } from '@/lib/admin/metrics';
+import { recordTopics } from '@/lib/admin/topics';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { todayKey } from '@/lib/time';
@@ -87,6 +89,7 @@ export async function POST(request: Request): Promise<Response> {
   // 3. Moderation — kriz/zararlı içerikte kota düşülmez, analitiğe yazılmaz
   const moderation = moderateInput(question);
   if (!moderation.allowed) {
+    await recordEvent('crisis');
     const event: StreamEvent = { type: 'crisis', message: CRISIS_RESPONSE[moderation.reason] };
     return singleEventResponse(event);
   }
@@ -97,7 +100,8 @@ export async function POST(request: Request): Promise<Response> {
     return apiError(429, 'QUOTA_EXCEEDED', 'Bugünkü soru hakkın doldu. Yarın yeniden görüşmek üzere.');
   }
 
-  void recordAnalytics(question, mentorIds, user.username);
+  // Admin metrikleri (hata fırlatmaz; sunucusuz ortamda kesilmesin diye beklenir)
+  await Promise.all([recordAnalytics(question, mentorIds), recordEvent('question'), recordTopics(question)]);
 
   // 5. Mentorlara paralel streaming
   const abortController = new AbortController();
@@ -168,6 +172,7 @@ async function runMentor(
         text += chunk.text;
         emit({ type: 'delta', mentorId, text: chunk.text });
       } else if (chunk.type === 'error') {
+        await recordEvent('mentor_error');
         emit({ type: 'error', mentorId, message: publicError(chunk.error) });
         return null;
       }
@@ -175,6 +180,7 @@ async function runMentor(
     emit({ type: 'end', mentorId });
     return text || null;
   } catch (error) {
+    await recordEvent('mentor_error');
     emit({ type: 'error', mentorId, message: publicError(error instanceof Error ? error.message : undefined) });
     return null;
   }
@@ -190,16 +196,23 @@ function publicError(detail?: string): string {
 // Admin analitiği (en iyi çaba — hata akışı bozmaz)
 // -----------------------------------------------------------
 
-async function recordAnalytics(question: string, mentorIds: MentorId[], username: string) {
+/**
+ * Mentor sayaçları ve son sorular. Son sorular listesine kullanıcı bilgisi
+ * YAZILMAZ: admin panelinde soru metni kimseyle eşleştirilmeden görünür.
+ */
+async function recordAnalytics(question: string, mentorIds: MentorId[]) {
   try {
     const kv = getKV();
     const today = todayKey();
     await Promise.all(
-      mentorIds.flatMap((mid) => [kv.incr(`stats:mentor:${mid}`), kv.incr(`stats:mentor:${mid}:${today}`)]),
+      mentorIds.flatMap((mid) => [
+        kv.incr(`stats:mentor:${mid}`),
+        kv.incr(`stats:mentor:${mid}:${today}`).then((n) => (n === 1 ? kv.expire(`stats:mentor:${mid}:${today}`, 60 * 60 * 24 * 120) : 0)),
+      ]),
     );
     await kv.lpush(
       'stats:recent-questions',
-      JSON.stringify({ q: question.slice(0, 200), mentors: mentorIds, user: username, at: new Date().toISOString() }),
+      JSON.stringify({ q: question.slice(0, 200), mentors: mentorIds, at: new Date().toISOString() }),
     );
     await kv.ltrim('stats:recent-questions', 0, 99);
   } catch (e) {

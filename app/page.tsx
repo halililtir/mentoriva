@@ -259,6 +259,7 @@ export default function HomePage() {
     <div className="min-h-dvh flex flex-col">
       <Header {...headerProps} />
       <ToastProvider />
+      <main className="flex flex-1 flex-col">
 
       {/* GALLERY — ziyaretçiye önce "ne, neden, nasıl" anlatılır;
           üyeye ise doğrudan mentor seçimi ve örnek sorular gösterilir. */}
@@ -364,6 +365,7 @@ export default function HomePage() {
 
       {/* LIMIT */}
       {view === 'limit' && <LimitReachedView onHome={resetToGallery} />}
+      </main>
     </div>
   );
 }

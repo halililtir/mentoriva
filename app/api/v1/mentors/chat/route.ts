@@ -18,6 +18,7 @@
 import { streamMentorResponse } from '@/lib/claude/client';
 import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
+import { recordEvent } from '@/lib/admin/metrics';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { recordAnswer } from '@/lib/share/answers';
@@ -98,6 +99,7 @@ export async function POST(request: Request): Promise<Response> {
   const userMessage = messages[messages.length - 1]!.content;
   const moderation = moderateInput(userMessage);
   if (!moderation.allowed) {
+    await recordEvent('crisis');
     const event: ChatStreamEvent = { type: 'crisis', message: CRISIS_RESPONSE[moderation.reason] };
     return singleEventResponse(event);
   }
@@ -154,6 +156,7 @@ export async function POST(request: Request): Promise<Response> {
       if (produced && !failed) {
         emit({ type: 'end' });
         await recordQuestion(user.username).catch(() => {});
+        await recordEvent('chat');
         await recordAnswer(user.username, { mentorId, question: userMessage, text: answer });
       } else {
         await releaseQuestion(user, reservation).catch(() => {});

@@ -14,7 +14,7 @@ interface Props {
 /** Giriş / kayıt / şifre sıfırlama sayfalarının ortak çerçevesi. */
 export function AuthShell({ eyebrow, title, subtitle, children, footer }: Props) {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center px-5 py-12">
+    <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-12">
       <Link href="/" className="mb-8 animate-fade-down" aria-label="Ana sayfa">
         <Logo animated />
       </Link>
@@ -46,7 +46,7 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: Props)
       </div>
 
       {footer && <div className="mt-6 text-center text-[13px] text-white/40 animate-fade-up">{footer}</div>}
-    </div>
+    </main>
   );
 }
 

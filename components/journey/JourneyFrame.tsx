@@ -18,7 +18,7 @@ interface Props {
  */
 export function JourneyFrame({ stage, onBack, onExit, children }: Props) {
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-72px)] w-full max-w-2xl flex-col px-5 pb-12 pt-6">
+    <main className="mx-auto flex min-h-[calc(100dvh-72px)] w-full max-w-2xl flex-col px-5 pb-12 pt-6">
       <div className="flex items-center justify-between">
         {onBack ? (
           <button onClick={onBack} className="btn-ghost text-sm" aria-label="Önceki adıma dön">
@@ -48,7 +48,7 @@ export function JourneyFrame({ stage, onBack, onExit, children }: Props) {
       )}
 
       <div className="flex flex-1 flex-col justify-center py-8">{children}</div>
-    </div>
+    </main>
   );
 }
 
