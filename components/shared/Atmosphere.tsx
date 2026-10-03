@@ -23,29 +23,31 @@ export function Atmosphere() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-ink-0">
       {/* Temel derinlik */}
-      <div className="absolute inset-0 bg-[linear-gradient(170deg,#070b14_0%,#0a1020_45%,#0d1426_70%,#080c16_100%)]" />
+      <div className="absolute inset-0" style={{ background: 'var(--atmo-base)' }} />
 
-      {/* Aurora ışıkları */}
-      <div className="absolute -top-[20%] left-[5%] h-[60vmax] w-[60vmax] rounded-full bg-[radial-gradient(circle,rgba(0,188,212,0.16),transparent_60%)] blur-3xl animate-aurora-1" />
-      <div className="absolute top-[30%] -right-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[radial-gradient(circle,rgba(232,154,60,0.09),transparent_60%)] blur-3xl animate-aurora-2" />
-      <div className="absolute -bottom-[25%] left-[20%] h-[50vmax] w-[50vmax] rounded-full bg-[radial-gradient(circle,rgba(120,90,220,0.10),transparent_60%)] blur-3xl animate-aurora-3" />
+      {/* Aurora ışıkları (yoğunluk temaya göre) */}
+      <div className="absolute inset-0" style={{ opacity: 'var(--atmo-glow)' }}>
+        <div className="absolute -top-[20%] left-[5%] h-[60vmax] w-[60vmax] rounded-full bg-[radial-gradient(circle,rgba(0,188,212,0.16),transparent_60%)] blur-3xl animate-aurora-1" />
+        <div className="absolute top-[30%] -right-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[radial-gradient(circle,rgba(232,154,60,0.09),transparent_60%)] blur-3xl animate-aurora-2" />
+        <div className="absolute -bottom-[25%] left-[20%] h-[50vmax] w-[50vmax] rounded-full bg-[radial-gradient(circle,rgba(120,90,220,0.10),transparent_60%)] blur-3xl animate-aurora-3" />
+      </div>
 
       {/* Yıldız tozu */}
-      <div className="absolute inset-0 opacity-70" style={{ backgroundImage: STARS, backgroundSize: '600px 600px' }} />
+      <div className="absolute inset-0" style={{ backgroundImage: STARS, backgroundSize: '600px 600px', opacity: 'var(--atmo-stars)' }} />
 
       {/* İnce ızgara — üstte görünür, aşağı doğru kaybolur */}
       <div
         className="absolute inset-x-0 top-0 h-[80vh] opacity-[0.35] mask-fade-b"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+            'linear-gradient(rgb(var(--fg) / 0.03) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--fg) / 0.03) 1px, transparent 1px)',
           backgroundSize: '64px 64px',
         }}
       />
 
       {/* Gren + vinyet */}
       <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: NOISE }} />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(3,5,10,0.65)_100%)]" />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, var(--atmo-vignette) 100%)' }} />
     </div>
   );
 }

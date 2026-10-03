@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '@/components/shared/Logo';
+import { ThemeSwitcher } from '@/components/shared/ThemeSwitcher';
 import { useSession } from '@/lib/session';
 import { cn } from '@/lib/cn';
 
@@ -109,7 +110,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
 
         {/* Sağ */}
         <div className="flex items-center gap-1.5">
-          <nav className="hidden md:flex items-center gap-1" aria-label="Ana menü">
+          <nav className="hidden lg:flex items-center gap-1" aria-label="Ana menü">
             {NAV.map((item) => {
               const active = pathname === item.href;
               return (
@@ -117,7 +118,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'relative rounded-lg px-3 py-2 text-[13px] transition-colors',
+                    'relative whitespace-nowrap rounded-lg px-3 py-2 text-[13px] transition-colors',
                     active ? 'text-white' : 'text-white/50 hover:text-white',
                   )}
                 >
@@ -137,6 +138,8 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
               </button>
             )}
           </nav>
+
+          <ThemeSwitcher />
 
           {/* Kullanıcı */}
           {status === 'loading' ? (
@@ -185,14 +188,14 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
               <Link href="/giris" className="hidden sm:inline-flex rounded-lg px-3 py-2 text-[13px] text-white/60 hover:text-white transition-colors">
                 Giriş
               </Link>
-              <Link href="/kayit" className="btn-primary !rounded-full !px-4 !py-2 text-[13px]">
+              <Link href="/kayit" className="btn-primary whitespace-nowrap !rounded-full !px-4 !py-2 text-[13px]">
                 Ücretsiz başla
               </Link>
             </div>
           )}
 
           {/* Mobil menü */}
-          <div className="relative md:hidden">
+          <div className="relative lg:hidden">
             <button
               onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); setUserMenuOpen(false); }}
               className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"

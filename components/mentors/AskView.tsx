@@ -60,7 +60,7 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
                 className="relative h-20 w-20 overflow-hidden rounded-full border-2 animate-pop sm:h-24 sm:w-24"
                 style={{
                   borderColor: a.hex,
-                  boxShadow: `0 0 0 4px #070b14, 0 0 50px -6px ${a.glow}`,
+                  boxShadow: `0 0 0 4px rgb(var(--ink-0)), 0 0 50px -6px ${a.glow}`,
                   animationDelay: `${i * 80}ms`,
                   zIndex: mentors.length - i,
                 }}

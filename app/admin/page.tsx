@@ -145,7 +145,7 @@ export default function AdminPage() {
         <div className="space-y-3">
           <input type="password" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => e.key === 'Enter' && login()} placeholder="Admin şifresi" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white/90 text-center placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" autoFocus />
           {err && <p className="text-red-400 text-sm">{err}</p>}
-          <button onClick={login} disabled={loading} className="w-full py-3 rounded-xl bg-brand-500 text-[#070b14] text-sm font-medium">{loading ? '...' : 'Giriş'}</button>
+          <button onClick={login} disabled={loading} className="w-full py-3 rounded-xl bg-brand-500 text-onbrand text-sm font-medium">{loading ? '...' : 'Giriş'}</button>
         </div>
       </div>
     </div>
@@ -153,7 +153,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#070b14]/85 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-0/85 backdrop-blur-md">
         <div className="mx-auto max-w-content px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/"><Logo /></Link>
@@ -273,7 +273,7 @@ export default function AdminPage() {
                   placeholder="Günlük hak"
                   className="w-24 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 text-center focus:outline-none focus:border-amber-500/40"
                 />
-                <button onClick={giveTokens} className="px-4 py-2.5 rounded-lg bg-amber-500 text-[#070b14] text-xs font-medium hover:bg-amber-400 transition-colors">
+                <button onClick={giveTokens} className="px-4 py-2.5 rounded-lg bg-amber-500 text-[#1f1404] text-xs font-medium hover:bg-amber-400 transition-colors">
                   Tanımla
                 </button>
               </div>
@@ -294,7 +294,7 @@ export default function AdminPage() {
                 <input value={nu.notes} onChange={e => setNu({ ...nu, notes: e.target.value })} placeholder="Not" className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-brand-500/40" />
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={create} className="px-4 py-2 rounded-lg bg-brand-500 text-[#070b14] text-xs font-medium">Oluştur</button>
+                <button onClick={create} className="px-4 py-2 rounded-lg bg-brand-500 text-onbrand text-xs font-medium">Oluştur</button>
                 {msg && <span className="text-xs text-amber-400">{msg}</span>}
               </div>
             </div>

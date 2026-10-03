@@ -31,7 +31,7 @@ export function Logo({ className, showWordmark = true, size = 32, animated = fal
 export function LogoMark({ size = 32, className, animated = false }: { size?: number; className?: string; animated?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <circle cx="32" cy="32" r="16" fill="none" stroke="#ffffff" strokeWidth="2.5" />
+      <circle cx="32" cy="32" r="16" fill="none" stroke="currentColor" strokeWidth="2.5" />
       <g
         className={cn(
           'origin-center transition-transform duration-700 ease-spring group-hover/logo:rotate-[22deg]',
@@ -39,13 +39,13 @@ export function LogoMark({ size = 32, className, animated = false }: { size?: nu
         )}
         style={{ transformBox: 'fill-box', transformOrigin: '50% 50%' }}
       >
-        <path d="M 32 4 L 36 32 L 32 30 Z" fill="#ffffff" />
-        <path d="M 4 32 L 32 28 L 30 32 Z" fill="#ffffff" />
-        <path d="M 32 60 L 28 32 L 32 34 Z" fill="#00bcd4" />
-        <path d="M 60 32 L 32 36 L 34 32 Z" fill="#00bcd4" />
-        <path d="M 32 18 L 34 32 L 32 46 L 30 32 Z" fill="#00bcd4" opacity="0.9" />
+        <path d="M 32 4 L 36 32 L 32 30 Z" fill="currentColor" />
+        <path d="M 4 32 L 32 28 L 30 32 Z" fill="currentColor" />
+        <path d="M 32 60 L 28 32 L 32 34 Z" fill="rgb(var(--brand-500))" />
+        <path d="M 60 32 L 32 36 L 34 32 Z" fill="rgb(var(--brand-500))" />
+        <path d="M 32 18 L 34 32 L 32 46 L 30 32 Z" fill="rgb(var(--brand-500))" opacity="0.9" />
       </g>
-      <circle cx="32" cy="32" r="2" fill="#0a0c12" stroke="#ffffff" strokeWidth="1" />
+      <circle cx="32" cy="32" r="2" fill="rgb(var(--ink-0))" stroke="currentColor" strokeWidth="1" />
     </svg>
   );
 }

@@ -8,8 +8,93 @@
 /* Base                                                      */
 /* -------------------------------------------------------- */
 @layer base {
-  :root {
+  /* --- Temalar ------------------------------------------
+   * Renkler "R G B" üçlüsü olarak tutulur; Tailwind bunları
+   * rgb(var(--x) / alfa) biçiminde kullanır (tailwind.config.ts).
+   * Tema html[data-theme] ile seçilir: gece (varsayılan), aksam, gunduz.
+   * Seçim lib/theme.ts → ThemeSwitcher ile değişir. */
+  :root,
+  [data-theme='gece'] {
     color-scheme: dark;
+    --ink-0: 7 11 20;
+    --ink-50: 12 18 32;
+    --ink-100: 15 21 40;
+    --ink-200: 21 28 48;
+    --ink-300: 28 36 64;
+    --ink-400: 42 51 80;
+    --fg: 255 255 255;
+    --paper: 240 242 245;
+    --muted: 138 146 164;
+    --faint: 74 81 101;
+    --brand-200: 140 236 240;
+    --brand-300: 95 228 234;
+    --brand-400: 51 212 220;
+    --brand-500: 0 188 212;
+    --brand-600: 0 160 181;
+    --brand-700: 0 125 140;
+    --on-brand: 7 11 20;
+    --atmo-base: linear-gradient(170deg, #070b14 0%, #0a1020 45%, #0d1426 70%, #080c16 100%);
+    --atmo-glow: 1;
+    --atmo-stars: 0.7;
+    --atmo-vignette: rgba(3, 5, 10, 0.65);
+    --surface-shadow: rgba(0, 0, 0, 0.8);
+    --gradient-text: linear-gradient(100deg, #5fe4ea 0%, #00bcd4 25%, #d4a574 50%, #e89a3c 70%, #5fe4ea 100%);
+  }
+
+  /* Akşam: lacivert yerine nötr, hafif sıcak koyu; metin daha okunaklı */
+  [data-theme='aksam'] {
+    color-scheme: dark;
+    --ink-0: 16 17 20;
+    --ink-50: 23 25 29;
+    --ink-100: 27 29 34;
+    --ink-200: 35 37 43;
+    --ink-300: 45 48 55;
+    --ink-400: 62 65 74;
+    --fg: 248 244 236;
+    --paper: 244 239 230;
+    --muted: 168 165 158;
+    --faint: 98 97 100;
+    --brand-200: 160 232 236;
+    --brand-300: 120 218 224;
+    --brand-400: 80 202 210;
+    --brand-500: 44 184 193;
+    --brand-600: 30 154 162;
+    --brand-700: 20 120 128;
+    --on-brand: 10 22 24;
+    --atmo-base: linear-gradient(170deg, #101114 0%, #131418 45%, #16171c 70%, #0f1013 100%);
+    --atmo-glow: 0.55;
+    --atmo-stars: 0.25;
+    --atmo-vignette: rgba(6, 6, 8, 0.55);
+    --surface-shadow: rgba(0, 0, 0, 0.6);
+    --gradient-text: linear-gradient(100deg, #78dae0 0%, #2cb8c1 25%, #d4a574 50%, #e0985a 70%, #78dae0 100%);
+  }
+
+  /* Gündüz: krem zemin, beyaz kartlar, koyu metin */
+  [data-theme='gunduz'] {
+    color-scheme: light;
+    --ink-0: 246 243 238;
+    --ink-50: 255 255 255;
+    --ink-100: 251 249 245;
+    --ink-200: 230 224 214;
+    --ink-300: 218 211 199;
+    --ink-400: 196 188 174;
+    --fg: 24 27 34;
+    --paper: 27 30 37;
+    --muted: 92 97 110;
+    --faint: 150 154 164;
+    --brand-200: 0 92 100;
+    --brand-300: 0 114 125;
+    --brand-400: 0 126 138;
+    --brand-500: 0 145 160;
+    --brand-600: 0 126 138;
+    --brand-700: 0 96 104;
+    --on-brand: 255 255 255;
+    --atmo-base: linear-gradient(170deg, #f8f5f0 0%, #f4f0e9 45%, #f1ede5 70%, #f6f3ee 100%);
+    --atmo-glow: 0.5;
+    --atmo-stars: 0;
+    --atmo-vignette: rgba(120, 100, 70, 0.08);
+    --surface-shadow: rgba(80, 60, 30, 0.14);
+    --gradient-text: linear-gradient(100deg, #00727d 0%, #00919f 25%, #a86d34 50%, #b85f1c 70%, #00727d 100%);
   }
 
   html {
@@ -39,14 +124,14 @@
   }
 
   ::selection {
-    background: rgba(0, 188, 212, 0.35);
-    color: #fff;
+    background: rgb(var(--brand-500) / 0.35);
+    color: rgb(var(--fg));
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--fg) / 0.1); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--fg) / 0.18); }
 
   textarea { @apply font-sans; }
 
@@ -61,7 +146,7 @@
   /* --- Butonlar ---------------------------------------- */
   .btn-primary {
     @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl
-           bg-brand-500 text-ink-0 font-medium px-6 py-3
+           bg-brand-500 text-onbrand font-medium px-6 py-3
            shadow-[0_8px_30px_-10px_rgba(0,188,212,0.6)]
            transition-all duration-300 ease-out-expo
            hover:bg-brand-400 hover:-translate-y-0.5 hover:shadow-[0_14px_40px_-12px_rgba(0,188,212,0.75)]
@@ -100,8 +185,8 @@
   .glass {
     @apply border border-white/[0.07] bg-ink-50/60 backdrop-blur-xl;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 30px 60px -30px rgba(0, 0, 0, 0.8);
+      inset 0 1px 0 rgb(var(--fg) / 0.05),
+      0 30px 60px -30px var(--surface-shadow);
   }
 
   .card-surface {
@@ -124,7 +209,7 @@
 
   /* Hareketli gradient metin */
   .text-gradient {
-    background-image: linear-gradient(100deg, #5fe4ea 0%, #00bcd4 25%, #d4a574 50%, #e89a3c 70%, #5fe4ea 100%);
+    background-image: var(--gradient-text);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -134,7 +219,7 @@
 
   /* Yükleme iskeleti */
   .skeleton {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.09) 50%, rgba(255, 255, 255, 0.03) 100%);
+    background: linear-gradient(90deg, rgb(var(--fg) / 0.03) 0%, rgb(var(--fg) / 0.09) 50%, rgb(var(--fg) / 0.03) 100%);
     background-size: 200% 100%;
     @apply rounded animate-shimmer;
   }
@@ -163,7 +248,7 @@
     z-index: -1;
     border-radius: inherit;
     padding: 1px;
-    background: conic-gradient(from var(--angle, 0deg), transparent 0deg, var(--accent, #00bcd4) 60deg, transparent 140deg);
+    background: conic-gradient(from var(--angle, 0deg), transparent 0deg, var(--accent, rgb(var(--brand-500))) 60deg, transparent 140deg);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -175,7 +260,7 @@
     position: relative;
     border-radius: 1.25rem;
     padding: 1px;
-    background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08));
+    background: linear-gradient(rgb(var(--fg) / 0.1), rgb(var(--fg) / 0.1));
     transition: background 0.4s ease;
   }
   .focus-ring-gradient:focus-within {

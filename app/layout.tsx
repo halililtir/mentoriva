@@ -5,6 +5,7 @@ import { Atmosphere } from '@/components/shared/Atmosphere';
 import { SessionProvider } from '@/lib/session';
 import { SITE_URL } from '@/lib/site';
 import { ANALYTICS_INIT } from '@/lib/analytics';
+import { DEFAULT_THEME, THEME_INIT } from '@/lib/theme';
 import './globals.css';
 
 const display = Playfair_Display({
@@ -53,16 +54,20 @@ export const viewport: Viewport = {
   themeColor: '#070b14',
   width: 'device-width',
   initialScale: 1,
-  colorScheme: 'dark',
+  colorScheme: 'dark light',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className={`dark ${display.variable} ${sans.variable}`}>
+    <html lang="tr" data-theme={DEFAULT_THEME} className={`${display.variable} ${sans.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Kayıtlı temayı ilk boyamadan önce uygula (lib/theme.ts) */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
       <body className="antialiased">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-500 focus:text-ink-0 focus:rounded-card"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-500 focus:text-onbrand focus:rounded-card"
         >
           Ana içeriğe geç
         </a>

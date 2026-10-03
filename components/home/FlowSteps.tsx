@@ -19,7 +19,7 @@ export function FlowSteps({ current, className }: { current: number; className?:
                 <span
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-semibold transition-all duration-500',
-                    done && 'border-brand-500 bg-brand-500 text-ink-0',
+                    done && 'border-brand-500 bg-brand-500 text-onbrand',
                     active && 'border-brand-400 bg-brand-500/15 text-brand-200 shadow-[0_0_20px_-4px_rgba(0,188,212,0.8)]',
                     !done && !active && 'border-white/15 text-white/35',
                   )}

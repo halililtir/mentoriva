@@ -10,22 +10,30 @@ const config: Config = {
     extend: {
       colors: {
         // Temel yüzeyler
+        // Tema renkleri app/globals.css içindeki CSS değişkenlerinden gelir
+        // (html[data-theme] = gece | aksam | gunduz). "white" da temaya göre
+        // ön plan rengidir: açık temada koyu metne döner; böylece text-white/50
+        // gibi yüzlerce sınıf her temada doğru çalışır.
+        white: 'rgb(var(--fg) / <alpha-value>)',
         ink: {
-          0: '#070b14', // derin lacivert, arka plan
-          50: '#0c1220', // kart arka planı
-          100: '#0f1528', // sekonder yüzey
-          200: '#151c30',
-          300: '#1c2440',
-          400: '#2a3350',
+          0: 'rgb(var(--ink-0) / <alpha-value>)', // arka plan
+          50: 'rgb(var(--ink-50) / <alpha-value>)', // kart arka planı
+          100: 'rgb(var(--ink-100) / <alpha-value>)', // sekonder yüzey
+          200: 'rgb(var(--ink-200) / <alpha-value>)',
+          300: 'rgb(var(--ink-300) / <alpha-value>)',
+          400: 'rgb(var(--ink-400) / <alpha-value>)',
         },
+        // Marka rengi zeminli butonların üzerindeki metin
+        onbrand: 'rgb(var(--on-brand) / <alpha-value>)',
 
         // Marka rengi — logonun cyan'ı
         brand: {
-          300: '#5fe4ea',
-          400: '#33d4dc',
-          500: '#00bcd4', // ana cyan (logo)
-          600: '#00a0b5',
-          700: '#007d8c',
+          200: 'rgb(var(--brand-200) / <alpha-value>)',
+          300: 'rgb(var(--brand-300) / <alpha-value>)',
+          400: 'rgb(var(--brand-400) / <alpha-value>)',
+          500: 'rgb(var(--brand-500) / <alpha-value>)', // ana cyan (logo)
+          600: 'rgb(var(--brand-600) / <alpha-value>)',
+          700: 'rgb(var(--brand-700) / <alpha-value>)',
         },
 
         // Mentor aksent renkleri (eski siten + bizim paletten karma)
@@ -41,9 +49,9 @@ const config: Config = {
         danger: '#ef4444',
 
         // Metin
-        paper: '#f0f2f5', // ana beyaz
-        muted: '#8a92a4', // sekonder metin
-        faint: '#4a5165', // devreden dışı
+        paper: 'rgb(var(--paper) / <alpha-value>)', // ana metin
+        muted: 'rgb(var(--muted) / <alpha-value>)', // sekonder metin
+        faint: 'rgb(var(--faint) / <alpha-value>)', // devreden dışı
       },
 
       fontFamily: {

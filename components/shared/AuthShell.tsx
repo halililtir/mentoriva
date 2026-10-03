@@ -29,7 +29,7 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: Props)
             <span
               key={m.id}
               className="relative h-9 w-9 overflow-hidden rounded-full border-2 animate-pop"
-              style={{ borderColor: getAccent(m.accentColor).hex, animationDelay: `${150 + i * 70}ms`, boxShadow: '0 0 0 3px #0c1220' }}
+              style={{ borderColor: getAccent(m.accentColor).hex, animationDelay: `${150 + i * 70}ms`, boxShadow: '0 0 0 3px rgb(var(--ink-50))' }}
             >
               <Image src={m.portraitUrl} alt="" fill sizes="36px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
             </span>

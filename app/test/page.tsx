@@ -465,7 +465,7 @@ export default function QuizPage() {
                   className="object-cover brightness-75"
                   sizes="640px"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#070b14] via-[#070b14]/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink-0 via-ink-0/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="flex items-end justify-between">
                     <div>

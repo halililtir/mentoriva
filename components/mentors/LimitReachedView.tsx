@@ -97,7 +97,7 @@ export function LimitReachedView({ onHome }: { onHome: () => void }) {
                 <button
                   onClick={join}
                   disabled={state === 'sending'}
-                  className="flex-shrink-0 rounded-xl bg-amber-500 px-4 text-sm font-medium text-ink-0 transition-all hover:-translate-y-0.5 hover:bg-amber-400 disabled:opacity-50"
+                  className="flex-shrink-0 rounded-xl bg-amber-500 px-4 text-sm font-medium text-[#1f1404] transition-all hover:-translate-y-0.5 hover:bg-amber-400 disabled:opacity-50"
                 >
                   {state === 'sending' ? '…' : 'Haber ver'}
                 </button>
