@@ -158,7 +158,7 @@ export function WhyMentoriva() {
                   </p>
                 ))}
                 <span
-                  className="stamp absolute right-0 top-1/2 rounded-lg border-2 border-red-400/70 bg-ink-50/85 px-3 py-1 font-display text-[15px] italic text-red-400 shadow-lg backdrop-blur-sm sm:right-2 sm:text-base"
+                  className="stamp absolute right-0 top-1/2 rounded-lg border-2 border-red-400/70 bg-ink-50/90 px-3 py-1 font-display text-[15px] italic text-red-400 shadow-lg sm:right-2 sm:text-base"
                   style={{ '--d': `${stampAt}ms` } as React.CSSProperties}
                 >
                   {d.verdict}

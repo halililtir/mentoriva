@@ -65,7 +65,7 @@ export function DemoPreview() {
 
   return (
     <div ref={ref} className="relative">
-      <div className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_30%,rgba(0,188,212,0.18),transparent_65%)] blur-2xl" />
+      <div className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_30%,rgba(0,188,212,0.18),transparent_72%)]" />
 
       <div className="glass relative overflow-hidden rounded-2xl" role="img" aria-label={`Örnek: "${sample.question}" sorusuna mentorların cevabı`}>
         {/* Pencere çubuğu */}

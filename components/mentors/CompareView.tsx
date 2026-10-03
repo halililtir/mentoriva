@@ -91,7 +91,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
       ) : (
         <>
         {mentorIds.length > 1 && (
-          <div className="sticky top-[60px] z-20 -mx-5 mt-5 flex gap-1.5 overflow-x-auto bg-ink-0/85 px-5 py-2 backdrop-blur-md md:hidden" role="tablist" aria-label="Mentor cevapları">
+          <div className="sticky top-[60px] z-20 -mx-5 mt-5 flex gap-1.5 overflow-x-auto keep-blur bg-ink-0/85 px-5 py-2 backdrop-blur-md md:hidden" role="tablist" aria-label="Mentor cevapları">
             {mentorIds.map((mid) => {
               const m = getActiveMentor(mid);
               const a = getAccent(m.accentColor);

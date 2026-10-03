@@ -74,7 +74,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
       className={cn(
         'sticky top-0 z-40 transition-all duration-500 ease-out-expo',
         scrolled
-          ? 'border-b border-white/[0.06] bg-ink-0/75 backdrop-blur-xl shadow-[0_10px_30px_-20px_rgba(0,0,0,0.9)]'
+          ? 'border-b border-white/[0.06] keep-blur bg-ink-0/75 backdrop-blur-xl shadow-[0_10px_30px_-20px_rgba(0,0,0,0.9)]'
           : 'border-b border-transparent bg-transparent',
       )}
     >

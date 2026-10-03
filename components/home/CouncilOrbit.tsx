@@ -25,7 +25,7 @@ export function CouncilOrbit({ selectedIds, onToggle }: Props) {
       style={{ '--r': 'min(32vw, 168px)' } as React.CSSProperties}
     >
       {/* Arka hale */}
-      <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle,rgba(0,188,212,0.22),transparent_65%)] blur-2xl animate-breathe" />
+      <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle,rgba(0,188,212,0.22),transparent_72%)] animate-breathe" />
 
       {/* Halkalar */}
       <div className="absolute inset-[6%] rounded-full border border-dashed border-white/[0.08] animate-spin-slow" />

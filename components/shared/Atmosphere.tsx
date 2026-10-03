@@ -27,9 +27,9 @@ export function Atmosphere() {
 
       {/* Aurora ışıkları (yoğunluk temaya göre) */}
       <div className="absolute inset-0" style={{ opacity: 'var(--atmo-glow)' }}>
-        <div className="absolute -top-[20%] left-[5%] h-[60vmax] w-[60vmax] rounded-full bg-[radial-gradient(circle,rgba(0,188,212,0.16),transparent_60%)] blur-3xl animate-aurora-1" />
-        <div className="absolute top-[30%] -right-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[radial-gradient(circle,rgba(232,154,60,0.09),transparent_60%)] blur-3xl animate-aurora-2" />
-        <div className="absolute -bottom-[25%] left-[20%] h-[50vmax] w-[50vmax] rounded-full bg-[radial-gradient(circle,rgba(120,90,220,0.10),transparent_60%)] blur-3xl animate-aurora-3" />
+        <div className="absolute -top-[20%] left-[5%] h-[60vmax] w-[60vmax] rounded-full bg-[radial-gradient(circle,rgba(0,188,212,0.16),transparent_70%)] will-change-transform animate-aurora-1" />
+        <div className="absolute top-[30%] -right-[15%] h-[55vmax] w-[55vmax] rounded-full bg-[radial-gradient(circle,rgba(232,154,60,0.09),transparent_70%)] will-change-transform animate-aurora-2" />
+        <div className="absolute -bottom-[25%] left-[20%] h-[50vmax] w-[50vmax] rounded-full bg-[radial-gradient(circle,rgba(120,90,220,0.10),transparent_70%)] will-change-transform animate-aurora-3" />
       </div>
 
       {/* Yıldız tozu */}

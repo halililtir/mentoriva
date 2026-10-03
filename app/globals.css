@@ -457,3 +457,16 @@
   .reveal { opacity: 1; transform: none; }
   .strike, .stamp, .m-appear { transition-delay: 0ms !important; }
 }
+
+/* Performans: arka plan ışıkları sürekli hareket ettiği için tarayıcı her cam
+   yüzeyin (backdrop-filter) arkasını her karede yeniden bulanıklaştırıyordu;
+   ana sayfada ~70 katman telefonda takılmaya yol açıyordu. Dokunmatik ve dar
+   ekranlarda bulanıklık yalnızca sabit çubuklarda (.keep-blur) kalır, kartlar
+   biraz daha opak çizilir. */
+@media (max-width: 1023px), (hover: none) {
+  *:not(.keep-blur) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .glass { background-color: rgb(var(--ink-50) / 0.88); }
+}
