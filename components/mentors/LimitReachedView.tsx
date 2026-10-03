@@ -16,25 +16,44 @@ export function LimitReachedView({ onHome }: { onHome: () => void }) {
   return <MemberLimit onHome={onHome} />;
 }
 
+/** Üyelikle açılanlar; sayı yazılmaz (mentor sayısı değişebilir). */
+const MEMBER_GAINS = [
+  { title: 'Sohbeti sürdür', text: 'Seni en çok düşündüren mentorla konuşmaya kaldığın yerden devam et.' },
+  { title: 'Daha çok bakış', text: 'Aynı soruyu daha fazla mentora birlikte sor, ayrıldıkları yeri gör.' },
+  { title: 'Sakla, geri dön', text: 'Önemli sohbetlerini kaydet; istediğin gün yeniden aç.' },
+];
+
 /** Misafir denemesini kullandı: üyeliğe davet. */
 function GuestTrialOver({ onHome }: { onHome: () => void }) {
   return (
-    <div className="mx-auto w-full max-w-[520px] px-5 py-12 sm:py-20">
-      <div className="glass relative overflow-hidden rounded-3xl p-8 text-center animate-scale-in sm:p-10">
+    <div className="mx-auto w-full max-w-[540px] px-5 py-12 sm:py-20">
+      <div className="glass relative overflow-hidden rounded-3xl p-7 text-center animate-scale-in sm:p-10">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/70 to-transparent" />
-        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-brand-300">Deneme hakkın doldu</p>
-        <h2 className="mt-4 font-display text-3xl leading-tight text-balance">
-          Beğendiysen, <span className="italic text-gradient">sohbet şimdi başlıyor.</span>
+        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-brand-300">Bugünlük deneme tamam</p>
+        <h2 className="mt-4 font-display text-[clamp(1.7rem,4.5vw,2.2rem)] leading-tight text-balance">
+          İlk cevabını aldın. <span className="italic text-gradient">Asıl konuşma şimdi başlıyor.</span>
         </h2>
-        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-white/60">
-          Ücretsiz üye ol: her gün {DEFAULT_DAILY_LIMIT} soru, dört mentora birden sorma, seçtiğin mentorla sohbete devam etme
-          ve sohbetlerini kaydetme. Kredi kartı istenmez.
+        <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-white/60">
+          Bir cevap kapıyı aralar; düşünce, ardından gelen sorularda derinleşir.
         </p>
+
+        <ul className="mx-auto mt-6 max-w-sm space-y-3 text-left">
+          {MEMBER_GAINS.map((g) => (
+            <li key={g.title} className="flex gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brand-400" aria-hidden="true" />
+              <span className="text-[14px] leading-relaxed text-white/65">
+                <b className="font-medium text-white/90">{g.title}.</b> {g.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link href="/kayit?next=/" className="btn-primary w-full !px-7 sm:w-auto">Ücretsiz üye ol</Link>
-          <Link href="/giris?next=/" className="btn-secondary w-full !px-7 sm:w-auto">Giriş yap</Link>
+          <Link href="/giris?next=/" className="btn-secondary w-full !px-7 sm:w-auto">Zaten üyeyim</Link>
         </div>
-        <button onClick={onHome} className="btn-ghost mt-4 text-sm">← Ana sayfaya dön</button>
+        <p className="mt-4 text-[12px] text-white/40">Her gün {DEFAULT_DAILY_LIMIT} soru · ücretsiz · kredi kartı gerekmez</p>
+        <button onClick={onHome} className="btn-ghost mt-2 text-sm">← Ana sayfaya dön</button>
       </div>
     </div>
   );

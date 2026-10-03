@@ -181,8 +181,9 @@ export default function KayitPage() {
             className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-white/[0.04] accent-brand-500"
           />
           <span className="text-xs leading-relaxed text-white/55">
-            Yazdıklarımın cevap üretilmesi için yurt dışındaki yapay zekâ sağlayıcısına (Anthropic, ABD) aktarılmasına{' '}
-            <b className="font-medium text-white/75">açık rıza</b> veriyorum.
+            Yazdıklarımın, cevap üretilebilmesi için yurt dışındaki hizmet sağlayıcılara aktarılmasına{' '}
+            <b className="font-medium text-white/75">açık rıza</b> veriyorum.{' '}
+            <Link href="/gizlilik#yurt-disi" target="_blank" className="text-brand-300/80 underline-offset-2 hover:underline">Ayrıntılar</Link>
           </span>
         </label>
         </div>

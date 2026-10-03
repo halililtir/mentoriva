@@ -29,6 +29,7 @@ import { getEarlyMentors } from '@/lib/mentors/access-server';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { releaseGuest, reserveGuest } from '@/lib/auth/guest';
+import { synthesize } from '@/lib/mentors/synthesis';
 import { DEFAULT_DAILY_LIMIT, GUEST_MAX_MENTORS } from '@/lib/auth/limits';
 import { todayKey } from '@/lib/time';
 import { recordAnswer } from '@/lib/share/answers';
@@ -153,6 +154,12 @@ export async function POST(request: Request): Promise<Response> {
       );
       const completed = results.flatMap((r, i) => (r.status === 'fulfilled' && r.value !== null ? [{ mentorId: mentorIds[i]!, text: r.value }] : []));
       const anySucceeded = completed.length > 0;
+
+      // Birden fazla mentor cevap verdiyse: nerede birleşip nerede ayrıldıkları
+      if (completed.length >= 2 && !abortController.signal.aborted) {
+        const synthesis = await synthesize(question, completed);
+        if (synthesis) emit({ type: 'synthesis', ...synthesis });
+      }
       if (user && reservation) {
         // Paylaşım kartı yalnızca gerçekten üretilmiş cevaplardan cümle basabilsin
         await Promise.all(completed.map((c) => recordAnswer(user.username, { mentorId: c.mentorId, question, text: c.text })));

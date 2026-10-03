@@ -10,6 +10,8 @@ import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
 import { announceBadges } from '@/components/shared/BadgeToaster';
+import { SynthesisCard, SynthesisPending } from '@/components/mentors/SynthesisCard';
+import type { Synthesis } from '@/lib/mentors/synthesis';
 import type { MentorId, MentorResponseState, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -27,6 +29,9 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
   );
   const [crisis, setCrisis] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
+  const [synthesis, setSynthesis] = useState<Synthesis | null>(null);
+  /** Sunucu akışı kapattı (sentez gelmediyse bekleme göstergesi kalkar). */
+  const [streamDone, setStreamDone] = useState(false);
   /** Telefonda tek seferde bir cevap gösterilir (sekmeler); geniş ekranda hepsi yan yana. */
   const [tab, setTab] = useState<MentorId>(mentorIds[0]!);
   const { start } = useSSEStream<StreamEvent>();
@@ -45,6 +50,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
         if (ev.type === 'quota') return handlers.current.onQuota(ev.remaining);
         if (ev.type === 'crisis') return setCrisis(ev.message);
         if (ev.type === 'badges') return announceBadges(ev.ids);
+        if (ev.type === 'synthesis') return setSynthesis({ agree: ev.agree, differ: ev.differ, ask: ev.ask });
         const mid = ev.mentorId;
         setStates((prev) => {
           const cur = prev[mid] ?? { status: 'pending', content: '' };
@@ -56,13 +62,17 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
         });
       },
       onError: (e) => {
+        setStreamDone(true);
         if (!routeStreamError(e, handlers.current)) setFatal(e.message);
       },
+      onComplete: () => setStreamDone(true),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- onay yalnızca ilk istekte okunur
   }, [mentorIds, question, start]);
 
   const doneCount = Object.values(states).filter((s) => s.status === 'completed' || s.status === 'error').length;
+  const completedCount = Object.values(states).filter((s) => s.status === 'completed').length;
+  const awaitingSynthesis = !synthesis && !streamDone && doneCount === mentorIds.length && completedCount >= 2;
 
   return (
     <div className="mx-auto w-full max-w-content px-5 py-6 sm:py-14">
@@ -199,6 +209,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
             );
           })}
         </div>
+        {synthesis ? <SynthesisCard data={synthesis} /> : awaitingSynthesis ? <SynthesisPending /> : null}
         </>
       )}
 

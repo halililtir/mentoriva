@@ -25,6 +25,7 @@ export const COST_FEATURES = {
   chat: 'Sohbet',
   daily: 'Günün sorusu',
   journey: 'Kendine Yolculuk',
+  synthesis: 'Ayrışma özeti',
   other: 'Diğer',
 } as const;
 export type CostFeature = keyof typeof COST_FEATURES;

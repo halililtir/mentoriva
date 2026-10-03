@@ -99,7 +99,8 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
             </button>
           )}
           <Link href="/" aria-label="Mentoriva ana sayfa">
-            <Logo size={30} />
+            {/* Geri düğmesi varken telefonda yer açılsın: yalnızca pusula simgesi */}
+            <Logo size={30} className={showBack ? "[&>span]:hidden sm:[&>span]:inline" : undefined} />
           </Link>
           {title && (
             <span className="hidden sm:inline truncate border-l border-white/10 pl-3 font-display text-lg text-white/60 animate-fade-in">
@@ -109,7 +110,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
         </div>
 
         {/* Sağ */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           <nav className="hidden lg:flex items-center gap-1" aria-label="Ana menü">
             {NAV.map((item) => {
               const active = pathname === item.href;

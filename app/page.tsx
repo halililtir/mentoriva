@@ -112,7 +112,7 @@ export default function HomePage() {
       if (prev.length >= maxSelected) {
         showToast(
           isGuest
-            ? `Denemede en fazla ${maxSelected} mentor seçebilirsin; ücretsiz üye olunca dört mentora birden sorabilirsin.`
+            ? `Denemede en fazla ${maxSelected} mentor seçebilirsin; üye olunca daha fazla mentora birlikte sorabilirsin.`
             : perks.includes('tam-meclis')
             ? `En fazla ${maxSelected} mentor seçebilirsin`
             : `En fazla ${maxSelected} mentor seçebilirsin. Çok Sesli işaretini kazanınca hepsine birden sorabilirsin.`,

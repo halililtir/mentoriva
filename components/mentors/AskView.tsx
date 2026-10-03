@@ -147,15 +147,15 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
                 className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-white/[0.04] accent-brand-500"
               />
               <span className="text-xs leading-relaxed text-white/60">
-                {MIN_AGE} yaşından büyüğüm; sorumun cevap üretilmesi için yurt dışındaki yapay zekâ sağlayıcısına (Anthropic, ABD)
-                aktarılmasına açık rıza veriyorum.{' '}
+                {MIN_AGE} yaşından büyüğüm; sorumun, cevap üretilebilmesi için yurt dışındaki hizmet sağlayıcılara aktarılmasına
+                açık rıza veriyorum.{' '}
                 <Link href="/kullanim-sartlari" target="_blank" className="text-brand-300/80 hover:underline">Şartlar</Link>
                 {' · '}
-                <Link href="/gizlilik" target="_blank" className="text-brand-300/80 hover:underline">Gizlilik</Link>
+                <Link href="/gizlilik#yurt-disi" target="_blank" className="text-brand-300/80 hover:underline">Gizlilik</Link>
               </span>
             </label>
             <p className="mt-2 text-[11.5px] leading-relaxed text-white/45">
-              Beğenirsen ücretsiz üye ol: her gün {DEFAULT_DAILY_LIMIT} soru, mentorla sohbet ve sohbetlerini kaydetme.
+              Beğenirsen ücretsiz üye olabilirsin: her gün {DEFAULT_DAILY_LIMIT} soru, mentorlarla sohbet ve sohbetlerini saklama.
             </p>
           </div>
         )}

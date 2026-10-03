@@ -47,7 +47,9 @@ export type StreamEvent =
   | { type: 'delta'; mentorId: MentorId; text: string }
   | { type: 'end'; mentorId: MentorId }
   | { type: 'error'; mentorId: MentorId; message: string }
-  | { type: 'crisis'; message: string };
+  | { type: 'crisis'; message: string }
+  /** Birden fazla mentor cevap verince "nerede ayrışıyorlar" özeti (lib/mentors/synthesis.ts). */
+  | { type: 'synthesis'; agree: string; differ: string; ask: string };
 
 /** POST /api/v1/mentors/chat — SSE olayları (tek mentor, mentorId yok). */
 export type ChatStreamEvent =
