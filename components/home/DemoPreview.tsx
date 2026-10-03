@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { DEMO_SAMPLES } from '@/lib/home-content';
 import { ACTIVE_MENTORS, getAccent } from '@/lib/mentors/metadata';
 import { usePrefersReducedMotion } from '@/lib/usePrefersReducedMotion';
-import { SITE_HOST } from '@/lib/site';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
 
@@ -74,7 +73,7 @@ export function DemoPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="ml-3 flex-1 truncate rounded-md bg-white/[0.04] px-3 py-1 text-center text-[11px] text-white/35">{SITE_HOST}</span>
+          <span className="ml-3 flex-1 truncate rounded-md bg-white/[0.04] px-3 py-1 text-center text-[11px] text-white/35">mentoriva</span>
           <span className="rounded-full border border-brand-500/25 bg-brand-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand-300">
             Örnek
           </span>

@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
 import { PRESELECT_KEY } from '@/lib/flow-keys';
+import type { MentorId } from '@/types';
 
 // -----------------------------------------------------------
 // Soru & puanlama verisi
@@ -562,13 +563,9 @@ export default function QuizPage() {
 
               {/* Story kartı */}
               <StoryCard
-                mentor={result.primary.mentor}
-                percentage={result.primary.percentage}
-                insightSlap={result.insightSlap}
-                secondaryMentor={result.secondary ? {
-                  name: result.secondary.mentor.name,
-                  percentage: result.secondary.percentage,
-                } : null}
+                primaryId={result.primary.mentor.id as MentorId}
+                results={result.all.map((r) => ({ id: r.mentor.id, pct: r.percentage }))}
+                seed={scoresToSeed(scores)}
               />
 
               {/* Metin paylaşım */}

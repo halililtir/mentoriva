@@ -5,7 +5,7 @@
 
 import { ImageResponse } from 'next/og';
 import { getAccent, type MentorMetadata } from '@/lib/mentors/metadata';
-import { SITE_HOST } from '@/lib/site';
+import { DISPLAY_HOST } from '@/lib/site';
 
 export const CARD_SIZE = { width: 1080, height: 1920 };
 
@@ -28,7 +28,7 @@ export interface CardInput {
 
 const fontCache = new Map<string, ArrayBuffer>();
 
-async function loadGoogleFont(family: string, weight: number, italic: boolean, text: string): Promise<ArrayBuffer | null> {
+export async function loadGoogleFont(family: string, weight: number, italic: boolean, text: string): Promise<ArrayBuffer | null> {
   const chars = [...new Set(text)].join('');
   const cacheKey = `${family}:${weight}:${italic}:${chars}`;
   const cached = fontCache.get(cacheKey);
@@ -48,7 +48,7 @@ async function loadGoogleFont(family: string, weight: number, italic: boolean, t
 }
 
 /** Portrenin mutlak adresi — Satori görseli kendisi indirir (Edge'de dosya sistemi yok). */
-function portraitSrc(portraitUrl: string, origin: string): string {
+export function portraitSrc(portraitUrl: string, origin: string): string {
   return new URL(portraitUrl, origin).toString();
 }
 
@@ -57,7 +57,7 @@ export async function renderShareCard({ mentor, question, highlight, quote, labe
   const portrait = portraitSrc(mentor.portraitUrl, origin);
 
   const serifText = `${highlight}${question}${mentor.name}“”`;
-  const sansText = `${label ?? ''}${quote?.text ?? ''}${quote?.source ?? ''}${mentor.tradition ?? ''}${SITE_HOST}mentorivaSen de sor →Sorum—`;
+  const sansText = `${label ?? ''}${quote?.text ?? ''}${quote?.source ?? ''}${mentor.tradition ?? ''}${DISPLAY_HOST}mentorivaSen de sor →Sorum—`;
   const [serif, serifItalic, sans] = await Promise.all([
     loadGoogleFont('Playfair Display', 400, false, serifText),
     loadGoogleFont('Playfair Display', 400, true, serifText),
@@ -142,7 +142,7 @@ export async function renderShareCard({ mentor, question, highlight, quote, labe
         {/* Alt: çağrı */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 40, borderTop: '2px solid rgba(255,255,255,0.1)' }}>
           <div style={{ display: 'flex', fontSize: 34, color: 'rgba(240,242,245,0.75)' }}>Sen de sor →</div>
-          <div style={{ display: 'flex', fontSize: 34, color: '#33d4dc' }}>{SITE_HOST}</div>
+          <div style={{ display: 'flex', fontSize: 34, color: '#33d4dc' }}>{DISPLAY_HOST}</div>
         </div>
       </div>
     ),

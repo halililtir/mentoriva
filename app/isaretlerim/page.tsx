@@ -67,7 +67,7 @@ export default function BadgesPage() {
                   <div className="flex gap-3">
                     {granted.map((b) => (
                       <button key={b.id} onClick={() => setOpen(b.id)} className="group text-center" aria-label={b.name}>
-                        <BadgeMedal id={b.id} size={64} className="transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105" />
+                        <BadgeMedal id={b.id} size={76} className="transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-105" />
                         <span className="mt-1 block text-[11px] font-medium text-amber-400">{b.name}</span>
                       </button>
                     ))}
@@ -79,7 +79,7 @@ export default function BadgesPage() {
             {/* Seçili işaretin anlamı */}
             {selected && (
               <section className="mt-6 flex flex-col items-center gap-5 rounded-3xl border border-white/[0.08] bg-ink-50/70 p-6 text-center animate-fade-up sm:flex-row sm:text-left" aria-live="polite">
-                <BadgeMedal id={selected.id} earned={!!selectedEarned} size={112} />
+                <BadgeMedal id={selected.id} earned={!!selectedEarned} size={150} />
                 <div className="flex-1">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">
                     {selectedEarned ? `${DATE.format(new Date(selectedEarned.at))}${selected.kind === 'grant' ? ' · Mentoriva tarafından verildi' : ''}` : 'Henüz değil'}
@@ -137,7 +137,7 @@ export default function BadgesPage() {
                           open === b.id && 'ring-2 ring-brand-500/50',
                         )}
                       >
-                        <BadgeMedal id={b.id} earned={!!e} size={84} className="transition-transform duration-500 ease-spring group-hover:scale-105" />
+                        <BadgeMedal id={b.id} earned={!!e} size={112} className="transition-transform duration-500 ease-spring group-hover:scale-105" />
                         <span className={cn('mt-3 font-display text-[17px]', e ? 'text-white/95' : 'text-white/55')}>{b.name}</span>
                         <span className="mt-0.5 text-[11px] text-white/45">{e ? DATE.format(new Date(e.at)) : 'Henüz değil'}</span>
                       </button>

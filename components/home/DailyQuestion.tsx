@@ -18,6 +18,18 @@ interface DailyEntry {
   answers: Partial<Record<MentorId, string>>;
 }
 
+/** Önizleme: ilk cümleler, en az ~200 karakter, en fazla ~320. Cümle ortasında kesmez. */
+function excerpt(text: string, min = 200, max = 320): { short: string; cut: boolean } {
+  const sentences = text.replace(/\s+/g, ' ').trim().match(/[^.!?…]+[.!?…]+[”"]?\s*|[^.!?…]+$/g) ?? [text];
+  let out = '';
+  for (const s of sentences) {
+    if (out.length >= min || (out && out.length + s.length > max)) break;
+    out += s;
+  }
+  out = out.trim() || text.slice(0, max);
+  return { short: out, cut: out.length < text.trim().length - 2 };
+}
+
 const DATE_FMT = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', weekday: 'long', timeZone: 'Europe/Istanbul' });
 
 /**
@@ -28,6 +40,7 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
   const [entry, setEntry] = useState<DailyEntry | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [active, setActive] = useState<MentorId | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -68,15 +81,15 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
   if (state === 'error') return null;
 
   return (
-    <section ref={ref} id="gunun-sorusu" className="mx-auto max-w-content scroll-mt-24 px-5 py-16 sm:py-20" aria-labelledby="daily-title">
+    <section ref={ref} id="gunun-sorusu" className="mx-auto max-w-content scroll-mt-24 px-5 py-12 sm:py-16" aria-labelledby="daily-title">
       <SectionHeading eyebrow={entry ? `Günün sorusu · ${DATE_FMT.format(new Date(`${entry.date}T12:00:00Z`))}` : 'Günün sorusu'} title="Bugün mentorlar" accent="bunu konuşuyor" id="daily-title">
-        Her gün yeni bir soru, mentorlardan farklı cevaplar. Giriş yapmadan oku, beğendiğin cevabı kart olarak paylaş.
+        Her gün yeni bir soru. Giriş yapmadan oku, bir mentora dokun, sesini dinle.
       </SectionHeading>
 
-      <Reveal delay={80} className="mt-10">
+      <Reveal delay={80} className="mt-8">
         <div className="glass mx-auto max-w-4xl overflow-hidden rounded-3xl">
           {/* Soru */}
-          <div className="border-b border-white/[0.06] px-6 py-6 text-center sm:px-10">
+          <div className="border-b border-white/[0.06] px-6 py-5 text-center sm:px-10">
             {entry ? (
               <p className="font-display text-[clamp(1.4rem,3.2vw,2rem)] leading-snug text-white/90 text-balance">“{entry.question}”</p>
             ) : (
@@ -95,7 +108,7 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
                   role="tab"
                   aria-selected={selected}
                   disabled={!entry}
-                  onClick={() => { setActive(m.id as MentorId); track('daily_tab', { mentor: m.id }); }}
+                  onClick={() => { setActive(m.id as MentorId); setExpanded(false); track('daily_tab', { mentor: m.id }); }}
                   className={cn('flex flex-shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors', selected ? 'bg-white/[0.06]' : 'text-white/50 hover:text-white/80')}
                   style={selected ? { color: a.text } : undefined}
                 >
@@ -109,26 +122,46 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
           </div>
 
           {/* Cevap */}
-          <div className="min-h-[220px] px-6 py-7 sm:px-10" role="tabpanel" aria-live="polite">
+          <div className="min-h-[160px] px-6 py-6 sm:px-10" role="tabpanel" aria-live="polite">
             {state !== 'ready' || !answer || !current || !accent ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-white/40">
                   <TypingDots /> Mentorlar bugünün sorusunu düşünüyor
                 </div>
-                {[100, 94, 86, 60].map((w, i) => <div key={i} className="skeleton h-3" style={{ width: `${w}%` }} />)}
+                {[100, 86, 60].map((w, i) => <div key={i} className="skeleton h-3" style={{ width: `${w}%` }} />)}
               </div>
             ) : (
               <div key={current.id} className="animate-fade-in">
-                <p className="whitespace-pre-wrap font-display text-[17px] leading-[1.8] text-white/80 sm:text-[19px]">{answer}</p>
-                <RateAnswer key={current.id} mentorId={current.id as MentorId} source="daily" className="mt-5" />
-                <div className="mt-6 flex flex-col gap-2 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                  <ShareCardButton data={{ source: 'daily', mentorId: current.id as MentorId, question: entry!.question, answer }} />
+                {(() => {
+                  const { short, cut } = excerpt(answer);
+                  return (
+                    <>
+                      <p className="whitespace-pre-wrap font-display text-[16px] leading-[1.75] text-white/85 sm:text-[17px]">
+                        {expanded || !cut ? answer : `${short} `}
+                        {cut && (
+                          <button
+                            onClick={() => { setExpanded((v) => !v); if (!expanded) track('daily_expand', { mentor: current.id }); }}
+                            className="ml-1 whitespace-nowrap font-sans text-sm font-medium text-brand-300 hover:underline"
+                            aria-expanded={expanded}
+                          >
+                            {expanded ? 'Daha az göster' : 'Devamını oku'}
+                          </button>
+                        )}
+                      </p>
+                    </>
+                  );
+                })()}
+                <div className="mt-5 flex flex-col gap-3 border-t border-white/[0.06] pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <RateAnswer key={current.id} mentorId={current.id as MentorId} source="daily" />
+                  <div className="flex items-center gap-2">
+                  <ShareCardButton data={{ source: 'daily', mentorId: current.id as MentorId, question: entry!.question, answer }} compact />
                   <button
                     onClick={() => { onAskYourself(entry!.question); track('daily_ask_yourself'); }}
                     className="btn-ghost justify-center text-sm"
                   >
-                    Bu soruyu kendi mentorlarına sor →
+                    Kendin sor →
                   </button>
+                  </div>
                 </div>
               </div>
             )}
