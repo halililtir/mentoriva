@@ -18,6 +18,7 @@ import { ErrorsList, type ErrorEntry } from '@/components/admin/ErrorsList';
 import { WeeklyReportPanel } from '@/components/admin/WeeklyReportPanel';
 import { Insights } from '@/components/admin/Insights';
 import { EarlyAccess } from '@/components/admin/EarlyAccess';
+import { Membership } from '@/components/admin/Membership';
 import { cn } from '@/lib/cn';
 
 type Tab = 'overview' | 'insights' | 'users' | 'access' | 'feedback' | 'errors' | 'report' | 'log';
@@ -138,7 +139,12 @@ export default function AdminPage() {
         )}
 
         {tab === 'overview' && (overview ? <Overview data={overview} onOpenFeedback={() => setTab('feedback')} /> : <Skeleton />)}
-        {tab === 'users' && <Users users={users} onChanged={load} onError={handleError} />}
+        {tab === 'users' && (
+          <div className="space-y-6">
+            <Membership sender={overview?.health.emailSender ?? null} onChanged={load} onError={handleError} />
+            <Users users={users} onChanged={load} onError={handleError} />
+          </div>
+        )}
         {tab === 'feedback' && <FeedbackList items={feedback} onChanged={load} onError={handleError} />}
         {tab === 'insights' && <Insights onError={handleError} />}
         {tab === 'access' && <EarlyAccess onError={handleError} />}

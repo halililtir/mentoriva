@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AuthShell, Field, FormError } from '@/components/shared/AuthShell';
@@ -11,6 +11,8 @@ import { REF_KEY } from '@/lib/flow-keys';
 import { track } from '@/lib/analytics';
 
 const MIN_PASSWORD = 8;
+/** "Kodu tekrar gönder" için bekleme (sunucu da e-posta başına sınırlar). */
+const RESEND_COOLDOWN = 60;
 
 function readRef(): string | null {
   try { return localStorage.getItem(REF_KEY); } catch { return null; }
@@ -25,7 +27,15 @@ export default function KayitPage() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [notice, setNotice] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
   const { setUser } = useSession();
 
   const formValid = name.trim().length >= 2 && email.trim().includes('@') && password.length >= MIN_PASSWORD && accepted;
@@ -43,7 +53,9 @@ export default function KayitPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error ?? 'Kayıt başarısız'); return; }
+      setNotice(step === 'verify' ? 'Yeni bir kod gönderildi. Önceki kod artık geçersiz.' : '');
       setCode('');
+      setCooldown(RESEND_COOLDOWN);
       setStep('verify');
     } catch {
       setError('Bağlantı hatası');
@@ -89,6 +101,7 @@ export default function KayitPage() {
         <div className="space-y-5">
           <CodeInput value={code} onChange={setCode} onComplete={(v) => void handleVerify(v)} disabled={loading} />
           <FormError>{error}</FormError>
+          {notice && !error && <p className="text-center text-[13px] text-emerald-400" role="status">{notice}</p>}
           <button onClick={() => void handleVerify()} disabled={loading || code.length !== 6} className="btn-primary w-full !py-3.5">
             {loading ? 'Doğrulanıyor…' : 'Hesabımı oluştur'}
           </button>
@@ -96,10 +109,19 @@ export default function KayitPage() {
             <button onClick={() => { setStep('form'); setError(''); }} className="text-white/40 transition-colors hover:text-white/70">
               ← Bilgileri düzenle
             </button>
-            <button onClick={() => void handleRegister()} disabled={loading} className="text-brand-300/80 transition-colors hover:text-brand-200">
-              Kodu tekrar gönder
+            <button onClick={() => void handleRegister()} disabled={loading || cooldown > 0} className="text-brand-300/80 transition-colors hover:text-brand-200 disabled:text-white/40">
+              {cooldown > 0 ? `Tekrar gönder (${cooldown})` : 'Kodu tekrar gönder'}
             </button>
           </div>
+          <details className="rounded-xl border border-white/[0.08] px-4 py-3 text-[13px] text-white/65">
+            <summary className="cursor-pointer text-white/75">Kod gelmedi mi?</summary>
+            <ul className="mt-2 list-disc space-y-1 pl-4 leading-relaxed">
+              <li>Bir iki dakika bekle; bazen gecikebiliyor.</li>
+              <li><b>Spam / Gereksiz</b> ve Gmail’de <b>Promosyonlar</b> klasörüne bak. Gönderen: <b>Mentoriva</b>.</li>
+              <li>E-posta adresini doğru yazdığından emin ol: <span className="text-white/85">{email}</span></li>
+              <li>Hâlâ gelmediyse <Link href="/geri-bildirim" className="text-brand-300 hover:underline">bize yaz</Link>; hesabını elle açalım.</li>
+            </ul>
+          </details>
         </div>
       </AuthShell>
     );

@@ -26,7 +26,7 @@ export async function renderTestCard({ primary, results, slap, origin }: TestCar
   const names = results.map((r) => getActiveMentor(r.id).shortName).join('');
 
   const serifText = `${m.name}${slap}%0123456789“”Seninki kim?`;
-  const sansText = `mentoriva · testi çözKİŞİLİK TESTİZİHNİMİN MİMARISeninki kim?2 dakikalık test${m.tradition ?? ''}${names}%0123456789${DISPLAY_HOST === 'mentoriva' ? '' : DISPLAY_HOST + '/test'}→·`;
+  const sansText = `mentorivaKİŞİLİK TESTİZİHNİMİN MİMARISeninki kim?2 dakikalık test${m.tradition ?? ''}${names}%0123456789${DISPLAY_HOST}/test→·`;
   const [serif, serifItalic, sans] = await Promise.all([
     loadGoogleFont('Playfair Display', 400, false, serifText),
     loadGoogleFont('Playfair Display', 400, true, serifText),
@@ -103,7 +103,7 @@ export async function renderTestCard({ primary, results, slap, origin }: TestCar
             <div style={{ display: 'flex', fontSize: 44 }}>Seninki kim?</div>
             <div style={{ display: 'flex', fontSize: 26, marginTop: 6, color: 'rgba(240,242,245,0.55)' }}>2 dakikalık test</div>
           </div>
-          <div style={{ display: 'flex', fontSize: 32, color: '#33d4dc' }}>{DISPLAY_HOST === 'mentoriva' ? 'mentoriva · testi çöz →' : `${DISPLAY_HOST}/test →`}</div>
+          <div style={{ display: 'flex', fontSize: 32, color: '#33d4dc' }}>{`${DISPLAY_HOST}/test →`}</div>
         </div>
       </div>
     ),

@@ -6,6 +6,7 @@ import { issueCode, type PendingRegistration } from '@/lib/auth/codes';
 import { getUser } from '@/lib/auth/users';
 import { sendCodeEmail } from '@/lib/email';
 import { normalizeReferralCode } from '@/lib/auth/referral';
+import { savePending } from '@/lib/auth/registration';
 
 export const runtime = 'nodejs';
 
@@ -32,9 +33,11 @@ export async function POST(req: Request) {
 
   const pending: PendingRegistration = { name, passwordHash: await hashPassword(password), ref: normalizeReferralCode(body['ref']) };
   const code = await issueCode('verify', email, pending);
+  // E-posta ulaşmazsa admin panelinden onaylanabilsin diye 7 gün saklanır
+  await savePending(email, pending);
 
   if (!(await sendCodeEmail(email, code, 'verify'))) {
-    return jsonError(502, 'Doğrulama kodu gönderilemedi. Lütfen biraz sonra tekrar dene.');
+    return jsonError(502, 'Doğrulama kodu şu an gönderilemedi. Birkaç dakika sonra tekrar dene; sorun sürerse bize yaz, hesabını elle açalım.');
   }
   return NextResponse.json({ success: true });
 }

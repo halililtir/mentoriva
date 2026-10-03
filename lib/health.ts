@@ -32,6 +32,8 @@ export interface Health {
   mockAi: boolean;
   email: 'configured' | 'missing';
   emailFrom: 'custom' | 'default';
+  /** Gönderici adresi (yalnızca adres; gizli değil). */
+  emailSender: string;
   admin: 'missing' | 'too_short' | 'ok';
   shareSecret: 'custom' | 'fallback';
   /** Haftalık özet e-postasının gideceği adres tanımlı mı? */
@@ -57,6 +59,7 @@ export async function getHealth(): Promise<Health> {
     mockAi: isMockEnabled(),
     email: process.env['RESEND_API_KEY'] ? 'configured' : 'missing',
     emailFrom: process.env['RESEND_FROM'] ? 'custom' : 'default',
+    emailSender: (process.env['RESEND_FROM']?.trim() || 'onboarding@resend.dev').replace(/^.*<([^>]+)>.*$/, '$1'),
     admin: !admin ? 'missing' : admin.length < 12 ? 'too_short' : 'ok',
     shareSecret: process.env['SHARE_CARD_SECRET'] ? 'custom' : 'fallback',
     adminEmail: !!process.env['ADMIN_EMAIL']?.trim(),

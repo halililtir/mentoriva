@@ -47,6 +47,8 @@ Next.js 14 (App Router) · React 18 · TypeScript (strict + `noUncheckedIndexedA
 - `password.ts` — scrypt; düz metin eski kayıtları tanır (`needsRehash`), login'de hash'e çevrilir.
 - `users.ts` — `user:<email>` kaydı + günlük sayaç `usage:<email>:<YYYY-MM-DD>` (atomik INCR, Europe/Istanbul günü, `lib/time.ts`). Günlük limit `dailyLimit ?? questionLimit ?? 5`. `dailyUsed`/`dailyResetDate` eski alanlardır, okunmaz.
 - `codes.ts` — kayıt/şifre sıfırlama kodları: hash'li saklanır, 10 dk TTL, 5 yanlışta kilit.
+- `registration.ts` — kayıt sırasında `pending:<email>` (ad, parola özeti, davet; 7 gün) da yazılır. `completeRegistration` hem kodla doğrulamada hem admin onayında kullanılır (Üyeler sekmesi → "Doğrulama bekleyenler", `/api/admin/pending`). E-posta ulaşmayan biri böyle açılır.
+- E-posta: `lib/email.ts` (`sendEmailDetailed` hata nedenini döner ve admin Hatalar'a yazar; kod konu satırında). Admin "E-posta ayarları" kartından deneme e-postası (`/api/admin/email-test`).
 - İstemci tarafı: `lib/session.tsx` (`SessionProvider`, `useSession`) yalnızca `/api/v1/auth/me` sonucunu ve SSE'den gelen kalan hakkı gösterir.
 
 ### Admin
@@ -85,7 +87,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 - **Paylaşım kartı:** `components/share/ShareCardDialog.tsx`. İki adımlı: `POST /api/v1/share/card` (Node) cümlenin gerçekten üretilmiş bir cevapta geçtiğini doğrular (`lib/share/answers.ts`, `answers:<email>` son 30 cevap; günün sorusu için `daily:<tarih>`) ve 5 dk'lık HMAC izni döner (`lib/share/token.ts`). `POST /api/v1/share/image` (Edge) izinle 1080×1920 PNG çizer (`lib/share/card.tsx`). Node'da `next/og` Windows'ta font yolu hatası verdiği için çizim Edge'dedir. İmza anahtarı `SHARE_CARD_SECRET` ya da `KV_REST_API_TOKEN`.
 - **Test hikâye kartı:** `GET /api/v1/share/test-card?m=&r=<id>-<yüzde>,…&s=<tohum>` (Edge, `lib/share/test-card.tsx`); serbest metin almaz, cümle `getRandomSlap(m, s)`. Bileşen `components/shared/StoryCard.tsx` (önizleme, Web Share ile paylaş, indir).
-- Görsellerde adres `DISPLAY_HOST` (`lib/site.ts`): geçici *.vercel.app adresi yerine "mentoriva" yazılır; kendi alan adı gelince otomatik görünür.
+- Görsellerde ve tanıtımda adres her zaman `DISPLAY_HOST` = `mentoriva.com.tr` (`lib/site.ts`). Çalışan bağlantılar (paylaşım metni, e-posta) `SITE_URL` kullanır.
 - **Günün sorusu:** `lib/daily.ts` (soru havuzu + günde bir üretim, kilitli), `GET /api/v1/daily`, `vercel.json` cron (21:05 UTC = 00:05 İstanbul). Bileşen `components/home/DailyQuestion.tsx`.
 - **Davet:** `lib/auth/referral.ts` + `lib/auth/bonus.ts`. Davet eden +5, yeni üye +2 bonus; kişi başı 10 ödüllü davet. Bonus, günlük hak bitince `reserveQuestion` içinde harcanır ve `Reservation.fromBonus` ile doğru havuza iade edilir. `?ref=` kodu `SessionProvider` tarafından localStorage'a alınır. Sayfa `/davet`.
 - **Test → soru:** test sonucu `sessionStorage.mentoriva_preselect` yazar; ana sayfa mentoru seçili açar (`?mentor=` parametresi de desteklenir). Anahtarlar `lib/flow-keys.ts`.

@@ -13,6 +13,7 @@ export interface OverviewData {
     mockAi: boolean;
     email: 'configured' | 'missing';
     emailFrom: 'custom' | 'default';
+    emailSender: string;
     admin: 'missing' | 'too_short' | 'ok';
     shareSecret: 'custom' | 'fallback';
     adminEmail: boolean;
