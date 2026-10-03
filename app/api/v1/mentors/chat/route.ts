@@ -20,7 +20,9 @@ import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
 import { logError } from '@/lib/admin/errors';
-import { awardBadges } from '@/lib/badges';
+import { awardBadges, getPerks } from '@/lib/badges';
+import { canUseMentor } from '@/lib/mentors/access';
+import { getEarlyMentors } from '@/lib/mentors/access-server';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { recordAnswer } from '@/lib/share/answers';
@@ -96,6 +98,10 @@ export async function POST(request: Request): Promise<Response> {
   const validation = validateRequest(body);
   if (!validation.ok) return apiError(400, 'INVALID_REQUEST', validation.error);
   const { mentorId, messages } = validation.data;
+  const [perks, early] = await Promise.all([getPerks(user.username), getEarlyMentors()]);
+  if (!canUseMentor(mentorId, perks, early)) {
+    return apiError(403, 'MENTOR_NOT_ALLOWED', 'Bu mentor şimdilik yalnızca erken erişimi olan üyelere açık.');
+  }
 
   // Son kullanıcı mesajı için moderation — kota düşülmeden önce
   const userMessage = messages[messages.length - 1]!.content;

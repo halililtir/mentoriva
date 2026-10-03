@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/shared/Header';
 import { Footer } from '@/components/shared/Footer';
@@ -27,6 +27,8 @@ import { useSession } from '@/lib/session';
 import { DRAFT_KEY, PRESELECT_KEY } from '@/lib/flow-keys';
 import { track } from '@/lib/analytics';
 import type { MentorId } from '@/types';
+import { canUseMentor, maxMentorsFor } from '@/lib/mentors/access';
+import { useEarlyMentors } from '@/lib/useEarlyMentors';
 
 type View = 'gallery' | 'ask' | 'single-response' | 'compare' | 'chat' | 'limit';
 
@@ -36,7 +38,6 @@ interface ChatState {
   response: string;
 }
 
-const MAX_SELECTED = 4;
 
 export default function HomePage() {
   const router = useRouter();
@@ -90,16 +91,30 @@ export default function HomePage() {
     } catch {}
   }, []);
 
+  // Seçim sınırı ve erken erişim işaret ayrıcalıklarına bağlı (sunucu da denetler: lib/mentors/access.ts)
+  const perks = useMemo(() => session.user?.perks ?? [], [session.user?.perks]);
+  const maxSelected = maxMentorsFor(perks);
+  const earlyMentors = useEarlyMentors();
+
   const toggleMentor = useCallback((id: MentorId) => {
+    if (!canUseMentor(id, perks, earlyMentors)) {
+      showToast('Bu mentor şimdilik erken erişimde: Kurucu Üye ve Destekçilere açık.', 'warning');
+      return;
+    }
     setSelectedIds((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= MAX_SELECTED) {
-        showToast('En fazla 4 mentor seçebilirsin', 'warning');
+      if (prev.length >= maxSelected) {
+        showToast(
+          perks.includes('tam-meclis')
+            ? `En fazla ${maxSelected} mentor seçebilirsin`
+            : `En fazla ${maxSelected} mentor seçebilirsin. Çok Sesli işaretini kazanınca hepsine birden sorabilirsin.`,
+          'warning',
+        );
         return prev;
       }
       return [...prev, id];
     });
-  }, []);
+  }, [perks, maxSelected, earlyMentors]);
 
   const scrollToGallery = useCallback(() => {
     galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -236,6 +251,8 @@ export default function HomePage() {
             selected={selectedIds.includes(m.id as MentorId)}
             onSelect={() => toggleMentor(m.id as MentorId)}
             delay={0.05 + i * 0.07}
+            early={earlyMentors.includes(m.id as MentorId)}
+            earlyLocked={!canUseMentor(m.id as MentorId, perks, earlyMentors)}
           />
         ))}
       </div>

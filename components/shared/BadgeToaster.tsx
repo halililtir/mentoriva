@@ -25,7 +25,7 @@ export function announceBadges(ids: string[]): void {
 /** Sayfanın altında beliren, kendiliğinden kapanan sakin bir kutlama. */
 export function BadgeToaster() {
   const [queue, setQueue] = useState<string[]>([]);
-  const { status } = useSession();
+  const { status, refresh } = useSession();
 
   // Giriş yapmış kullanıcının görmediği işaretler: açılışta ve checkBadges() çağrılınca
   useEffect(() => {
@@ -42,10 +42,14 @@ export function BadgeToaster() {
   }, [status]);
 
   useEffect(() => {
-    const on = (e: Event) => setQueue((q) => [...q, ...((e as CustomEvent<string[]>).detail ?? [])]);
+    // Yeni işaret yeni bir ayrıcalık açmış olabilir; oturum bilgisini tazele
+    const on = (e: Event) => {
+      setQueue((q) => [...q, ...((e as CustomEvent<string[]>).detail ?? [])]);
+      void refresh();
+    };
     window.addEventListener(EVENT, on);
     return () => window.removeEventListener(EVENT, on);
-  }, []);
+  }, [refresh]);
 
   const current = queue[0] ? BADGE_BY_ID[queue[0]] : null;
 

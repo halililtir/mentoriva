@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Header } from '@/components/shared/Header';
 import { Footer } from '@/components/shared/Footer';
 import { BadgeMedal } from '@/components/badges/BadgeMedal';
-import { BADGES, BADGE_BY_ID } from '@/lib/badges-public';
+import { BADGES, BADGE_BY_ID, PERKS } from '@/lib/badges-public';
 import { useSession } from '@/lib/session';
 import { cn } from '@/lib/cn';
 
@@ -86,8 +86,33 @@ export default function BadgesPage() {
                   </p>
                   <h2 className="mt-1 font-display text-2xl">{selected.name}</h2>
                   <p className="mt-2 text-[15px] leading-relaxed text-white/75">{selectedEarned ? selected.meaning : selected.how}</p>
+                  {selected.perks?.length ? (
+                    <ul className="mt-3 space-y-1">
+                      {selected.perks.map((p) => (
+                        <li key={p} className="text-[13px] text-white/70">
+                          <span className={selectedEarned ? 'text-emerald-400' : 'text-white/45'}>{selectedEarned ? '✓ Açtı:' : 'Açacağı:'}</span>{' '}
+                          <b className="text-white/85">{PERKS[p].name}</b> — {PERKS[p].desc}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
                 <button onClick={() => setOpen(null)} className="text-sm text-white/50 hover:text-white">Kapat</button>
+              </section>
+            )}
+
+            {/* Açılan ayrıcalıklar */}
+            {(user?.perks?.length ?? 0) > 0 && (
+              <section className="mt-8">
+                <h2 className="font-display text-2xl">Açtığın ayrıcalıklar</h2>
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {(user?.perks ?? []).filter((p): p is keyof typeof PERKS => p in PERKS).map((p) => (
+                    <li key={p} className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.05] p-4">
+                      <p className="text-sm font-medium text-emerald-400">✓ {PERKS[p].name}</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-white/70">{PERKS[p].desc}</p>
+                    </li>
+                  ))}
+                </ul>
               </section>
             )}
 

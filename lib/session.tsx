@@ -23,6 +23,8 @@ export interface SessionUser {
   remaining: number;
   /** Ömür boyu sorulan soru; 0 ise yeni üye karşılaması gösterilir. */
   questionsUsed?: number;
+  /** İşaretlerin açtığı ayrıcalıklar ('tam-meclis', 'sohbet-indir', 'erken-erisim'…). */
+  perks?: string[];
 }
 
 type Status = 'loading' | 'guest' | 'user';

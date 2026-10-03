@@ -13,7 +13,7 @@ import { getKV, getMany, scanKeys } from '@/lib/kv';
 import { todayKey } from '@/lib/time';
 import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 import { getBonus, refundBonus, spendBonus } from '@/lib/auth/bonus';
-import { FOUNDER_DAILY_BONUS, deleteBadgeData, hasBadge } from '@/lib/badges';
+import { FOUNDER_DAILY_BONUS, deleteBadgeData, getPerks, hasBadge, type PerkId } from '@/lib/badges';
 
 export { DEFAULT_DAILY_LIMIT };
 const USAGE_TTL_SECONDS = 60 * 60 * 48;
@@ -53,6 +53,8 @@ export interface PublicUser {
   remaining: number;
   /** Ömür boyu sorulan soru (yeni üye karşılaması için). */
   questionsUsed: number;
+  /** İşaretlerin açtığı ayrıcalıklar (lib/badges-public.ts → PERKS). */
+  perks: PerkId[];
 }
 
 const userKey = (username: string) => `user:${username}`;
@@ -66,7 +68,8 @@ export function dailyLimitOf(user: StoredUser): number {
 /** Günlük limit + rozet ayrıcalıkları (Kurucu Üye: +1). Kota hesabında bunu kullan. */
 export async function effectiveDailyLimit(user: StoredUser): Promise<number> {
   const base = dailyLimitOf(user);
-  return (await hasBadge(user.username, 'kurucu').catch(() => false)) ? base + FOUNDER_DAILY_BONUS : base;
+  const perks = await getPerks(user.username).catch(() => [] as PerkId[]);
+  return perks.includes('gunluk-arti-bir') ? base + FOUNDER_DAILY_BONUS : base;
 }
 
 export async function getUser(username: string): Promise<StoredUser | null> {
@@ -111,7 +114,12 @@ export async function resetUsageToday(username: string): Promise<void> {
 }
 
 export async function toPublicUser(user: StoredUser): Promise<PublicUser> {
-  const [dailyLimit, usedToday, bonus] = await Promise.all([effectiveDailyLimit(user), getUsedToday(user.username), getBonus(user.username)]);
+  const [dailyLimit, usedToday, bonus, perks] = await Promise.all([
+    effectiveDailyLimit(user),
+    getUsedToday(user.username),
+    getBonus(user.username),
+    getPerks(user.username).catch(() => [] as PerkId[]),
+  ]);
   return {
     username: user.username,
     name: user.name || user.username.split('@')[0] || user.username,
@@ -120,6 +128,7 @@ export async function toPublicUser(user: StoredUser): Promise<PublicUser> {
     bonus,
     remaining: Math.max(0, dailyLimit - usedToday) + bonus,
     questionsUsed: user.questionsUsed ?? 0,
+    perks,
   };
 }
 

@@ -18,9 +18,9 @@ import { getKV } from '@/lib/kv';
 import { todayKey } from '@/lib/time';
 import { MENTOR_IDS, type MentorId } from '@/types';
 
-export { BADGES, BADGE_BY_ID, GRANTABLE, FOUNDER_DAILY_BONUS } from '@/lib/badges-public';
-export type { BadgeDef, BadgeKind } from '@/lib/badges-public';
-import { BADGE_BY_ID } from '@/lib/badges-public';
+export { BADGES, BADGE_BY_ID, GRANTABLE, FOUNDER_DAILY_BONUS, PERKS, DEFAULT_MAX_MENTORS, perksFromBadges } from '@/lib/badges-public';
+export type { BadgeDef, BadgeKind, PerkId } from '@/lib/badges-public';
+import { BADGE_BY_ID, perksFromBadges, type PerkId } from '@/lib/badges-public';
 
 const badgesKey = (u: string) => `badges:${u}`;
 const progressKey = (u: string) => `progress:${u}`;
@@ -41,6 +41,10 @@ export async function getBadges(username: string): Promise<EarnedBadge[]> {
     })
     .filter((b): b is EarnedBadge => b !== null)
     .sort((a, b) => a.at.localeCompare(b.at));
+}
+
+export async function getPerks(username: string): Promise<PerkId[]> {
+  return perksFromBadges((await getBadges(username)).map((b) => b.id));
 }
 
 export async function hasBadge(username: string, id: string): Promise<boolean> {

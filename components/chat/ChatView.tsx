@@ -11,6 +11,7 @@ import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
 import { announceBadges } from '@/components/shared/BadgeToaster';
+import { ChatExport } from '@/components/chat/ChatExport';
 import type { ChatStreamEvent, MentorId, Message } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -103,8 +104,11 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
             {isStreaming ? 'yazıyor…' : mentor.title}
           </p>
         </div>
+        <div className="ml-auto">
+          <ChatExport mentorName={mentor.name} messages={messages} unlocked={!!user?.perks?.includes('sohbet-indir')} />
+        </div>
         {user && (
-          <span className="ml-auto rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/50">
+          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/50">
             Kalan <span className="font-semibold text-brand-300">{user.remaining}</span>
           </span>
         )}

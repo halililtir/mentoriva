@@ -23,7 +23,9 @@ import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
 import { recordTopics } from '@/lib/admin/topics';
 import { logError } from '@/lib/admin/errors';
-import { awardBadges } from '@/lib/badges';
+import { awardBadges, getPerks } from '@/lib/badges';
+import { checkMentorSelection } from '@/lib/mentors/access';
+import { getEarlyMentors } from '@/lib/mentors/access-server';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { todayKey } from '@/lib/time';
@@ -87,6 +89,11 @@ export async function POST(request: Request): Promise<Response> {
   const validation = validateRequest(body);
   if (!validation.ok) return apiError(400, 'INVALID_REQUEST', validation.error);
   const { question, mentorIds } = validation.data;
+
+  // Seçim sınırı ve erken erişim (arayüz de uygular; asıl denetim burada)
+  const [perks, early] = await Promise.all([getPerks(user.username), getEarlyMentors()]);
+  const selectionError = checkMentorSelection(mentorIds, perks, early);
+  if (selectionError) return apiError(403, 'MENTOR_NOT_ALLOWED', selectionError);
 
   // 3. Moderation — kriz/zararlı içerikte kota düşülmez, analitiğe yazılmaz
   const moderation = moderateInput(question);

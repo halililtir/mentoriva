@@ -92,7 +92,7 @@ export const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Bir "soru hakkı" neye harcanır?',
-    a: 'Mentorlara sorduğun her yeni soru 1 hak kullanır; tek mentor da seçsen birkaç mentor da seçsen fark etmez (bir soruya en fazla 4 mentor seçilebilir). Bir mentorla sohbete devam ederken gönderdiğin her mesaj da 1 hak kullanır. Bir mentor teknik bir sorun yüzünden cevap veremezse hakkın iade edilir.',
+    a: 'Mentorlara sorduğun her yeni soru 1 hak kullanır; tek mentor da seçsen birkaç mentor da seçsen fark etmez (bir soruya en fazla 4 mentor seçilebilir; Çok Sesli işaretini kazananlar hepsine birden sorabilir). Bir mentorla sohbete devam ederken gönderdiğin her mesaj da 1 hak kullanır. Bir mentor teknik bir sorun yüzünden cevap veremezse hakkın iade edilir.',
   },
   {
     q: 'Hangi mentoru seçmeliyim?',

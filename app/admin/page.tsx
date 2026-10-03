@@ -17,9 +17,10 @@ import { FeedbackList, type AdminFeedback } from '@/components/admin/FeedbackLis
 import { ErrorsList, type ErrorEntry } from '@/components/admin/ErrorsList';
 import { WeeklyReportPanel } from '@/components/admin/WeeklyReportPanel';
 import { Insights } from '@/components/admin/Insights';
+import { EarlyAccess } from '@/components/admin/EarlyAccess';
 import { cn } from '@/lib/cn';
 
-type Tab = 'overview' | 'insights' | 'users' | 'feedback' | 'errors' | 'report' | 'log';
+type Tab = 'overview' | 'insights' | 'users' | 'access' | 'feedback' | 'errors' | 'report' | 'log';
 interface LogEntry { action: string; target: string; detail?: string; at: string }
 
 export default function AdminPage() {
@@ -84,6 +85,7 @@ export default function AdminPage() {
     { id: 'overview', label: 'Genel bakış' },
     { id: 'insights', label: 'Büyüme ve maliyet' },
     { id: 'users', label: 'Üyeler', badge: users.length },
+    { id: 'access', label: 'Erken erişim' },
     { id: 'feedback', label: 'Geri bildirim', badge: unread || undefined },
     { id: 'errors', label: 'Hatalar', badge: errors.length || undefined },
     { id: 'report', label: 'Haftalık özet' },
@@ -139,6 +141,7 @@ export default function AdminPage() {
         {tab === 'users' && <Users users={users} onChanged={load} onError={handleError} />}
         {tab === 'feedback' && <FeedbackList items={feedback} onChanged={load} onError={handleError} />}
         {tab === 'insights' && <Insights onError={handleError} />}
+        {tab === 'access' && <EarlyAccess onError={handleError} />}
         {tab === 'errors' && <ErrorsList entries={errors} />}
         {tab === 'report' && <WeeklyReportPanel onError={handleError} />}
         {tab === 'log' && (

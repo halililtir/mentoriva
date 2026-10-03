@@ -12,15 +12,19 @@ interface Props {
   onSelect?: () => void;
   /** Kademeli giriş animasyonu gecikmesi (saniye). */
   delay?: number;
+  /** Erken erişimde ve bu kullanıcıya henüz kapalı. */
+  earlyLocked?: boolean;
+  /** Erken erişimde ve bu kullanıcıya açık (rozet gösterilir). */
+  early?: boolean;
 }
 
 /**
  * Mentor kartı — imleci takip eden ışık ve hafif 3B eğilme.
  * Hareket CSS değişkenleriyle yapılır, React yeniden render edilmez.
  */
-export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0 }: Props) {
+export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0, earlyLocked = false, early = false }: Props) {
   const a = getAccent(mentor.accentColor);
-  const isSoon = mentor.status === 'coming_soon';
+  const isSoon = mentor.status === 'coming_soon' || earlyLocked;
   const ref = useRef<HTMLElement>(null);
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -57,7 +61,7 @@ export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0 }: Pro
       tabIndex={isSoon ? undefined : 0}
       aria-pressed={isSoon ? undefined : !!selected}
       onKeyDown={isSoon ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(); } }}
-      aria-label={isSoon ? `${mentor.name} — yakında` : `${mentor.name} — ${selected ? 'seçimi kaldır' : 'seç'}`}
+      aria-label={earlyLocked ? `${mentor.name} — erken erişimde` : isSoon ? `${mentor.name} — yakında` : `${mentor.name} — ${selected ? 'seçimi kaldır' : 'seç'}`}
     >
       {/* Animasyon (article), kalkış (bu katman) ve eğilme (iç katman) ayrı
           elemanlarda — üçü de transform kullandığı için birbirini ezmesin. */}
@@ -154,7 +158,12 @@ export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0 }: Pro
               <rect x="5" y="11" width="14" height="10" rx="2" />
               <path d="M8 11V7a4 4 0 0 1 8 0v4" />
             </svg>
-            Yakında
+            {earlyLocked ? 'Erken erişimde' : 'Yakında'}
+          </span>
+        )}
+        {early && !earlyLocked && (
+          <span className="absolute left-3 top-3 z-10 rounded-full border border-amber-500/30 bg-ink-0/60 px-2.5 py-1 text-[9px] font-medium uppercase tracking-wider text-amber-300 backdrop-blur-md">
+            Erken erişim
           </span>
         )}
 

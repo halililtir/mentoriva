@@ -151,6 +151,14 @@ export const COMING_SOON_MENTORS: MentorMetadata[] = [
 
 export const ALL_MENTORS = [...ACTIVE_MENTORS, ...COMING_SOON_MENTORS];
 
+/**
+ * Erken erişimdeki mentorlar: prompt'u hazır (MENTOR_IDS'te) ama şimdilik
+ * yalnızca "erken-erisim" ayrıcalığı olanlar (Kurucu Üye, Destekçi) seçebilir.
+ * Yeni bir mentoru önce buraya ekle; herkese açınca listeden çıkar.
+ * Sunucu tarafı denetim: lib/mentors/access.ts.
+ */
+export const EARLY_ACCESS_MENTORS: readonly MentorId[] = [];
+
 export function getActiveMentor(id: MentorId): MentorMetadata {
   const found = ACTIVE_MENTORS.find((m) => m.id === id);
   if (!found) throw new Error(`Aktif mentor bulunamadı: ${id}`);

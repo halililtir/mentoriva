@@ -97,6 +97,9 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 - Otomatik: İlk Adım, Çok Sesli (tüm aktif mentorlar), Derinleşen (sohbette 5. kullanıcı mesajı), İçe Bakış (yolculuk), Düşünme Alışkanlığı (7 farklı gün), Köprü (ödüllü davet), Paylaşan (paylaşım kartı). `awardBadges(username, event)` respond/chat/journey result/share card/referral içinden çağrılır, hata fırlatmaz.
 - Admin verir: Kurucu Üye (günlük +1 hak: `effectiveDailyLimit`, kota ve `toPublicUser` bunu kullanır), Destekçi, Katkı Veren. `/api/v1/users` PUT `grantBadge`/`revokeBadge`.
 - Redis: `badges:<email>` hash (HSETNX → iki kez verilmez), `progress:<email>` hash (`m:<mentor>`, `d:<gün>`), `badges-seen:<email>`. `deleteUser` bunları da siler.
+- **Madalyalar:** `components/badges/BadgeMedal.tsx` (saf SVG, işaret başına sembol + renk; kazanılmamışsa gri). Yeni işaret eklerken `LOOKS`'a da ekle.
+- **Ayrıcalıklar (PERKS, `lib/badges-public.ts`):** ilke "daha çok soru değil, yeni bir kapı". `tam-meclis` (Çok Sesli: bir soruda bütün mentorlar; varsayılan en fazla `DEFAULT_MAX_MENTORS`=4), `sohbet-indir` (Derinleşen: `components/chat/ChatExport.tsx`, .txt ve yazdırarak PDF, tamamen tarayıcıda), `erken-erisim` (Kurucu Üye, Destekçi), `gunluk-arti-bir` (Kurucu Üye). `getPerks()` sunucuda, `toPublicUser().perks` istemcide. Yeni işaret kazanılınca `BadgeToaster` oturumu tazeler.
+- **Mentor erişimi:** kurallar `lib/mentors/access.ts` (saf; istemci de kullanır), depolama `lib/mentors/access-server.ts` (Redis `access:early-mentors`, admin "Erken erişim" sekmesi, `/api/admin/access`; herkese açık liste `GET /api/v1/access`). respond/chat seçim sınırını ve erken erişimi **sunucuda** denetler (403 `MENTOR_NOT_ALLOWED`). Yeni mentoru önce erken erişime al.
 - Bildirim: SSE `{type:'badges', ids}` → `announceBadges()`; SSE dışı olaylar (yolculuk, paylaşım) için `checkBadges()`. `BadgeToaster` layout'ta `SessionProvider` içinde.
 
 ## Kendine Yolculuk (`/yolculuk`)
