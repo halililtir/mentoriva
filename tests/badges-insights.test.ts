@@ -7,7 +7,6 @@ import { lastDays } from '@/lib/admin/metrics';
 import { cohorts, funnel } from '@/lib/admin/funnel';
 import { POST as adminLogin } from '@/app/api/admin/login/route';
 import { PUT as putUser } from '@/app/api/v1/users/route';
-import { POST as bulkBadge } from '@/app/api/admin/badges/route';
 
 const U = 'uye@ornek.com';
 const user = (over: Partial<StoredUser> = {}): StoredUser => ({
@@ -65,14 +64,6 @@ describe('admin işaret işlemleri', () => {
     expect((await getBadges(U)).map((b) => b.id)).toEqual(['destekci']);
     await call(putUser, '/api/v1/users', 'PUT', { username: U, revokeBadge: 'destekci' });
     expect(await getBadges(U)).toEqual([]);
-  });
-
-  it('toplu Kurucu Üye herkese bir kez verir', async () => {
-    await saveUser(user({ username: 'iki@ornek.com' }));
-    const first = await (await call(bulkBadge, '/api/admin/badges', 'POST', { badge: 'kurucu' })).json();
-    expect(first).toMatchObject({ given: 2, total: 2 });
-    const again = await (await call(bulkBadge, '/api/admin/badges', 'POST', { badge: 'kurucu' })).json();
-    expect(again.given).toBe(0);
   });
 });
 

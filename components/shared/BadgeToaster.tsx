@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BADGE_BY_ID } from '@/lib/badges-public';
 import { useSession } from '@/lib/session';
+import { BadgeMedal } from '@/components/badges/BadgeMedal';
 
 const EVENT = 'mentoriva:badges';
 const CHECK = 'mentoriva:badge-check';
@@ -59,9 +60,7 @@ export function BadgeToaster() {
   return (
     <div className="fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4" role="status" aria-live="polite">
       <div key={current.id} className="glass flex w-full max-w-md items-start gap-4 rounded-2xl !bg-ink-50 p-4 shadow-2xl animate-fade-up">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brand-500/40 bg-brand-500/10 text-xl text-brand-300" aria-hidden="true">
-          {current.icon}
-        </span>
+        <BadgeMedal id={current.id} size={64} className="animate-pop" />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-brand-300">Yeni bir işaret</p>
           <p className="mt-0.5 font-display text-lg text-white/95">{current.name}</p>

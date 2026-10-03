@@ -95,7 +95,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 - **İlke:** kişiye özel, kimseyle karşılaştırılmaz; miktarı değil derinliği/çeşitliliği ödüllendirir, seri (streak) baskısı yok. Bu ilkeyi bozacak (sıralama, "üst üste N gün", soru sayısı) rozet ekleme.
 - Tanımlar (ad, anlam, nasıl kazanılır, simge) `lib/badges-public.ts`; kurallar ve depolama `lib/badges.ts`.
 - Otomatik: İlk Adım, Çok Sesli (tüm aktif mentorlar), Derinleşen (sohbette 5. kullanıcı mesajı), İçe Bakış (yolculuk), Düşünme Alışkanlığı (7 farklı gün), Köprü (ödüllü davet), Paylaşan (paylaşım kartı). `awardBadges(username, event)` respond/chat/journey result/share card/referral içinden çağrılır, hata fırlatmaz.
-- Admin verir: Kurucu Üye (günlük +1 hak: `effectiveDailyLimit`, kota ve `toPublicUser` bunu kullanır), Destekçi, Katkı Veren. `/api/v1/users` PUT `grantBadge`/`revokeBadge`; toplu: `POST /api/admin/badges {badge}`.
+- Admin verir: Kurucu Üye (günlük +1 hak: `effectiveDailyLimit`, kota ve `toPublicUser` bunu kullanır), Destekçi, Katkı Veren. `/api/v1/users` PUT `grantBadge`/`revokeBadge`.
 - Redis: `badges:<email>` hash (HSETNX → iki kez verilmez), `progress:<email>` hash (`m:<mentor>`, `d:<gün>`), `badges-seen:<email>`. `deleteUser` bunları da siler.
 - Bildirim: SSE `{type:'badges', ids}` → `announceBadges()`; SSE dışı olaylar (yolculuk, paylaşım) için `checkBadges()`. `BadgeToaster` layout'ta `SessionProvider` içinde.
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { cn } from '@/lib/cn';
 import { Card, Pill, adminFetch, fmtAgo, fmtDate, inputCls, smallBtn } from './shared';
 import { BADGES, BADGE_BY_ID, FOUNDER_DAILY_BONUS } from '@/lib/badges-public';
+import { BadgeMedal } from '@/components/badges/BadgeMedal';
 
 export interface AdminUser {
   username: string;
@@ -92,7 +93,6 @@ export function Users({ users, onChanged, onError }: { users: AdminUser[]; onCha
           <option value="questions">En çok soru</option>
         </select>
         <div className="flex gap-2 sm:ml-auto">
-          <FounderBulk onDone={onChanged} onError={onError} />
           <button onClick={exportCsv} className={smallBtn} disabled={list.length === 0}>CSV indir</button>
           <button onClick={() => setShowCreate((v) => !v)} className={smallBtn}>{showCreate ? 'Kapat' : '+ Yeni üye'}</button>
         </div>
@@ -131,7 +131,7 @@ export function Users({ users, onChanged, onError }: { users: AdminUser[]; onCha
                     {u.referredBy && <Pill tone="brand">Davetli</Pill>}
                     {u.bonus > 0 && <Pill tone="warn">+{u.bonus} bonus</Pill>}
                     {(u.badges ?? []).map((id) => BADGE_BY_ID[id]).filter(Boolean).map((b) => (
-                      <span key={b!.id} title={b!.name} className={cn('text-sm', b!.kind === 'grant' ? 'text-amber-400' : 'text-brand-300')}>{b!.icon}</span>
+                      <span key={b!.id} title={b!.name}><BadgeMedal id={b!.id} size={20} /></span>
                     ))}
                   </div>
                   <p className="mt-0.5 text-[11px] text-white/45">Kayıt {fmtDate(u.createdAt)} · son görülme {fmtAgo(u.lastSeen)}</p>
@@ -235,7 +235,7 @@ function UserDetail({ user, onChanged, onError }: { user: AdminUser; onChanged: 
                 onClick={() => update(has ? { revokeBadge: b.id } : { grantBadge: b.id }, has ? `${b.name} geri alındı` : `${b.name} verildi`)}
                 className={cn(smallBtn, has && '!border-amber-500/40 !bg-amber-500/10 !text-amber-400')}
               >
-                {b.icon} {b.name} {has ? '✓' : '+'}
+                <BadgeMedal id={b.id} earned={has} size={18} /> {b.name} {has ? '✓' : '+'}
               </button>
             );
           })}
@@ -289,17 +289,3 @@ function CreateUser({ onDone, onError }: { onDone: () => Promise<void>; onError:
   );
 }
 
-/** Kapalı betadaki herkesi Kurucu Üye yapar (zaten olanlar atlanır). */
-function FounderBulk({ onDone, onError }: { onDone: () => Promise<void>; onError: (e: unknown) => void }) {
-  const [busy, setBusy] = useState(false);
-  const run = async () => {
-    if (!confirm('Şu an kayıtlı TÜM üyelere "Kurucu Üye" işareti verilsin mi? (Her gün +1 soru hakkı da kazanırlar.)')) return;
-    setBusy(true);
-    try {
-      const r = await adminFetch<{ given: number; total: number }>('/api/admin/badges', { method: 'POST', json: { badge: 'kurucu' } });
-      alert(`${r.given} üyeye yeni verildi (toplam ${r.total} üye).`);
-      await onDone();
-    } catch (e) { onError(e); } finally { setBusy(false); }
-  };
-  return <button onClick={run} disabled={busy} className={smallBtn}>◆ Herkese Kurucu Üye</button>;
-}
