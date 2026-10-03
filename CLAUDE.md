@@ -86,7 +86,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ### Redis anahtarları
 
-`user:*`, `usage:*`, `bonus:*`, `guest:*`, `guest-count:*`, `chats:*`, `chat:*`, `pending:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
+`user:*`, `usage:*`, `bonus:*`, `guest-dev:*`, `guest-ip:*`, `guest-count:*`, `chats:*`, `chat:*`, `pending:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
 
 ## Büyüme özellikleri
 
@@ -113,7 +113,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ## Kayıt olmadan deneme (misafir)
 
-- Oturumsuz ziyaretçi IP başına günde 1 soru sorabilir, en fazla `GUEST_MAX_MENTORS` (2) mentor. `POST /api/v1/mentors/respond` misafiri `authorizeMentorRequest(..., { allowGuest: true })` ile geçirir; `lib/auth/guest.ts` → `guest:<gün>:<sha256(ip)>` (düz IP yok) ve günlük toplam sigortası `GUEST_DAILY_CAP` (300). Hiçbir mentor cevap veremezse hak iade edilir.
+- Oturumsuz ziyaretçi **cihaz başına** günde 1 soru sorabilir, en fazla `GUEST_MAX_MENTORS` (2) mentor. Cihaz = httpOnly `mentoriva_guest` çerezi (rastgele kimlik; yoksa respond route üretip yazar). IP yalnızca gevşek üst sınır: bağlantı başına günde `GUEST_PER_IP` (5); aynı Wi-Fi ve mobil operatör (CGNAT) adresleri paylaşıldığı için IP tek başına kullanılmaz. Anahtarlar `guest-dev:*`, `guest-ip:*` (özet, düz değil), günlük toplam `GUEST_DAILY_CAP` (300). `POST /api/v1/mentors/respond` misafiri `authorizeMentorRequest(..., { allowGuest: true })` ile geçirir; hiçbir mentor cevap veremezse hak iade edilir. Ret nedeni (`GUEST_USED` mesajı) `LimitReachedView` misafir kartında gösterilir.
 - Misafir kayıt formunu görmediği için 18+ ve yurt dışı aktarım onayı soru ekranında alınır (`AskView guest`); istek `consent: true` taşımazsa 403 `CONSENT_REQUIRED`. Kullanıldı 429 `GUEST_USED` → `LimitReachedView` misafir hâli.
 - Misafirde: sohbete devam ve kayıt yok (üyeliğe yönlendirilir), cevap paylaşım kartı gizli, rozet/answers yazılmaz. Metrik olayı `guest_question`. Tarayıcı tarafı `lib/guest-trial.ts` (yalnızca arayüz yönlendirmesi).
 

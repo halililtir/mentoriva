@@ -57,7 +57,7 @@ export default function GizlilikPage() {
             <p className="mt-1"><span className="text-white/70">Doğrulama kodu:</span> 10 dakika; tamamlanmamış kayıt 7 gün.</p>
             <p className="mt-1"><span className="text-white/70">Paylaşım kartı için son cevapların:</span> en fazla 30 cevap, 48 saat. Yalnızca paylaşım kartındaki cümlenin gerçekten bir mentor cevabından geldiğini doğrulamak için.</p>
             <p className="mt-1"><span className="text-white/70">Kaydettiğin sohbetler:</span> yalnızca sen &ldquo;Kaydet&rdquo; dersen; sen silene ya da hesabın silinene kadar. Ücretsiz üyelikte en fazla 5 sohbet.</p>
-            <p className="mt-1"><span className="text-white/70">Kayıt olmadan deneme:</span> aynı gün ikinci denemeyi engellemek için IP adresinin geri döndürülemez özeti (düz IP değil) 48 saat; deneme onayın yalnızca kendi tarayıcında. Deneme sorusu, cevap üretmek için yapay zekâ sağlayıcısına iletilir ve sana bağlanmadan anonim istatistiklere girer.</p>
+            <p className="mt-1"><span className="text-white/70">Kayıt olmadan deneme:</span> aynı cihazdan günde bir deneme için tarayıcına rastgele bir deneme kimliği (çerez, 1 yıl) konur; kötüye kullanıma karşı IP adresinin geri döndürülemez özeti (düz IP değil) ve deneme kimliğinin özeti 48 saat tutulur. Deneme onayın yalnızca kendi tarayıcında. Deneme sorusu, cevap üretmek için yapay zekâ sağlayıcısına iletilir ve sana bağlanmadan anonim istatistiklere girer.</p>
             <p className="mt-1"><span className="text-white/70">Kendine Yolculuk:</span> anlatımın ve cevapların saklanmaz; yalnızca sen kaydedersen düşünce haritan ve seçtiğin küçük adım hesabında tutulur, istediğin an silebilirsin.</p>
             <p className="mt-1"><span className="text-white/70">Anonim istatistikler:</span> günlük sayılar ve konu başlıkları 120 gün. Hizmeti geliştirmek için son 100 soru, <b className="text-white/70">kimin sorduğu bilgisi olmadan</b> yönetim panelinde görüntülenebilir.</p>
             <p className="mt-2">Kaydettiğin sohbetler ve yolculuk kayıtların yönetim panelinde gösterilmez.</p>
@@ -81,7 +81,7 @@ export default function GizlilikPage() {
 
           <div>
             <h2 className="mb-2 font-display text-lg text-white/80">7. Çerezler ve ölçüm</h2>
-            <p>Yalnızca oturumunu açık tutan zorunlu bir çerez kullanılır. Reklam ya da takip çerezi yoktur. Ziyaret istatistikleri için çerez kullanmayan ve kişiyi tanımlamayan Vercel Web Analytics kullanılır; yazdıkların istatistiklere eklenmez. Tema tercihin gibi küçük ayarlar yalnızca kendi tarayıcında saklanır.</p>
+            <p>Yalnızca zorunlu çerezler kullanılır: üyelerde oturumu açık tutan çerez, üye olmadan denerken günde bir deneme sınırı için rastgele bir deneme kimliği. Reklam ya da takip çerezi yoktur. Ziyaret istatistikleri için çerez kullanmayan ve kişiyi tanımlamayan Vercel Web Analytics kullanılır; yazdıkların istatistiklere eklenmez. Tema tercihin gibi küçük ayarlar yalnızca kendi tarayıcında saklanır.</p>
           </div>
 
           <div>

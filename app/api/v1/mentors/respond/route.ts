@@ -28,9 +28,10 @@ import { checkMentorSelection } from '@/lib/mentors/access';
 import { getEarlyMentors } from '@/lib/mentors/access-server';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
-import { releaseGuest, reserveGuest } from '@/lib/auth/guest';
+import { GUEST_COOKIE, guestCookieHeader, guestDeviceId, releaseGuest, reserveGuest } from '@/lib/auth/guest';
+import { readCookie } from '@/lib/auth/session';
 import { synthesize } from '@/lib/mentors/synthesis';
-import { DEFAULT_DAILY_LIMIT, GUEST_MAX_MENTORS } from '@/lib/auth/limits';
+import { GUEST_MAX_MENTORS } from '@/lib/auth/limits';
 import { todayKey } from '@/lib/time';
 import { recordAnswer } from '@/lib/share/answers';
 import { MENTOR_IDS } from '@/types';
@@ -119,15 +120,19 @@ export async function POST(request: Request): Promise<Response> {
   if (user && !reservation) {
     return apiError(429, 'QUOTA_EXCEEDED', 'Bugünkü soru hakkın doldu. Yarın yeniden görüşmek üzere.');
   }
-  const guestReservation = guestIp ? await reserveGuest(guestIp) : null;
+  // Misafir: cihaz başına günde bir deneme (çerez), bağlantı başına gevşek üst sınır (IP)
+  const device = guestIp ? guestDeviceId(readCookie(request, GUEST_COOKIE)) : null;
+  const guestReservation = guestIp && device ? await reserveGuest(device.id, guestIp) : null;
   if (guestReservation && !guestReservation.ok) {
-    return apiError(
-      429,
-      'GUEST_USED',
-      guestReservation.reason === 'used'
-        ? `Bugünkü deneme hakkını kullandın. Ücretsiz üye ol, her gün ${DEFAULT_DAILY_LIMIT} soru sor.`
-        : `Deneme hakları bugünlük doldu. Ücretsiz üye olarak her gün ${DEFAULT_DAILY_LIMIT} soru sorabilirsin.`,
-    );
+    const message = {
+      used: 'Bu cihazdan bugünkü deneme sorunu zaten sordun.',
+      ip: 'Bu internet bağlantısından bugün birçok deneme yapıldı.',
+      cap: 'Bugünlük deneme hakları doldu.',
+    }[guestReservation.reason];
+    // Yalnızca neden; üyelik daveti arayüzdeki kartta (LimitReachedView)
+    const res = apiError(429, 'GUEST_USED', message);
+    if (device?.isNew) res.headers.append('Set-Cookie', guestCookieHeader(device.id));
+    return res;
   }
 
   // Admin metrikleri (hata fırlatmaz; sunucusuz ortamda kesilmesin diye beklenir)
@@ -187,7 +192,9 @@ export async function POST(request: Request): Promise<Response> {
     },
   });
 
-  return new Response(stream, { headers: sseHeaders() });
+  const headers = new Headers(sseHeaders());
+  if (device?.isNew) headers.append('Set-Cookie', guestCookieHeader(device.id));
+  return new Response(stream, { headers });
 }
 
 // -----------------------------------------------------------

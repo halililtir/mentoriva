@@ -28,7 +28,8 @@ export interface SSEStreamOptions<TEvent> {
 export interface MentorStreamHandlers {
   onQuota: (remaining: number) => void;
   onAuthRequired: () => void;
-  onQuotaExceeded: () => void;
+  /** Misafir denemesi reddedildiyse sunucunun nedeni (GUEST_USED) gelir. */
+  onQuotaExceeded: (reason?: string) => void;
 }
 
 export function useSSEStream<TEvent>() {
@@ -126,7 +127,7 @@ export function routeStreamError(error: StreamError, handlers: MentorStreamHandl
     return true;
   }
   if (error.code === 'QUOTA_EXCEEDED' || error.code === 'GUEST_USED') {
-    handlers.onQuotaExceeded();
+    handlers.onQuotaExceeded(error.code === 'GUEST_USED' ? error.message : undefined);
     return true;
   }
   return false;

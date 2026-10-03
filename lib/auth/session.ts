@@ -20,7 +20,7 @@ export const ADMIN_COOKIE = 'mentoriva_admin';
 const USER_TTL = 60 * 60 * 24 * 30;
 const ADMIN_TTL = 60 * 60 * 12;
 
-function readCookie(request: Request, name: string): string | null {
+export function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('cookie');
   if (!header) return null;
   for (const part of header.split(';')) {

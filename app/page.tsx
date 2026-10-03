@@ -56,6 +56,8 @@ export default function HomePage() {
   /** Kayıt olmadan deneme: misafir bugün bir soru sorabilir (sunucu IP ile denetler). */
   const isGuest = session.status === 'guest';
   const [guestUsed, setGuestUsed] = useState(false);
+  /** Sunucu misafir denemesini reddettiyse nedeni (aynı cihaz, aynı bağlantı, günlük tavan). */
+  const [guestBlockReason, setGuestBlockReason] = useState<string | null>(null);
   useEffect(() => { setGuestUsed(guestTrialUsedToday()); }, []);
 
   // Görünüm değişince sayfanın başına dön
@@ -199,8 +201,8 @@ export default function HomePage() {
     router.push('/giris?next=/');
   }, [router, session]);
 
-  const handleQuotaExceeded = useCallback(() => {
-    if (session.status !== 'user') { markGuestTrialUsed(); setGuestUsed(true); }
+  const handleQuotaExceeded = useCallback((reason?: string) => {
+    if (session.status !== 'user') { markGuestTrialUsed(); setGuestUsed(true); setGuestBlockReason(reason ?? null); }
     else session.setRemaining(0);
     setView('limit');
   }, [session]);
@@ -422,7 +424,7 @@ export default function HomePage() {
       )}
 
       {/* LIMIT */}
-      {view === 'limit' && <LimitReachedView onHome={resetToGallery} />}
+      {view === 'limit' && <LimitReachedView onHome={resetToGallery} guestReason={guestBlockReason} />}
       </main>
     </div>
   );

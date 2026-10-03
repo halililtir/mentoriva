@@ -10,9 +10,9 @@ import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 const PERKS = ['Sınırsız mentor sohbeti', 'Derin analiz modu', 'Tüm mentorlarla karşılaştırma', 'Yeni mentorlara öncelikli erişim'];
 
 /** Günlük hak bittiğinde gösterilen premium bekleme listesi ekranı. */
-export function LimitReachedView({ onHome }: { onHome: () => void }) {
-  const { user, status } = useSession();
-  if (status === 'guest') return <GuestTrialOver onHome={onHome} />;
+export function LimitReachedView({ onHome, guestReason }: { onHome: () => void; guestReason?: string | null }) {
+  const { status } = useSession();
+  if (status === 'guest') return <GuestTrialOver onHome={onHome} reason={guestReason ?? null} />;
   return <MemberLimit onHome={onHome} />;
 }
 
@@ -24,15 +24,16 @@ const MEMBER_GAINS = [
 ];
 
 /** Misafir denemesini kullandı: üyeliğe davet. */
-function GuestTrialOver({ onHome }: { onHome: () => void }) {
+function GuestTrialOver({ onHome, reason }: { onHome: () => void; reason: string | null }) {
   return (
     <div className="mx-auto w-full max-w-[540px] px-5 py-12 sm:py-20">
       <div className="glass relative overflow-hidden rounded-3xl p-7 text-center animate-scale-in sm:p-10">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/70 to-transparent" />
         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-brand-300">Bugünlük deneme tamam</p>
         <h2 className="mt-4 font-display text-[clamp(1.7rem,4.5vw,2.2rem)] leading-tight text-balance">
-          İlk cevabını aldın. <span className="italic text-gradient">Asıl konuşma şimdi başlıyor.</span>
+          Deneme sorun bugün için kullanıldı. <span className="italic text-gradient">Asıl konuşma üyelikle başlıyor.</span>
         </h2>
+        {reason && <p className="mx-auto mt-3 max-w-sm text-[13.5px] leading-relaxed text-white/50">{reason}</p>}
         <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-white/60">
           Bir cevap kapıyı aralar; düşünce, ardından gelen sorularda derinleşir.
         </p>
