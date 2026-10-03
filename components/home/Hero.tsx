@@ -39,22 +39,22 @@ export function Hero({ user, guestTrial = false, onStart, onHowItWorks }: Props)
 
         <h1 className="mt-6 font-display text-[clamp(2.5rem,6.6vw,4.4rem)] leading-[1.03] tracking-[-0.02em] text-balance">
           {['Tek', 'bir', 'soru,'].map((w, i) => (
-            <span key={i} className="inline-block animate-word" style={{ animationDelay: `${120 + i * 90}ms` }}>
+            <span key={i} className="inline-block animate-word" style={{ animationDelay: `${60 + i * 50}ms` }}>
               {w}&nbsp;
             </span>
           ))}
           <br className="hidden sm:block" />
-          <span className="inline-block animate-word italic text-gradient" style={{ animationDelay: '440ms' }}>
+          <span className="inline-block animate-word italic text-gradient" style={{ animationDelay: '220ms' }}>
             farklı zihinler.
           </span>
         </h1>
 
         {/* Ne işe yaradığını tek satırda söyleyen dönen cümle */}
-        <p className="mt-4 min-h-[2.8em] text-[16px] leading-snug text-white/80 animate-fade-up sm:mt-5 sm:min-h-[1.8em] sm:text-lg" style={{ animationDelay: '600ms' }}>
+        <p className="mt-4 min-h-[2.8em] text-[16px] leading-snug text-white/80 animate-fade-up sm:mt-5 sm:min-h-[1.8em] sm:text-lg" style={{ animationDelay: '260ms' }}>
           Mentoriva ile <RotatingText phrases={PHRASES} className="font-medium text-brand-300" />
         </p>
 
-        <p className="mx-auto mt-3 max-w-[540px] text-[14.5px] leading-relaxed text-white/55 animate-fade-up sm:mt-4 sm:text-[15px] lg:mx-0" style={{ animationDelay: '700ms' }}>
+        <p className="mx-auto mt-3 max-w-[540px] text-[14.5px] leading-relaxed text-white/55 animate-fade-up sm:mt-4 sm:text-[15px] lg:mx-0" style={{ animationDelay: '300ms' }}>
           <span className="sm:hidden">Bir soru yaz; farklı düşünürler aynı anda cevap versin, seni en çok düşündürenle konuşmaya devam et.</span>
           <span className="hidden sm:inline">
             Aklındaki soruyu yaz; Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca kendi düşünce sistemleriyle aynı anda
@@ -62,7 +62,7 @@ export function Hero({ user, guestTrial = false, onStart, onHowItWorks }: Props)
           </span>
         </p>
 
-        <div className="mt-6 flex flex-col items-center justify-center gap-2.5 animate-fade-up sm:mt-8 sm:flex-row sm:gap-3 lg:justify-start" style={{ animationDelay: '800ms' }}>
+        <div className="mt-6 flex flex-col items-center justify-center gap-2.5 animate-fade-up sm:mt-8 sm:flex-row sm:gap-3 lg:justify-start" style={{ animationDelay: '320ms' }}>
           {user ? (
             <button onClick={onStart} className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
               Mentorunu seç
@@ -85,12 +85,12 @@ export function Hero({ user, guestTrial = false, onStart, onHowItWorks }: Props)
         </div>
 
         {user ? (
-          <p className="mt-6 text-sm text-white/45 animate-fade-up" style={{ animationDelay: '900ms' }}>
+          <p className="mt-6 text-sm text-white/45 animate-fade-up" style={{ animationDelay: '380ms' }}>
             Hoş geldin <span className="text-white/75">{user.name}</span> · bugün{' '}
             <span className="font-semibold text-brand-300">{user.remaining}</span> soru hakkın var.
           </p>
         ) : (
-          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 animate-fade-up sm:mt-6 sm:gap-x-5 lg:justify-start" style={{ animationDelay: '900ms' }}>
+          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 animate-fade-up sm:mt-6 sm:gap-x-5 lg:justify-start" style={{ animationDelay: '380ms' }}>
             {TRUST.map((t, i) => (
               <li key={t} className={`items-center gap-1.5 text-[12.5px] text-white/50 sm:text-[13px] ${i === 2 ? 'hidden sm:flex' : 'flex'}`}>
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -103,7 +103,7 @@ export function Hero({ user, guestTrial = false, onStart, onHowItWorks }: Props)
         )}
       </div>
 
-      <div className="animate-scale-in" style={{ animationDelay: '300ms' }}>
+      <div className="animate-scale-in" style={{ animationDelay: '200ms' }}>
         <DemoPreview />
       </div>
     </section>

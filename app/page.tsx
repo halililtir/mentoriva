@@ -316,7 +316,7 @@ export default function HomePage() {
           üyeye ise doğrudan mentor seçimi ve örnek sorular gösterilir. */}
       {view === 'gallery' && (
         <div className="flex-1">
-          <Hero user={user} guestTrial={isGuest && !guestUsed} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
+          <Hero user={user} guestTrial={session.status !== 'user' && !guestUsed} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
           {user && user.questionsUsed === 0 && <WelcomeCard name={user.name} onPick={handlePickQuestion} />}
           {user && <StepReminder />}
           {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
