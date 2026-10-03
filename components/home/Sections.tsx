@@ -7,6 +7,7 @@
 import Image from 'next/image';
 import { Reveal } from '@/components/ui/Reveal';
 import { ACTIVE_MENTORS, COMING_SOON_MENTORS, getAccent } from '@/lib/mentors/metadata';
+import { COMPARE_DEMO, COMPARE_ROWS } from '@/lib/home-content';
 
 // -----------------------------------------------------------
 // Ortak bölüm başlığı
@@ -104,88 +105,100 @@ export function TraditionsStrip() {
 }
 
 // -----------------------------------------------------------
-// Neden Mentoriva? — genel amaçlı asistanla dürüst bir kıyas
+// Neden Mentoriva? — aynı soruya asistan ve Mentoriva. Asistanın dengeli
+// listesi ekrana girince satır satır çizilir, üstüne damga basılır; ardından
+// mentorların birbirinden ayrışan tek cümlelik cevapları belirir.
 // -----------------------------------------------------------
 
-const COMPARISON: Array<{ label: string; general: string; mentoriva: string }> = [
-  {
-    label: 'Ne verir?',
-    general: 'Konunun her yönünü dengeleyen tek, kapsamlı bir cevap.',
-    mentoriva: 'Birbirinden farklı, zaman zaman çelişen net duruşlar. Farkı sen görürsün.',
-  },
-  {
-    label: 'Nasıl konuşur?',
-    general: 'Nötr, nazik ve yardımsever bir asistan dili.',
-    mentoriva: 'Her mentor kendi tarzıyla: biri sorgular, biri zorlar, biri teselli eder, biri yön gösterir.',
-  },
-  {
-    label: 'Ne için ideal?',
-    general: 'Bilgi, araştırma, yazı, kod ve günlük işler.',
-    mentoriva: 'Kararlar, ilişkiler, iç çatışmalar ve anlam arayışı gibi kişisel sorular.',
-  },
-  {
-    label: 'Sonunda ne kalır?',
-    general: 'Genellikle bir çözüm listesi ya da öneriler.',
-    mentoriva: 'Soruna yeni bir açıdan bakmanı sağlayan fikirler ve kendine sorman gereken sorular.',
-  },
-];
+const STRIKE_START = 500;
+const STRIKE_STEP = 260;
 
 export function WhyMentoriva() {
+  const d = COMPARE_DEMO;
+  const stampAt = STRIKE_START + d.assistant.length * STRIKE_STEP + 100;
   return (
     <section className="mx-auto max-w-content px-5 py-12 sm:py-28" aria-labelledby="why-title">
-      <div className="grid items-start gap-8 sm:gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid items-start gap-8 sm:gap-12 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="lg:sticky lg:top-28">
           <SectionHeading eyebrow="Neden Mentoriva?" title="Bilgi için asistan," accent="düşünmek için Mentoriva." id="why-title" align="left">
-            <span className="sm:hidden">Asistanlar bilgi verir; kişisel sorularda ise dengeli ama mesafeli kalır. Mentoriva sana ne yapacağını söylemez, <span className="text-white/80">kendi cevabına farklı açılardan bakmanı sağlar.</span></span>
-            <span className="hidden sm:inline">
-            Genel amaçlı yapay zekâ asistanları bilgiye ulaşmakta harikadır. Ama &ldquo;ne yapmalıyım?&rdquo; gibi kişisel
-            sorularda çoğu zaman her ihtimali tartan, dengeli ama mesafeli bir cevap verirler. İnsanlık ise bu sorulara
-            yüzyıllardır çok farklı cevaplar verdi. Mentoriva bu farklılığı bir araya getirir; amacı sana ne yapacağını
-            söylemek değil, <span className="text-white/80">kendi cevabına daha geniş bir açıdan bakmanı sağlamaktır.</span>
-            </span>
+            Asistanlar bilgiye ulaşmakta harikadır. Ama &ldquo;ne yapmalıyım?&rdquo; diye sorduğunda herkese verilebilecek dengeli bir
+            liste döner. Mentoriva sana ne yapacağını söylemez; <span className="text-white/85">sorunun içinde senin göremediğin yeri gösterir.</span>
           </SectionHeading>
-          <Reveal delay={120} className="hidden sm:block">
-            <blockquote className="mt-8 border-l-2 border-brand-500/60 pl-5 font-display text-xl italic leading-snug text-white/75">
-              &ldquo;Doğru cevaptan önce doğru soru gelir.&rdquo;
-            </blockquote>
-          </Reveal>
-        </div>
-
-        <Reveal delay={100}>
-          <div className="glass overflow-hidden rounded-2xl">
-            {/* Sütun başlıkları — geniş ekranda */}
-            <div className="hidden grid-cols-[120px_1fr_1fr] border-b border-white/[0.06] text-[11px] uppercase tracking-[0.14em] sm:grid">
-              <span />
-              <span className="px-5 py-3.5 text-white/40">Genel amaçlı asistan</span>
-              <span className="flex items-center gap-2 border-l border-white/[0.06] bg-brand-500/[0.06] px-5 py-3.5 text-brand-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
-                Mentoriva
-              </span>
-            </div>
-
-            <dl>
-              {COMPARISON.map((row, i) => (
-                <div
-                  key={row.label}
-                  className={`grid sm:grid-cols-[120px_1fr_1fr] ${i < COMPARISON.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
-                >
-                  <dt className="px-4 pb-0.5 pt-3 text-[12px] font-medium text-white/70 sm:px-5 sm:py-5">{row.label}</dt>
-                  <dd className="px-4 pb-1.5 text-[13px] leading-relaxed text-white/45 sm:px-5 sm:py-5 sm:text-[13.5px]">
-                    <span className="mr-1.5 text-[10px] uppercase tracking-wider text-white/30 sm:hidden">Asistan:</span>
-                    {row.general}
-                  </dd>
-                  <dd className="border-white/[0.06] bg-brand-500/[0.035] px-4 pb-3 pt-1.5 text-[13px] leading-relaxed text-white/85 sm:border-l sm:px-5 sm:py-5 sm:text-[13.5px]">
-                    <span className="mr-1.5 text-[10px] uppercase tracking-wider text-brand-300 sm:hidden">Mentoriva:</span>
-                    {row.mentoriva}
+          <Reveal delay={120} className="hidden lg:block">
+            <dl className="mt-8 space-y-3">
+              {COMPARE_ROWS.map((row, i) => (
+                <div key={row.label} className="grid grid-cols-[110px_1fr] gap-x-3 text-[13.5px] leading-snug">
+                  <dt className="pt-px text-[12px] text-white/45">{row.label}</dt>
+                  <dd>
+                    <span className="strike text-white/55" style={{ '--d': `${700 + i * 220}ms` } as React.CSSProperties}>{row.general}</span>
+                    <span className="m-appear mt-0.5 block font-medium text-white/90" style={{ '--d': `${950 + i * 220}ms` } as React.CSSProperties}>
+                      <span className="mr-1.5 text-brand-300" aria-hidden="true">→</span>{row.mentoriva}
+                    </span>
                   </dd>
                 </div>
               ))}
             </dl>
-          </div>
-          <p className="mt-4 hidden px-1 text-xs leading-relaxed text-white/35 sm:block">
-            İkisi birbirinin alternatifi değil: bir konuyu öğrenmek için asistana, o konuda ne hissettiğini ve ne yapmak
-            istediğini düşünmek için Mentoriva&apos;ya gelirsin.
-          </p>
+          </Reveal>
+        </div>
+
+        <Reveal delay={100}>
+          <figure className="glass overflow-hidden rounded-2xl p-4 sm:p-6" aria-label="Aynı soruya asistan ve Mentoriva cevabı (temsili)">
+            <p className="ml-auto w-fit max-w-[88%] rounded-2xl rounded-br-md bg-white/[0.07] px-4 py-2.5 text-[14px] leading-snug text-white/85">
+              {d.question}
+            </p>
+
+            <div className="mt-5">
+              <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-white/40">
+                <span className="h-1.5 w-1.5 rounded-full bg-white/30" /> Genel amaçlı asistan
+              </p>
+              <div className="relative mt-2 space-y-1 text-[13.5px] leading-relaxed text-white/60">
+                {d.assistant.map((line, i) => (
+                  <p key={line}>
+                    <span className="strike" style={{ '--d': `${STRIKE_START + i * STRIKE_STEP}ms` } as React.CSSProperties}>{line}</span>
+                  </p>
+                ))}
+                <span
+                  className="stamp absolute right-0 top-1/2 rounded-lg border-2 border-red-400/70 bg-ink-50/85 px-3 py-1 font-display text-[15px] italic text-red-400 shadow-lg backdrop-blur-sm sm:right-2 sm:text-base"
+                  style={{ '--d': `${stampAt}ms` } as React.CSSProperties}
+                >
+                  {d.verdict}
+                </span>
+              </div>
+            </div>
+
+            <div
+              className="m-appear relative mt-5 rounded-xl border border-brand-400/30 bg-brand-500/[0.06] p-3.5 sm:p-4"
+              style={{ '--d': `${stampAt + 350}ms` } as React.CSSProperties}
+            >
+              <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-brand-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-400" /> Mentoriva
+              </p>
+              <ul className="mt-3 space-y-3">
+                {d.mentors.map((x, i) => {
+                  const m = ACTIVE_MENTORS.find((a) => a.id === x.id);
+                  if (!m) return null;
+                  const a = getAccent(m.accentColor);
+                  return (
+                    <li
+                      key={x.id}
+                      className="m-appear flex gap-3"
+                      style={{ '--d': `${stampAt + 650 + i * 380}ms` } as React.CSSProperties}
+                    >
+                      <span className="relative mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full border" style={{ borderColor: a.hex }}>
+                        <Image src={m.portraitUrl} alt="" fill sizes="32px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
+                      </span>
+                      <p className="text-[13.5px] leading-relaxed text-white/85">
+                        <span className="mr-1.5 font-medium" style={{ color: a.text }}>{m.shortName}</span>
+                        {x.text}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-4 border-t border-white/[0.07] pt-3 text-[12.5px] leading-relaxed text-white/55">{d.footer}</p>
+            </div>
+            <figcaption className="mt-3 text-right text-[10.5px] text-white/30">Temsili örnek</figcaption>
+          </figure>
         </Reveal>
       </div>
     </section>

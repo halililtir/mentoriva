@@ -125,3 +125,40 @@ export const WELCOME = {
     'Beni kıran birini affetmek zorunda mıyım?',
   ],
 };
+
+// -----------------------------------------------------------
+// "Neden Mentoriva?" — aynı soruya asistan ve Mentoriva (temsili)
+// -----------------------------------------------------------
+
+export const COMPARE_DEMO: {
+  question: string;
+  /** Tipik, dengeli asistan cevabı; ekrana girince satır satır üstü çizilir. */
+  assistant: string[];
+  /** Çizilen cevabın üstüne basılan damga. */
+  verdict: string;
+  mentors: Array<{ id: MentorId; text: string }>;
+  footer: string;
+} = {
+  question: 'Annemle her konuşmamız kavgayla bitiyor. Ne yapmalıyım?',
+  assistant: [
+    'Bu zor ama oldukça yaygın bir durum. Deneyebileceğin birkaç yöntem:',
+    '1. Sakin bir anda açık iletişim kur.',
+    '2. Suçlamak yerine "ben" dili kullan.',
+    '3. Sınırlarını net biçimde belirle.',
+    '4. Gerekirse bir uzmandan destek al.',
+  ],
+  verdict: 'Doğru. Ama herkese aynı.',
+  mentors: [
+    { id: 'jung', text: 'Kavgalarınız hep aynı yerden mi başlıyor? O yer, ikinizin de bakmak istemediği bir şeyi saklıyor olabilir.' },
+    { id: 'nietzsche', text: 'Her konuşmada hâlâ onun onayını mı kazanmaya çalışıyorsun? Belki kavga dediğin, teslim olmayı reddedişindir.' },
+    { id: 'mevlana', text: 'Karanlıkta aynı fili tutuyorsunuz; sen hortumunu, o kulağını. Önce onun elindekini sor.' },
+  ],
+  footer: 'Bir liste değil; birbirine itiraz eden bakışlar. Hangisinin sana dokunduğunu sen seçersin.',
+};
+
+/** Kısa kıyas satırları: asistan tarafı çizilir, Mentoriva tarafı öne çıkar. */
+export const COMPARE_ROWS: Array<{ label: string; general: string; mentoriva: string }> = [
+  { label: 'Ne verir?', general: 'Her şeyi dengeleyen tek cevap', mentoriva: 'Birbirine itiraz eden net duruşlar' },
+  { label: 'Nasıl konuşur?', general: 'Nötr, kibar bir asistan dili', mentoriva: 'Her mentor kendi sesiyle' },
+  { label: 'Geriye ne kalır?', general: 'Bir öneri listesi', mentoriva: 'Kendine soracağın bir soru' },
+];

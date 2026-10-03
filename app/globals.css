@@ -368,6 +368,11 @@
     .m-rail {
       display: flex !important;
       overflow-x: auto;
+      /* overflow-x:auto dikeyi de "auto" yapar; kartlar birkaç piksel taşınca şerit
+         çapraz çekişte yukarı-aşağı da kayıyordu. Dikey hareket sayfaya kalsın. */
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x pan-y;
       scroll-snap-type: x mandatory;
       gap: 12px;
       margin-left: -20px;
@@ -379,11 +384,18 @@
     .m-rail > * { flex: 0 0 82%; scroll-snap-align: center; min-width: 0; }
     .m-rail.m-rail-narrow > * { flex-basis: 62%; }
     .m-rail::-webkit-scrollbar { display: none; }
+    /* Şeritteki kartlar aşağıdan kayarak belirmesin: dikey taşma yaratır. */
+    .m-rail > .reveal { transform: none; }
   }
   @media (max-width: 767px) {
     .m-rail-md {
       display: flex !important;
       overflow-x: auto;
+      /* overflow-x:auto dikeyi de "auto" yapar; kartlar birkaç piksel taşınca şerit
+         çapraz çekişte yukarı-aşağı da kayıyordu. Dikey hareket sayfaya kalsın. */
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x pan-y;
       scroll-snap-type: x mandatory;
       gap: 12px;
       margin-left: -20px;
@@ -394,7 +406,34 @@
     }
     .m-rail-md > * { flex: 0 0 82%; scroll-snap-align: center; min-width: 0; }
     .m-rail-md::-webkit-scrollbar { display: none; }
+    .m-rail-md > .reveal { transform: none; }
   }
+
+  /* "Neden Mentoriva?" kıyası: .reveal görünür olunca asistan satırları elle
+     çizilmiş gibi çizilir (--d gecikmesiyle sırayla), damga basılır, mentor
+     cevapları belirir. Çok satırlı metinde her satır ayrı çizilir (clone). */
+  .strike {
+    background-image: linear-gradient(rgb(248 113 113 / 0.85), rgb(248 113 113 / 0.85));
+    background-repeat: no-repeat;
+    background-position: 0 58%;
+    background-size: 0% 2px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 0.55s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0ms), color 0.5s ease var(--d, 0ms);
+  }
+  .is-visible .strike { background-size: 100% 2px; color: rgb(var(--fg) / 0.32); }
+  .stamp {
+    opacity: 0;
+    transform: translateY(-50%) rotate(-7deg) scale(1.35);
+    transition: opacity 0.2s ease var(--d, 0ms), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d, 0ms);
+  }
+  .is-visible .stamp { opacity: 1; transform: translateY(-50%) rotate(-7deg) scale(1); }
+  .m-appear {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.6s ease var(--d, 0ms), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms);
+  }
+  .is-visible .m-appear { opacity: 1; transform: none; }
 
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
@@ -416,4 +455,5 @@
     transition-duration: 0.01ms !important;
   }
   .reveal { opacity: 1; transform: none; }
+  .strike, .stamp, .m-appear { transition-delay: 0ms !important; }
 }
