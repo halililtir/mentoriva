@@ -13,6 +13,7 @@ import { todayKey } from '@/lib/time';
 
 /** USD / 1M token. https://www.anthropic.com/pricing */
 export const PRICES: Record<string, { in: number; out: number; cacheWrite: number; cacheRead: number }> = {
+  'claude-sonnet-5-5': { in: 2, out: 10, cacheWrite: 2.5, cacheRead: 0.2 },
   'claude-sonnet-4-6': { in: 3, out: 15, cacheWrite: 3.75, cacheRead: 0.3 },
   'claude-haiku-4-5-20251001': { in: 1, out: 5, cacheWrite: 1.25, cacheRead: 0.1 },
 };

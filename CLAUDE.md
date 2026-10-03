@@ -138,4 +138,4 @@ Moderasyon (`lib/safety/moderation.ts`) girdiyi Türkçe küçültüp ASCII'ye k
 - Resend'de gönderici alan adı doğrulanıp `RESEND_FROM` ayarlanmalı.
 - Üye listesi SCAN + MGET ile okunuyor; on binlerce üyede set tabanlı indeks ve sayfalama gerekir.
 - Hata izleme (ör. Sentry) yok.
-- Anthropic SDK `^0.35` eski; model ve SDK güncellemesi ayrı bir iş olarak ele alınmalı.
+- Model `claude-sonnet-5-5` (effort `low`, temperature yok; Haiku fallback temperature ile). Effort ayarı canlı testle doğrulanmalı; kalite yetmezse `medium`.

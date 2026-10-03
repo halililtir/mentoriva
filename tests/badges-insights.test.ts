@@ -71,6 +71,7 @@ describe('maliyet', () => {
   it('liste fiyatıyla mikro-dolar hesaplar', () => {
     // 1M girdi × $3 + 1M çıktı × $15 = $18
     expect(costMicros('claude-sonnet-4-6', { input_tokens: 1_000_000, output_tokens: 1_000_000 })).toBe(18_000_000);
+    expect(costMicros('claude-sonnet-5-5', { input_tokens: 1_000_000, output_tokens: 1_000_000 })).toBe(12_000_000);
     expect(costMicros('claude-haiku-4-5-20251001', { cache_read_input_tokens: 1_000_000 })).toBe(100_000);
   });
 

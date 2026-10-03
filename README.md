@@ -23,7 +23,7 @@ Mentoriva, tek bir soruya **Carl Jung**, **Friedrich Nietzsche**, **Mevlânâ Ce
 
 - **Next.js 14** (App Router) · **React 18** · **TypeScript** (strict)
 - **Tailwind CSS 3** — animasyonlar CSS ile, ek animasyon kütüphanesi yok
-- **Anthropic Claude SDK** (`claude-sonnet-4-6`, hata durumunda `claude-haiku-4-5`)
+- **Anthropic Claude SDK** (`claude-sonnet-5-5`, effort `low`; hata ya da ret durumunda `claude-haiku-4-5`)
 - **Upstash Redis** — kullanıcılar, oturumlar, kota, rate limit, geri bildirim
 - **Resend** — doğrulama ve şifre sıfırlama e-postaları
 - **Vitest** — birim ve route testleri

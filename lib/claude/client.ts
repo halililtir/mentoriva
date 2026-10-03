@@ -44,6 +44,30 @@ function getClient(): Anthropic {
   return _client;
 }
 
+/**
+ * Modele göre örnekleme/düşünme ayarları. Sonnet 5.5 varsayılan dışı
+ * temperature'ı 400 ile reddeder, düşünmeyi effort ile ayarlar; fallback
+ * (Haiku 4.5) eski usul temperature ile çalışır.
+ */
+function modelParams(model: string, temperature: number) {
+  return model === API.MODEL ? { output_config: { effort: API.EFFORT } } : { temperature };
+}
+
+/**
+ * Sonnet 5.5'te düşünme max_tokens'a dahildir ve tokenizer aynı metni daha çok
+ * token sayar; JSON üreten çağrılar yarıda kesilmesin diye ana modele pay verilir.
+ */
+function tokenBudget(model: string, maxTokens: number): number {
+  return model === API.MODEL ? Math.ceil(maxTokens * 1.6) : maxTokens;
+}
+
+/** Model güvenlik gerekçesiyle cevap vermeyi reddetti; metin akmadıysa fallback denenir. */
+class RefusalError extends Error {
+  constructor() {
+    super('Model bu isteğe cevap vermedi');
+  }
+}
+
 // -----------------------------------------------------------
 // Tipler
 // -----------------------------------------------------------
@@ -177,7 +201,7 @@ async function* rawMentorStream(
         {
           model: modelToUse,
           max_tokens: maxTokens,
-          temperature: API.TEMPERATURE,
+          ...modelParams(modelToUse, API.TEMPERATURE),
           system: systemParam,
           messages,
         },
@@ -197,6 +221,7 @@ async function* rawMentorStream(
           Object.assign(usage, event.message.usage);
         } else if (event.type === 'message_delta') {
           usage.output_tokens = event.usage.output_tokens;
+          if (event.delta.stop_reason === 'refusal' && fullText.length === 0) throw new RefusalError();
         } else if (
           event.type === 'content_block_delta' &&
           event.delta.type === 'text_delta'
@@ -270,12 +295,13 @@ export async function completeText({ system, user, maxTokens, temperature = 0.6,
     try {
       const res = await client.messages.create({
         model,
-        max_tokens: maxTokens,
-        temperature,
+        max_tokens: tokenBudget(model, maxTokens),
+        ...modelParams(model, temperature),
         system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: user }],
       });
       await recordUsage(feature, model, res.usage);
+      if (res.stop_reason === 'refusal') throw new RefusalError();
       return res.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
     } catch (e) {
       lastError = e;

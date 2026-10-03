@@ -16,19 +16,29 @@ export const FEATURES = {
 // -----------------------------------------------------------
 
 export const API = {
-  /** Claude API modeli. */
-  MODEL: 'claude-sonnet-4-6',
+  /** Claude API modeli. Sonnet 5.5: temperature kabul etmez, düşünme varsayılan açıktır. */
+  MODEL: 'claude-sonnet-5-5',
+
+  /**
+   * Ana modelin düşünme derinliği. 'low' sohbet için önerilen başlangıç: basit
+   * isteklerde düşünmeyi atlar, ilk kelime hızlı gelir. Kalite yetmezse 'medium'.
+   */
+  EFFORT: 'low',
 
   /** Fallback model (ana model hata verirse). */
   FALLBACK_MODEL: 'claude-haiku-4-5-20251001',
 
-  /** İlk cevaplar için max token — kesilme olmasın. */
-  MAX_TOKENS_INITIAL: 1024,
+  /**
+   * İlk cevaplar için max token. Sonnet 5.5'in yeni tokenizer'ı aynı metni ~%30 daha
+   * çok token sayar ve düşünme de bu sınıra dahildir; o yüzden pay bırakıldı.
+   * Uzunluğu sınır değil prompt belirler.
+   */
+  MAX_TOKENS_INITIAL: 2000,
 
   /** Chat cevapları için max token. */
-  MAX_TOKENS_CHAT: 800,
+  MAX_TOKENS_CHAT: 1600,
 
-  /** Temperature — karakter için biraz yüksek ama tutarlı. */
+  /** Yalnızca fallback (Haiku) için; Sonnet 5.5 varsayılan dışı değeri 400 ile reddeder. */
   TEMPERATURE: 0.7,
 
   /** Tek bir mentor çağrısı için timeout. */
