@@ -3,7 +3,7 @@
  *
  * GET    → tüm üyeler (parolasız) + bugünkü kullanım, bonus, davet sayısı
  * POST   → yeni üye (doğrulanmış olarak)
- * PUT    → { username, dailyLimit?, isActive?, notes?, password?, resetToday?, addBonus? }
+ * PUT    → { username, dailyLimit?, isActive?, notes?, password?, resetToday?, addBonus?, grantBadge?, revokeBadge? }
  * DELETE → ?username=… (üyeye bağlı tüm kişisel veriyle birlikte)
  *
  * Her değişiklik admin işlem kaydına yazılır (lib/admin/audit.ts).
@@ -18,6 +18,7 @@ import { addBonus } from '@/lib/auth/bonus';
 import { getMany } from '@/lib/kv';
 import { todayKey } from '@/lib/time';
 import { logAdminAction } from '@/lib/admin/audit';
+import { BADGE_BY_ID, GRANTABLE, getBadges, giveBadge, removeBadge } from '@/lib/badges';
 import {
   DEFAULT_DAILY_LIMIT,
   dailyLimitOf,
@@ -44,10 +45,11 @@ export async function GET(req: Request) {
   const users = await listUsers();
   const day = todayKey();
   // Kullanıcı başına ayrı istek yerine üç toplu okuma
-  const [usage, bonus, refs] = await Promise.all([
+  const [usage, bonus, refs, badges] = await Promise.all([
     getMany<number | string>(users.map((u) => `usage:${u.username}:${day}`)),
     getMany<number | string>(users.map((u) => `bonus:${u.username}`)),
     getMany<number | string>(users.map((u) => `ref-count:${u.username}`)),
+    Promise.all(users.map((u) => getBadges(u.username).catch(() => []))),
   ]);
   const rows = users.map((u, i) => ({
     ...withoutPassword(u),
@@ -55,6 +57,7 @@ export async function GET(req: Request) {
     usedToday: Number(usage[i]) || 0,
     bonus: Number(bonus[i]) || 0,
     referrals: Number(refs[i]) || 0,
+    badges: (badges[i] ?? []).map((b) => b.id),
   }));
   return NextResponse.json({ users: rows, total: rows.length }, { headers: { 'Cache-Control': 'no-store' } });
 }
@@ -107,6 +110,11 @@ export async function PUT(req: Request) {
     if (!Number.isInteger(n) || n < 1 || n > 500) return jsonError(400, 'Bonus 1–500 arası bir tam sayı olmalı');
     bonusAmount = n;
   }
+  const grant = typeof body['grantBadge'] === 'string' ? body['grantBadge'] : null;
+  const revoke = typeof body['revokeBadge'] === 'string' ? body['revokeBadge'] : null;
+  if (grant && !GRANTABLE.includes(grant)) return jsonError(400, 'Bu işaret elle verilemez');
+  if (revoke && !BADGE_BY_ID[revoke]) return jsonError(400, 'Bilinmeyen işaret');
+
   let newLimit: number | null = null;
   if ('dailyLimit' in body) {
     newLimit = parseLimit(body['dailyLimit']);
@@ -141,6 +149,8 @@ export async function PUT(req: Request) {
   await saveUser(user);
   if (body['resetToday'] === true) { await resetUsageToday(user.username); changes.push('bugünkü kullanım sıfırlandı'); }
   if (bonusAmount) { await addBonus(user.username, bonusAmount); changes.push(`+${bonusAmount} bonus`); }
+  if (grant && (await giveBadge(user.username, grant, 'admin'))) changes.push(`işaret verildi: ${BADGE_BY_ID[grant]!.name}`);
+  if (revoke && (await removeBadge(user.username, revoke))) changes.push(`işaret geri alındı: ${BADGE_BY_ID[revoke]!.name}`);
 
   if (changes.length) await logAdminAction('Üye güncellendi', user.username, changes.join(', '));
   return NextResponse.json({ success: true, user: withoutPassword(user), changes });

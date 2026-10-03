@@ -21,6 +21,7 @@ import { findQuoteInText } from '@/lib/mentors/quotes';
 import { moderateInput } from '@/lib/safety/moderation';
 import { todayKey } from '@/lib/time';
 import { recordEvent } from '@/lib/admin/metrics';
+import { awardBadges } from '@/lib/badges';
 
 export const runtime = 'nodejs';
 
@@ -75,5 +76,8 @@ export async function POST(req: Request) {
   });
   if (!token) return jsonError(503, 'Paylaşım kartı şu an kullanılamıyor.');
   await recordEvent('share');
+  // Günün sorusunda oturum zorunlu değil; varsa işaret verilir
+  const sharer = await getSessionUser(req);
+  if (sharer) await awardBadges(sharer.username, { type: 'share' });
   return NextResponse.json({ token });
 }

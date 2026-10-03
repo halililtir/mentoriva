@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
 import { track } from '@/lib/analytics';
+import { checkBadges } from '@/components/shared/BadgeToaster';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
 
@@ -120,6 +121,7 @@ function ShareCardDialog({ data, onClose }: { data: ShareSource; onClose: () => 
       const blob = await img.blob();
       setImage({ url: URL.createObjectURL(blob), blob });
       setState('ready');
+      checkBadges();
       track('share_card_created', { mentor: data.mentorId, source: data.source });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Kart oluşturulamadı');

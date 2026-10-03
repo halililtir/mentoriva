@@ -23,6 +23,7 @@ import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
 import { recordTopics } from '@/lib/admin/topics';
 import { logError } from '@/lib/admin/errors';
+import { awardBadges } from '@/lib/badges';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { todayKey } from '@/lib/time';
@@ -130,6 +131,8 @@ export async function POST(request: Request): Promise<Response> {
 
       if (anySucceeded) {
         await recordQuestion(user.username).catch(() => {});
+        const earned = await awardBadges(user.username, { type: 'answered', mentorIds: completed.map((c) => c.mentorId) });
+        if (earned.length) emit({ type: 'badges', ids: earned });
       } else {
         await releaseQuestion(user, reservation).catch(() => {});
         emit({ type: 'quota', remaining: reservation.remaining + 1 });

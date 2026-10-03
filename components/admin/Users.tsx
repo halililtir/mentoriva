@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { cn } from '@/lib/cn';
 import { Card, Pill, adminFetch, fmtAgo, fmtDate, inputCls, smallBtn } from './shared';
+import { BADGES, BADGE_BY_ID, FOUNDER_DAILY_BONUS } from '@/lib/badges-public';
 
 export interface AdminUser {
   username: string;
@@ -18,9 +19,10 @@ export interface AdminUser {
   lastSeen: string | null;
   notes?: string;
   referredBy?: string;
+  badges?: string[];
 }
 
-type Filter = 'all' | 'active-today' | 'frozen' | 'referred' | 'never';
+type Filter = 'all' | 'active-today' | 'frozen' | 'referred' | 'never' | 'founder';
 type Sort = 'created' | 'seen' | 'questions';
 
 const FILTERS: Array<{ id: Filter; label: string }> = [
@@ -28,6 +30,7 @@ const FILTERS: Array<{ id: Filter; label: string }> = [
   { id: 'active-today', label: 'Bugün aktif' },
   { id: 'never', label: 'Hiç soru sormamış' },
   { id: 'referred', label: 'Davetle gelen' },
+  { id: 'founder', label: 'Kurucu üyeler' },
   { id: 'frozen', label: 'Dondurulmuş' },
 ];
 
@@ -59,7 +62,8 @@ export function Users({ users, onChanged, onError }: { users: AdminUser[]; onCha
           : filter === 'active-today' ? isToday(u.lastSeen)
             : filter === 'frozen' ? !u.isActive
               : filter === 'referred' ? !!u.referredBy
-                : (u.questionsUsed ?? 0) === 0,
+                : filter === 'founder' ? (u.badges ?? []).includes('kurucu')
+                  : (u.questionsUsed ?? 0) === 0,
       )
       .sort((a, b) =>
         sort === 'questions' ? (b.questionsUsed ?? 0) - (a.questionsUsed ?? 0)
@@ -88,6 +92,7 @@ export function Users({ users, onChanged, onError }: { users: AdminUser[]; onCha
           <option value="questions">En çok soru</option>
         </select>
         <div className="flex gap-2 sm:ml-auto">
+          <FounderBulk onDone={onChanged} onError={onError} />
           <button onClick={exportCsv} className={smallBtn} disabled={list.length === 0}>CSV indir</button>
           <button onClick={() => setShowCreate((v) => !v)} className={smallBtn}>{showCreate ? 'Kapat' : '+ Yeni üye'}</button>
         </div>
@@ -125,11 +130,14 @@ export function Users({ users, onChanged, onError }: { users: AdminUser[]; onCha
                     {!u.isActive && <Pill tone="bad">Dondurulmuş</Pill>}
                     {u.referredBy && <Pill tone="brand">Davetli</Pill>}
                     {u.bonus > 0 && <Pill tone="warn">+{u.bonus} bonus</Pill>}
+                    {(u.badges ?? []).map((id) => BADGE_BY_ID[id]).filter(Boolean).map((b) => (
+                      <span key={b!.id} title={b!.name} className={cn('text-sm', b!.kind === 'grant' ? 'text-amber-400' : 'text-brand-300')}>{b!.icon}</span>
+                    ))}
                   </div>
                   <p className="mt-0.5 text-[11px] text-white/45">Kayıt {fmtDate(u.createdAt)} · son görülme {fmtAgo(u.lastSeen)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-4 text-xs tabular-nums text-white/60">
-                  <span title="Bugün / günlük limit">Bugün <b className="text-white/85">{u.usedToday}/{u.dailyLimit}</b></span>
+                  <span title="Bugün / günlük limit (kurucu üyelere +1)">Bugün <b className="text-white/85">{u.usedToday}/{u.dailyLimit + ((u.badges ?? []).includes('kurucu') ? FOUNDER_DAILY_BONUS : 0)}</b></span>
                   <span title="Toplam soru">Toplam <b className="text-white/85">{u.questionsUsed ?? 0}</b></span>
                   <span className={cn('transition-transform', open === u.username && 'rotate-180')}>▾</span>
                 </div>
@@ -214,6 +222,31 @@ function UserDetail({ user, onChanged, onError }: { user: AdminUser; onChanged: 
         {msg && <span className="text-xs text-emerald-400">{msg}</span>}
       </div>
 
+      <div className="rounded-xl border border-white/[0.06] p-3">
+        <p className="mb-2 text-xs font-medium text-white/70">İşaretler</p>
+        <div className="flex flex-wrap gap-2">
+          {BADGES.filter((b) => b.kind === 'grant').map((b) => {
+            const has = (user.badges ?? []).includes(b.id);
+            return (
+              <button
+                key={b.id}
+                disabled={busy}
+                title={b.meaning}
+                onClick={() => update(has ? { revokeBadge: b.id } : { grantBadge: b.id }, has ? `${b.name} geri alındı` : `${b.name} verildi`)}
+                className={cn(smallBtn, has && '!border-amber-500/40 !bg-amber-500/10 !text-amber-400')}
+              >
+                {b.icon} {b.name} {has ? '✓' : '+'}
+              </button>
+            );
+          })}
+        </div>
+        {(user.badges ?? []).some((id) => BADGE_BY_ID[id]?.kind === 'auto') && (
+          <p className="mt-2 text-[11px] text-white/50">
+            Kendiliğinden kazandıkları: {(user.badges ?? []).map((id) => BADGE_BY_ID[id]).filter((b) => b?.kind === 'auto').map((b) => b!.name).join(', ')}
+          </p>
+        )}
+      </div>
+
       <div className="rounded-xl border border-red-500/25 bg-red-500/[0.04] p-3">
         <p className="text-xs font-medium text-red-400">Kalıcı silme</p>
         <p className="mt-1 text-[11px] text-white/55">Hesap, kullanım, bonus, kayıtlı cevaplar ve yolculuklar silinir; geri alınamaz. Onaylamak için e-postayı yaz.</p>
@@ -254,4 +287,19 @@ function CreateUser({ onDone, onError }: { onDone: () => Promise<void>; onError:
       <button disabled={busy} onClick={submit} className="btn-primary mt-3 !px-4 !py-2 text-sm">Oluştur</button>
     </Card>
   );
+}
+
+/** Kapalı betadaki herkesi Kurucu Üye yapar (zaten olanlar atlanır). */
+function FounderBulk({ onDone, onError }: { onDone: () => Promise<void>; onError: (e: unknown) => void }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    if (!confirm('Şu an kayıtlı TÜM üyelere "Kurucu Üye" işareti verilsin mi? (Her gün +1 soru hakkı da kazanırlar.)')) return;
+    setBusy(true);
+    try {
+      const r = await adminFetch<{ given: number; total: number }>('/api/admin/badges', { method: 'POST', json: { badge: 'kurucu' } });
+      alert(`${r.given} üyeye yeni verildi (toplam ${r.total} üye).`);
+      await onDone();
+    } catch (e) { onError(e); } finally { setBusy(false); }
+  };
+  return <button onClick={run} disabled={busy} className={smallBtn}>◆ Herkese Kurucu Üye</button>;
 }

@@ -41,6 +41,8 @@ export interface MentorResponseState {
 /** POST /api/v1/mentors/respond — SSE olayları. */
 export type StreamEvent =
   | { type: 'quota'; remaining: number }
+  /** Bu cevapla kazanılan yeni işaretler (lib/badges.ts). */
+  | { type: 'badges'; ids: string[] }
   | { type: 'start'; mentorId: MentorId }
   | { type: 'delta'; mentorId: MentorId; text: string }
   | { type: 'end'; mentorId: MentorId }
@@ -50,6 +52,7 @@ export type StreamEvent =
 /** POST /api/v1/mentors/chat — SSE olayları (tek mentor, mentorId yok). */
 export type ChatStreamEvent =
   | { type: 'quota'; remaining: number }
+  | { type: 'badges'; ids: string[] }
   | { type: 'delta'; text: string }
   | { type: 'end' }
   | { type: 'error'; message: string }

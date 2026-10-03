@@ -17,6 +17,7 @@ import type { MentorId, Message } from '@/types';
 import { buildMentorRequest } from '@/lib/mentors/prompts';
 import { isMockEnabled, mockStream } from './mock';
 import { QuoteTagFilter } from '@/lib/mentors/quote-stream';
+import { recordUsage, type CostFeature, type TokenUsage } from '@/lib/admin/cost';
 
 // -----------------------------------------------------------
 // SDK Singleton
@@ -53,6 +54,8 @@ export interface StreamMentorResponseParams {
   chatHistory?: Message[];
   mode: 'initial' | 'chat';
   abortSignal?: AbortSignal;
+  /** Maliyet raporunda hangi özelliğe yazılsın (varsayılan: mode'a göre answer/chat). */
+  feature?: CostFeature;
 }
 
 export interface StreamChunk {
@@ -127,6 +130,7 @@ async function* rawMentorStream(
   params: StreamMentorResponseParams,
 ): AsyncGenerator<StreamChunk, void, unknown> {
   const { mentorId, userMessage, chatHistory, mode, abortSignal } = params;
+  const feature: CostFeature = params.feature ?? (mode === 'chat' ? 'chat' : 'answer');
 
   if (isMockEnabled()) {
     yield* mockStream(mentorId, abortSignal);
@@ -163,9 +167,11 @@ async function* rawMentorStream(
   const maxAttempts = API.MAX_RETRIES + 1;
 
   while (attempt < maxAttempts) {
+    // Hangi modeli kullanacağız? İlk denemede ana, retry'da fallback.
+    const modelToUse = attempt === 0 ? API.MODEL : API.FALLBACK_MODEL;
+    // Bu denemenin token kullanımı (yarıda kesilse de faturalanır, o yüzden her durumda yazılır)
+    const usage: TokenUsage = {};
     try {
-      // Hangi modeli kullanacağız? İlk denemede ana, retry'da fallback.
-      const modelToUse = attempt === 0 ? API.MODEL : API.FALLBACK_MODEL;
 
       const stream = client.messages.stream(
         {
@@ -187,7 +193,11 @@ async function* rawMentorStream(
           return;
         }
 
-        if (
+        if (event.type === 'message_start') {
+          Object.assign(usage, event.message.usage);
+        } else if (event.type === 'message_delta') {
+          usage.output_tokens = event.usage.output_tokens;
+        } else if (
           event.type === 'content_block_delta' &&
           event.delta.type === 'text_delta'
         ) {
@@ -197,9 +207,11 @@ async function* rawMentorStream(
         }
       }
 
+      await recordUsage(feature, modelToUse, usage);
       yield { type: 'complete', fullText };
       return;
     } catch (error) {
+      await recordUsage(feature, modelToUse, usage);
       attempt += 1;
       // Client'a metin akmaya başladıysa retry yapma: fallback model baştan
       // yazacağı için kullanıcı aynı cevabın iki farklı başlangıcını görürdü.
@@ -239,13 +251,15 @@ export interface CompleteParams {
   temperature?: number;
   /** MENTORIVA_MOCK_AI açıkken API yerine dönecek metin. */
   mock: () => string;
+  /** Maliyet raporundaki özellik. */
+  feature?: CostFeature;
 }
 
 /**
  * Tek mesajlık istek atar, metni döner. Ana model hata verirse bir kez
  * fallback modeli dener. Hata mesajları kullanıcı metnini içermez.
  */
-export async function completeText({ system, user, maxTokens, temperature = 0.6, mock }: CompleteParams): Promise<string> {
+export async function completeText({ system, user, maxTokens, temperature = 0.6, mock, feature = 'other' }: CompleteParams): Promise<string> {
   if (isMockEnabled()) {
     await new Promise((r) => setTimeout(r, 900));
     return mock();
@@ -261,6 +275,7 @@ export async function completeText({ system, user, maxTokens, temperature = 0.6,
         system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
         messages: [{ role: 'user', content: user }],
       });
+      await recordUsage(feature, model, res.usage);
       return res.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
     } catch (e) {
       lastError = e;

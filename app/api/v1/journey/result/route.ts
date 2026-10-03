@@ -20,6 +20,7 @@ import { ANSWER_MAX, QUESTION_COUNT } from '@/lib/journey/content';
 import { RESULT_SYSTEM, resultUserMessage } from '@/lib/journey/prompts';
 import { extractJson, parseResult, type JourneyTokenPayload } from '@/lib/journey/schema';
 import { mockResult } from '@/lib/journey/mock';
+import { awardBadges } from '@/lib/badges';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
       system: RESULT_SYSTEM,
       user: resultUserMessage(payload.sp, payload.story, payload.questions.map((q, i) => ({ q, a: answers[i] ?? '' }))),
       maxTokens: 1600,
+      feature: 'journey',
       mock: mockResult,
     });
     parsed = parseResult(extractJson(text));
@@ -72,5 +74,6 @@ export async function POST(req: Request) {
   }
 
   await kv.set(`journey-done:${payload.jid}`, '1', { ex: 60 * 60 * 2 });
+  await awardBadges(user.username, { type: 'journey' });
   return NextResponse.json({ result: parsed.value, startingPoint: payload.sp });
 }

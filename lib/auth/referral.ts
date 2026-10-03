@@ -14,6 +14,7 @@ import { randomBytes } from 'node:crypto';
 import { getKV } from '@/lib/kv';
 import { getUser, saveUser, type StoredUser } from '@/lib/auth/users';
 import { addBonus } from '@/lib/auth/bonus';
+import { awardBadges } from '@/lib/badges';
 
 export const REFERRER_BONUS = 5;
 export const NEW_USER_BONUS = 2;
@@ -74,6 +75,7 @@ export async function applyReferral(code: string | null, newUsername: string): P
     return false;
   }
   await addBonus(String(referrer), REFERRER_BONUS);
+  await awardBadges(String(referrer), { type: 'referral' });
   await addBonus(newUsername, NEW_USER_BONUS);
 
   const fresh = await getUser(newUsername);

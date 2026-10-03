@@ -70,6 +70,7 @@ export async function POST(req: Request) {
       system: QUESTIONS_SYSTEM,
       user: questionsUserMessage(startingPoint, story),
       maxTokens: 500,
+      feature: 'journey',
       mock: mockQuestions,
     });
     parsed = parseQuestions(extractJson(text));

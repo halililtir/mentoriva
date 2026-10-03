@@ -10,6 +10,7 @@ import { TypingDots } from '@/components/ui/TypingDots';
 import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
+import { announceBadges } from '@/components/shared/BadgeToaster';
 import type { ChatStreamEvent, MentorId, Message } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -68,6 +69,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
       body: { mentorId, messages: next.map(({ role, content }) => ({ role, content })) },
       onEvent: (ev) => {
         if (ev.type === 'quota') onQuota(ev.remaining);
+        else if (ev.type === 'badges') announceBadges(ev.ids);
         else if (ev.type === 'delta') { acc += ev.text; setStreaming(acc); }
         else if (ev.type === 'end') {
           setMessages((p) => [...p, { role: 'assistant', content: acc, id: nextId('a') }]);

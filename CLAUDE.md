@@ -62,6 +62,7 @@ Next.js 14 (App Router) · React 18 · TypeScript (strict + `noUncheckedIndexedA
 - **Cevap değerlendirme:** `components/shared/RateAnswer.tsx` (👍/👎, 👎 sonrası isteğe bağlı neden) → `POST /api/v1/rate` (oturumsuz, IP sınırlı) → `lib/admin/ratings.ts` sayaçları `stats:rating:<tarih>:<mentor>:<up|down>`, `stats:rating-reason:<tarih>:<neden>`. Cevap metni gönderilmez. Neden kimlikleri bileşende ve `DOWN_REASONS`'ta aynı olmalı.
 - **Hata kaydı:** `lib/admin/errors.ts → logError()` son 200 hatayı `errors:recent`'e yazar (e-posta, anahtar, URL sorgusu temizlenir; kullanıcı metni asla). Tarayıcı: `components/shared/ErrorReporter.tsx` (layout'ta) + `app/error.tsx` → `POST /api/v1/errors`. Panelde "Hatalar" sekmesi (`GET /api/admin/errors`). Sentry yok; istenirse bunun yanına eklenir.
 - **Haftalık özet:** `lib/admin/report.ts` (son 7 gün / önceki 7 gün). Cron `/api/cron/weekly-report` pazartesi 06:00 UTC, `Authorization: Bearer CRON_SECRET` ister; alıcı `ADMIN_EMAIL`. Panelde önizleme ve "Şimdi gönder" (`/api/admin/report`). Gönderim `lib/email.ts → sendEmail()`.
+- **Büyüme ve maliyet** (`GET /api/admin/insights`): huni ve haftalık gruplar `lib/admin/funnel.ts` (üye kayıtlarından; ek veri yok). Yapay zekâ maliyeti `lib/admin/cost.ts`: `client.ts` her çağrının token kullanımını (`message_start`/`message_delta`, `res.usage`) `recordUsage(feature, model, usage)` ile yazar; özellik `answer | chat | daily | journey | other` (`streamMentorResponse({feature})`, `completeText({feature})`). Fiyatlar `PRICES` (USD/1M token, liste fiyatı) — model değişirse güncelle.
 - **Yeni üye karşılaması:** `components/home/WelcomeCard.tsx`, yalnızca `questionsUsed === 0` olan üyeye (`toPublicUser` döner); metinler `lib/home-content.ts → WELCOME`.
 
 ### Mentor prompt'ları
@@ -88,6 +89,15 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 - **Test → soru:** test sonucu `sessionStorage.mentoriva_preselect` yazar; ana sayfa mentoru seçili açar (`?mentor=` parametresi de desteklenir). Anahtarlar `lib/flow-keys.ts`.
 - **Alıntı sayfaları:** `/alintilar`, `/alintilar/[id]` (statik, schema.org Quotation, site haritasında).
 - **Ölçüm:** `lib/analytics.ts → track()`; paketsiz Vercel Web Analytics betiği yalnızca production'da yüklenir (Vercel panelinde Analytics açılmalı). Olay verisine kişisel bilgi konmaz.
+
+## İşaretler (rozetler) — `/isaretlerim`
+
+- **İlke:** kişiye özel, kimseyle karşılaştırılmaz; miktarı değil derinliği/çeşitliliği ödüllendirir, seri (streak) baskısı yok. Bu ilkeyi bozacak (sıralama, "üst üste N gün", soru sayısı) rozet ekleme.
+- Tanımlar (ad, anlam, nasıl kazanılır, simge) `lib/badges-public.ts`; kurallar ve depolama `lib/badges.ts`.
+- Otomatik: İlk Adım, Çok Sesli (tüm aktif mentorlar), Derinleşen (sohbette 5. kullanıcı mesajı), İçe Bakış (yolculuk), Düşünme Alışkanlığı (7 farklı gün), Köprü (ödüllü davet), Paylaşan (paylaşım kartı). `awardBadges(username, event)` respond/chat/journey result/share card/referral içinden çağrılır, hata fırlatmaz.
+- Admin verir: Kurucu Üye (günlük +1 hak: `effectiveDailyLimit`, kota ve `toPublicUser` bunu kullanır), Destekçi, Katkı Veren. `/api/v1/users` PUT `grantBadge`/`revokeBadge`; toplu: `POST /api/admin/badges {badge}`.
+- Redis: `badges:<email>` hash (HSETNX → iki kez verilmez), `progress:<email>` hash (`m:<mentor>`, `d:<gün>`), `badges-seen:<email>`. `deleteUser` bunları da siler.
+- Bildirim: SSE `{type:'badges', ids}` → `announceBadges()`; SSE dışı olaylar (yolculuk, paylaşım) için `checkBadges()`. `BadgeToaster` layout'ta `SessionProvider` içinde.
 
 ## Kendine Yolculuk (`/yolculuk`)
 

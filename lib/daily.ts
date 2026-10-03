@@ -68,7 +68,7 @@ export async function getDaily(date: string): Promise<DailyEntry | null> {
 
 async function collect(mentorId: MentorId, question: string): Promise<string | null> {
   let text = '';
-  for await (const chunk of streamMentorResponse({ mentorId, userMessage: question, mode: 'initial' })) {
+  for await (const chunk of streamMentorResponse({ mentorId, userMessage: question, mode: 'initial', feature: 'daily' })) {
     if (chunk.type === 'text_delta' && chunk.text) text += chunk.text;
     if (chunk.type === 'error') return null;
   }

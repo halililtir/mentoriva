@@ -20,6 +20,7 @@ import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
 import { logError } from '@/lib/admin/errors';
+import { awardBadges } from '@/lib/badges';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { recordAnswer } from '@/lib/share/answers';
@@ -160,6 +161,8 @@ export async function POST(request: Request): Promise<Response> {
         emit({ type: 'end' });
         await recordQuestion(user.username).catch(() => {});
         await recordEvent('chat');
+        const earned = await awardBadges(user.username, { type: 'chat', mentorId, userMessages: messages.filter((m) => m.role === 'user').length });
+        if (earned.length) emit({ type: 'badges', ids: earned });
         await recordAnswer(user.username, { mentorId, question: userMessage, text: answer });
       } else {
         await releaseQuestion(user, reservation).catch(() => {});

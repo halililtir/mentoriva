@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { Outfit, Playfair_Display } from 'next/font/google';
 import { Atmosphere } from '@/components/shared/Atmosphere';
 import { ErrorReporter } from '@/components/shared/ErrorReporter';
+import { BadgeToaster } from '@/components/shared/BadgeToaster';
 import { SessionProvider } from '@/lib/session';
 import { SITE_URL } from '@/lib/site';
 import { ANALYTICS_INIT } from '@/lib/analytics';
@@ -79,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorReporter />
         <SessionProvider>
           <div id="main-content">{children}</div>
+          <BadgeToaster />
         </SessionProvider>
         {/* Vercel Web Analytics — çerezsiz; yalnızca production'da */}
         {process.env.NODE_ENV === 'production' && (

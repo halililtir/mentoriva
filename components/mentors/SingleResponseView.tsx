@@ -9,6 +9,7 @@ import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
+import { announceBadges } from '@/components/shared/BadgeToaster';
 import type { MentorId, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -54,6 +55,7 @@ export function SingleResponseView({
         else if (ev.type === 'end') setDone(true);
         else if (ev.type === 'error') setError(ev.message);
         else if (ev.type === 'crisis') setCrisis(ev.message);
+        else if (ev.type === 'badges') announceBadges(ev.ids);
       },
       onError: (e) => {
         if (!routeStreamError(e, handlers.current)) setError(e.message);

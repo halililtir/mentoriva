@@ -20,6 +20,11 @@ export interface KV {
   ltrim(key: string, start: number, stop: number): Promise<unknown>;
   lrange<T = string>(key: string, start: number, stop: number): Promise<T[]>;
   mget<T = unknown>(...keys: string[]): Promise<(T | null)[]>;
+  /** Alan yoksa yazar; yeni yazıldıysa 1, zaten varsa 0 (atomik). */
+  hsetnx(key: string, field: string, value: unknown): Promise<number>;
+  hset(key: string, values: Record<string, unknown>): Promise<number>;
+  hgetall<T extends Record<string, unknown> = Record<string, unknown>>(key: string): Promise<T | null>;
+  hdel(key: string, ...fields: string[]): Promise<number>;
   scan(cursor: string | number, opts: { match: string; count?: number }): Promise<[string | number, string[]]>;
 }
 
@@ -129,6 +134,15 @@ function createMemoryKV(store: MemoryStore): KV {
     return next;
   };
 
+  /** Hash değeri: yoksa oluşturulur (Upstash'teki gibi alanlar düz değer). */
+  const hash = (key: string): Record<string, unknown> => {
+    const entry = read(key);
+    if (entry && entry.value && typeof entry.value === 'object' && !Array.isArray(entry.value)) return entry.value as Record<string, unknown>;
+    const h: Record<string, unknown> = {};
+    store.set(key, { value: h, expiresAt: entry?.expiresAt ?? null });
+    return h;
+  };
+
   const list = (key: string): string[] => {
     const entry = read(key);
     return Array.isArray(entry?.value) ? (entry!.value as string[]) : [];
@@ -176,6 +190,31 @@ function createMemoryKV(store: MemoryStore): KV {
         const entry = read(k);
         return entry ? (decode(entry.value) as T) : null;
       });
+    },
+    async hsetnx(key, field, value) {
+      const h = hash(key);
+      if (field in h) return 0;
+      h[field] = value;
+      return 1;
+    },
+    async hset(key, values) {
+      const h = hash(key);
+      let added = 0;
+      for (const [f, v] of Object.entries(values)) { if (!(f in h)) added++; h[f] = v; }
+      return added;
+    },
+    async hgetall<T extends Record<string, unknown>>(key: string) {
+      const entry = read(key);
+      const h = entry?.value as Record<string, unknown> | undefined;
+      return h && Object.keys(h).length ? ({ ...h } as T) : null;
+    },
+    async hdel(key, ...fields) {
+      const entry = read(key);
+      if (!entry) return 0;
+      const h = entry.value as Record<string, unknown>;
+      let n = 0;
+      for (const f of fields) if (f in h) { delete h[f]; n++; }
+      return n;
     },
     async scan(_cursor, opts) {
       const re = new RegExp('^' + opts.match.split('*').map(escapeRegex).join('.*') + '$');

@@ -16,6 +16,7 @@ import { ANSWER_MAX, JOURNEY_COST, QUESTION_COUNT, STARTING_POINTS, STORY_MAX, S
 import type { JourneyResult } from '@/lib/journey/schema';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
+import { checkBadges } from '@/components/shared/BadgeToaster';
 
 type Step = 'home' | 'where' | 'story' | 'questions' | 'thinking' | 'result' | 'crisis';
 
@@ -133,6 +134,7 @@ export default function YolculukPage() {
       setStartingPointLabel(data.startingPoint ?? '');
       setStep('result');
       track('journey_result');
+      checkBadges();
     } catch {
       setError('Bağlantı kurulamadı. Cevapların duruyor; tekrar dene.');
       setStep('questions');

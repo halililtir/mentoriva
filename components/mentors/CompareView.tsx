@@ -9,6 +9,7 @@ import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
+import { announceBadges } from '@/components/shared/BadgeToaster';
 import type { MentorId, MentorResponseState, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -39,6 +40,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
       onEvent: (ev) => {
         if (ev.type === 'quota') return handlers.current.onQuota(ev.remaining);
         if (ev.type === 'crisis') return setCrisis(ev.message);
+        if (ev.type === 'badges') return announceBadges(ev.ids);
         const mid = ev.mentorId;
         setStates((prev) => {
           const cur = prev[mid] ?? { status: 'pending', content: '' };

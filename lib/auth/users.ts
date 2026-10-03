@@ -13,6 +13,7 @@ import { getKV, getMany, scanKeys } from '@/lib/kv';
 import { todayKey } from '@/lib/time';
 import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 import { getBonus, refundBonus, spendBonus } from '@/lib/auth/bonus';
+import { FOUNDER_DAILY_BONUS, deleteBadgeData, hasBadge } from '@/lib/badges';
 
 export { DEFAULT_DAILY_LIMIT };
 const USAGE_TTL_SECONDS = 60 * 60 * 48;
@@ -62,6 +63,12 @@ export function dailyLimitOf(user: StoredUser): number {
   return Number.isFinite(limit) && limit >= 0 ? limit : DEFAULT_DAILY_LIMIT;
 }
 
+/** Günlük limit + rozet ayrıcalıkları (Kurucu Üye: +1). Kota hesabında bunu kullan. */
+export async function effectiveDailyLimit(user: StoredUser): Promise<number> {
+  const base = dailyLimitOf(user);
+  return (await hasBadge(user.username, 'kurucu').catch(() => false)) ? base + FOUNDER_DAILY_BONUS : base;
+}
+
 export async function getUser(username: string): Promise<StoredUser | null> {
   if (!username) return null;
   const raw = await getKV().get<StoredUser | string>(userKey(username));
@@ -83,6 +90,7 @@ export async function deleteUser(username: string): Promise<void> {
     `journey-step:${username}`,
     `journeys:${username}`,
   );
+  await deleteBadgeData(username);
 }
 
 export async function listUsers(): Promise<StoredUser[]> {
@@ -103,8 +111,7 @@ export async function resetUsageToday(username: string): Promise<void> {
 }
 
 export async function toPublicUser(user: StoredUser): Promise<PublicUser> {
-  const dailyLimit = dailyLimitOf(user);
-  const [usedToday, bonus] = await Promise.all([getUsedToday(user.username), getBonus(user.username)]);
+  const [dailyLimit, usedToday, bonus] = await Promise.all([effectiveDailyLimit(user), getUsedToday(user.username), getBonus(user.username)]);
   return {
     username: user.username,
     name: user.name || user.username.split('@')[0] || user.username,
@@ -137,7 +144,7 @@ export interface Reservation {
 export async function reserveQuestion(user: StoredUser): Promise<Reservation | null> {
   const kv = getKV();
   const key = usageKey(user.username);
-  const limit = dailyLimitOf(user);
+  const limit = await effectiveDailyLimit(user);
 
   const used = await kv.incr(key);
   if (used === 1) await kv.expire(key, USAGE_TTL_SECONDS);
