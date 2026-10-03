@@ -37,7 +37,7 @@ export function SynthesisCard({ data }: { data: Synthesis }) {
 
       <div className="mt-5 border-t border-brand-400/20 pt-4">
         <p className="text-[12px] font-medium text-brand-300">Sana kalan soru</p>
-        <p className="mt-1 font-display text-[clamp(1.1rem,2.6vw,1.35rem)] italic leading-snug text-white/90">{data.ask}</p>
+        <p className="mt-1.5 border-l-2 border-brand-400/70 pl-3.5 text-[16.5px] font-medium leading-relaxed text-white/90 sm:text-[17px]">{data.ask}</p>
       </div>
       <p className="mt-4 text-[11px] text-white/35">Mentoriva&apos;nın yukarıdaki cevaplardan çıkardığı özet.</p>
     </section>
