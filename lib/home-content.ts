@@ -139,19 +139,19 @@ export const COMPARE_DEMO: {
   mentors: Array<{ id: MentorId; text: string }>;
   footer: string;
 } = {
-  question: 'Annemle her konuşmamız kavgayla bitiyor. Ne yapmalıyım?',
+  question: 'Herkes beni güçlü biri sanıyor. Aslında çok yoruldum ama bunu kimseye söyleyemiyorum.',
   assistant: [
-    'Bu zor ama oldukça yaygın bir durum. Deneyebileceğin birkaç yöntem:',
-    '1. Sakin bir anda açık iletişim kur.',
-    '2. Suçlamak yerine "ben" dili kullan.',
-    '3. Sınırlarını net biçimde belirle.',
+    'Bu hissi yaşaman çok anlaşılır. Yardımcı olabilecek birkaç öneri:',
+    '1. Kendine dinlenmek için zaman ayır.',
+    '2. Güvendiğin biriyle duygularını paylaş.',
+    '3. Sınır koy, hayır demekten çekinme.',
     '4. Gerekirse bir uzmandan destek al.',
   ],
   verdict: 'Doğru. Ama herkese aynı.',
   mentors: [
-    { id: 'jung', text: 'Kavgalarınız hep aynı yerden mi başlıyor? O yer, ikinizin de bakmak istemediği bir şeyi saklıyor olabilir.' },
-    { id: 'nietzsche', text: 'Her konuşmada hâlâ onun onayını mı kazanmaya çalışıyorsun? Belki kavga dediğin, teslim olmayı reddedişindir.' },
-    { id: 'mevlana', text: 'Karanlıkta aynı fili tutuyorsunuz; sen hortumunu, o kulağını. Önce onun elindekini sor.' },
+    { id: 'jung', text: '“Güçlü” olan, yıllardır taşıdığın maske. Yorulan ise onun arkasında nefes alamayan insan. Maske bu kadar ağırlaştıysa artık sana değil, onlara hizmet ediyor.' },
+    { id: 'nietzsche', text: 'Güçlü görünmek gücün kendisi değil, en yorucu taklididir. Gerçekten güçlü olan, zayıf görünmeyi göze alabilendir.' },
+    { id: 'seneca', text: 'Herkesin yükünü taşıyan, kendine ait tek bir saat bırakmamıştır. Bu akşam o saati geri iste ve kimseye açıklama yapma.' },
   ],
   footer: 'Bir liste değil; birbirine itiraz eden bakışlar. Hangisinin sana dokunduğunu sen seçersin.',
 };
