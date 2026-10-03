@@ -22,6 +22,7 @@ import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
 import { recordTopics } from '@/lib/admin/topics';
+import { logError } from '@/lib/admin/errors';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { todayKey } from '@/lib/time';
@@ -172,7 +173,7 @@ async function runMentor(
         text += chunk.text;
         emit({ type: 'delta', mentorId, text: chunk.text });
       } else if (chunk.type === 'error') {
-        await recordEvent('mentor_error');
+        await Promise.all([recordEvent('mentor_error'), logError('server', `respond:${mentorId}`, chunk.error)]);
         emit({ type: 'error', mentorId, message: publicError(chunk.error) });
         return null;
       }
@@ -180,7 +181,7 @@ async function runMentor(
     emit({ type: 'end', mentorId });
     return text || null;
   } catch (error) {
-    await recordEvent('mentor_error');
+    await Promise.all([recordEvent('mentor_error'), logError('server', `respond:${mentorId}`, error)]);
     emit({ type: 'error', mentorId, message: publicError(error instanceof Error ? error.message : undefined) });
     return null;
   }

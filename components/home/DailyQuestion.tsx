@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { SectionHeading } from '@/components/home/Sections';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
+import { RateAnswer } from '@/components/shared/RateAnswer';
 import { Reveal } from '@/components/ui/Reveal';
 import { TypingDots } from '@/components/ui/TypingDots';
 import { ACTIVE_MENTORS, getAccent } from '@/lib/mentors/metadata';
@@ -119,6 +120,7 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
             ) : (
               <div key={current.id} className="animate-fade-in">
                 <p className="whitespace-pre-wrap font-display text-[17px] leading-[1.8] text-white/80 sm:text-[19px]">{answer}</p>
+                <RateAnswer key={current.id} mentorId={current.id as MentorId} source="daily" className="mt-5" />
                 <div className="mt-6 flex flex-col gap-2 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <ShareCardButton data={{ source: 'daily', mentorId: current.id as MentorId, question: entry!.question, answer }} />
                   <button

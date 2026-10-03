@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Outfit, Playfair_Display } from 'next/font/google';
 import { Atmosphere } from '@/components/shared/Atmosphere';
+import { ErrorReporter } from '@/components/shared/ErrorReporter';
 import { SessionProvider } from '@/lib/session';
 import { SITE_URL } from '@/lib/site';
 import { ANALYTICS_INIT } from '@/lib/analytics';
@@ -51,7 +52,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f4f8fb',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f8fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#070b14' },
+  ],
   width: 'device-width',
   initialScale: 1,
   colorScheme: 'dark light',
@@ -72,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Ana içeriğe geç
         </a>
         <Atmosphere />
+        <ErrorReporter />
         <SessionProvider>
           <div id="main-content">{children}</div>
         </SessionProvider>

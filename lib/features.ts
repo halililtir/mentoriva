@@ -98,6 +98,12 @@ export const RATE_LIMITS = {
 
   /** Geri bildirim — IP başına. */
   FEEDBACK_IP: { max: 5, windowSec: HOUR },
+
+  /** Cevap değerlendirme (👍/👎) — IP başına. */
+  RATE_IP: { max: 60, windowSec: HOUR },
+
+  /** İstemci hata kaydı — IP başına. */
+  CLIENT_ERROR_IP: { max: 20, windowSec: HOUR },
 } as const;
 
 // -----------------------------------------------------------

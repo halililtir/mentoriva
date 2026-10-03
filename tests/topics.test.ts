@@ -15,6 +15,12 @@ describe('soru konuları', () => {
     expect(classifyQuestion('KAYGILARIMLA NASIL BAŞA ÇIKARIM')).toContain('kaygi');
   });
 
+  it('tekrar eden hatalar kendini tanımaya girer; "olumlu" kayıp sayılmaz', () => {
+    expect(classifyQuestion('Neden hep aynı hataları tekrarlıyorum?')).toContain('benlik');
+    expect(classifyQuestion('Daha olumlu nasıl düşünürüm?')).not.toContain('kayip');
+    expect(classifyQuestion('Babamın ölümünü kabullenemiyorum')).toContain('kayip');
+  });
+
   it('alakasız metin boş döner', () => {
     expect(classifyQuestion('Merhaba')).toEqual([]);
   });

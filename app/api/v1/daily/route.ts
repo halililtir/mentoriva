@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ensureDaily } from '@/lib/daily';
+import { logError } from '@/lib/admin/errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,7 @@ export async function GET() {
     entry = await ensureDaily();
   } catch (e) {
     console.error('[daily] üretilemedi:', e instanceof Error ? e.message : e);
+    await logError('server', 'daily', e);
     return NextResponse.json({ error: 'Günün cevapları şu an hazırlanamıyor.' }, { status: 503 });
   }
   if (!entry) {

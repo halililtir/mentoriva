@@ -15,6 +15,8 @@ export interface OverviewData {
     emailFrom: 'custom' | 'default';
     admin: 'missing' | 'too_short' | 'ok';
     shareSecret: 'custom' | 'fallback';
+    adminEmail: boolean;
+    cronSecret: boolean;
     siteUrl: string | null;
   };
   members: {
@@ -26,6 +28,7 @@ export interface OverviewData {
   eventLabels: Record<string, string>;
   mentors: Array<{ id: string; total: number; last7: number }>;
   topics: Array<{ id: string; label: string; count: number }>;
+  ratings: { mentors: Array<{ id: string; up: number; down: number }>; reasons: Array<{ id: string; label: string; count: number }> };
   recentQuestions: Array<{ q: string; mentors: string[]; at: string | null }>;
   unreadFeedback: number;
 }
@@ -71,6 +74,12 @@ function healthRows(h: OverviewData['health']) {
       fix: h.shareSecret === 'custom' ? null : 'SHARE_CARD_SECRET ekle.',
     },
     {
+      label: 'Haftalık özet',
+      tone: h.adminEmail && h.cronSecret ? 'good' : 'warn',
+      value: h.adminEmail && h.cronSecret ? 'Açık' : 'Kapalı',
+      fix: h.adminEmail && h.cronSecret ? null : 'Pazartesi e-postası için ADMIN_EMAIL (senin adresin) ve CRON_SECRET (rastgele uzun bir değer) ekle.',
+    },
+    {
       label: 'Site adresi',
       tone: h.siteUrl ? 'good' : 'warn',
       value: h.siteUrl ?? 'Tanımsız',
@@ -94,7 +103,7 @@ export function Overview({ data, onOpenFeedback }: { data: OverviewData; onOpenF
 
   const questions7 = sum(series['question'], 7);
   const questionsToday = sum(series['question'], 1);
-  const errors7 = sum(series['mentor_error'], 7);
+  const errors7 = sum(series['mentor_error'], 7) + sum(series['server_error'], 7) + sum(series['client_error'], 7);
   const crisis7 = sum(series['crisis'], 7);
 
   return (
@@ -124,7 +133,7 @@ export function Overview({ data, onOpenFeedback }: { data: OverviewData; onOpenF
         <Stat
           label="Hata / kriz (7 gün)"
           value={`${errors7} / ${crisis7}`}
-          hint="Mentor hatası / kriz filtresi"
+          hint="Tüm hatalar / kriz filtresi"
           tone={errors7 > 0 ? 'warn' : 'default'}
         />
       </div>
@@ -200,6 +209,52 @@ export function Overview({ data, onOpenFeedback }: { data: OverviewData; onOpenF
           )}
         </Card>
       </div>
+
+      {/* Memnuniyet */}
+      <Card title="Cevap memnuniyeti (son 7 gün)">
+        {(() => {
+          const up = data.ratings.mentors.reduce((s, m) => s + m.up, 0);
+          const down = data.ratings.mentors.reduce((s, m) => s + m.down, 0);
+          if (up + down === 0) return <p className="text-sm text-white/50">Henüz oy yok. Cevapların altındaki 👍/👎 düğmelerinden gelir.</p>;
+          return (
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div className="space-y-3">
+                <p className="text-sm text-white/75">
+                  Genel: <b className="text-white/90">%{Math.round((up / (up + down)) * 100)}</b> olumlu · {up} 👍 / {down} 👎
+                </p>
+                {data.ratings.mentors.filter((m) => m.up + m.down > 0).map((m) => {
+                  const meta = mentorMeta[m.id];
+                  const total = m.up + m.down;
+                  return (
+                    <div key={m.id}>
+                      <div className="mb-1 flex justify-between text-[13px]">
+                        <span style={{ color: meta ? getAccent(meta.accentColor).text : undefined }}>{meta?.shortName ?? m.id}</span>
+                        <span className="tabular-nums text-white/55">%{Math.round((m.up / total) * 100)} · {total} oy</span>
+                      </div>
+                      <div className="flex h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                        <div className="h-full bg-emerald-500" style={{ width: `${(m.up / total) * 100}%` }} />
+                        <div className="h-full bg-red-500/70" style={{ width: `${(m.down / total) * 100}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div>
+                <p className="mb-2 text-sm text-white/75">👎 nedenleri</p>
+                {data.ratings.reasons.every((r) => r.count === 0) ? (
+                  <p className="text-sm text-white/50">Neden belirtilmedi.</p>
+                ) : (
+                  <ul className="space-y-1.5 text-[13px]">
+                    {data.ratings.reasons.filter((r) => r.count > 0).map((r) => (
+                      <li key={r.id} className="flex justify-between"><span className="text-white/75">{r.label}</span><span className="tabular-nums text-white/55">{r.count}</span></li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+      </Card>
 
       {/* Son sorular */}
       <Card title="Son sorular" action={<Pill>anonim</Pill>}>

@@ -59,6 +59,10 @@ Next.js 14 (App Router) · React 18 · TypeScript (strict + `noUncheckedIndexedA
 - Metrikler `lib/admin/metrics.ts → recordEvent()`: `stats:day:<tarih>:<olay>` (question, chat, signup, journey, share, referral, feedback, crisis, mentor_error; 120 gün TTL). Konular `lib/admin/topics.ts` (anahtar kelime, ASCII katlanmış; `stats:topic:<tarih>:<konu>`). Soru metni ve kullanıcı eşleşmesi metriklere yazılmaz; `stats:recent-questions` kullanıcısızdır.
 - Sunucusuz ortamda yanıt sonrası iş kesilebildiği için metrik yazımları `await` edilir; fonksiyonlar hata fırlatmaz.
 - Her admin değişikliği `lib/admin/audit.ts` ile `admin-log` listesine yazılır (son 300), `GET /api/admin/log`.
+- **Cevap değerlendirme:** `components/shared/RateAnswer.tsx` (👍/👎, 👎 sonrası isteğe bağlı neden) → `POST /api/v1/rate` (oturumsuz, IP sınırlı) → `lib/admin/ratings.ts` sayaçları `stats:rating:<tarih>:<mentor>:<up|down>`, `stats:rating-reason:<tarih>:<neden>`. Cevap metni gönderilmez. Neden kimlikleri bileşende ve `DOWN_REASONS`'ta aynı olmalı.
+- **Hata kaydı:** `lib/admin/errors.ts → logError()` son 200 hatayı `errors:recent`'e yazar (e-posta, anahtar, URL sorgusu temizlenir; kullanıcı metni asla). Tarayıcı: `components/shared/ErrorReporter.tsx` (layout'ta) + `app/error.tsx` → `POST /api/v1/errors`. Panelde "Hatalar" sekmesi (`GET /api/admin/errors`). Sentry yok; istenirse bunun yanına eklenir.
+- **Haftalık özet:** `lib/admin/report.ts` (son 7 gün / önceki 7 gün). Cron `/api/cron/weekly-report` pazartesi 06:00 UTC, `Authorization: Bearer CRON_SECRET` ister; alıcı `ADMIN_EMAIL`. Panelde önizleme ve "Şimdi gönder" (`/api/admin/report`). Gönderim `lib/email.ts → sendEmail()`.
+- **Yeni üye karşılaması:** `components/home/WelcomeCard.tsx`, yalnızca `questionsUsed === 0` olan üyeye (`toPublicUser` döner); metinler `lib/home-content.ts → WELCOME`.
 
 ### Mentor prompt'ları
 
@@ -96,7 +100,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 ## Tasarım sistemi
 
 - Renkler `tailwind.config.ts` (`ink`, `brand`, mentor aksanları `lib/mentors/metadata.ts → ACCENT_THEMES`). Fontlar `next/font` ile (`--font-display` Playfair Display, `--font-sans` Outfit).
-- **İki tema: Gündüz (varsayılan) ve Gece.** Renkler `app/globals.css` içinde `[data-theme='gece' | 'gunduz']` altında "R G B" CSS değişkenleridir; Tailwind `ink-*`, `brand-*`, `paper`, `muted`, `faint`, `onbrand` ve **`white`** bunları okur. `white` ön plan rengidir: gündüzde koyulaşır, böylece `text-white/50` gibi sınıflar her iki temada çalışır. Yeni renk yazarken sabit hex/`rgba(255,255,255,…)` yerine bu sınıfları ya da `rgb(var(--fg) / x)` kullan. Mentor adı gibi aksan **metinleri** `getAccent(..).text` ile (gündüzde koyu ton), çizgi/arka plan `hex` ile boyanır. Gündüzde düşük alfalı metinler ve `text-amber-*`/`text-red-*` globals.css'te okunur tonlara çekilir. Portre kartları `data-theme="gece"` ile her temada koyu kalır. Ana sayfada `.band` sarmalayıcısı gündüzde açık mavi şerit çizer. Seçim `lib/theme.ts` (localStorage + ilk boyamadan önce çalışan `THEME_INIT`), düğme `components/shared/ThemeSwitcher.tsx`. Paylaşım görselleri (OG, StoryCard, share/card) bilerek hep koyudur.
+- **İki tema: Gündüz ve Gece; varsayılan cihaz ayarı** (`prefers-color-scheme`). Kullanıcı düğmeyle seçerse seçimi localStorage'da saklanır ve cihaz ayarının önüne geçer; seçim yoksa cihazın mod değişimi canlı izlenir. Renkler `app/globals.css` içinde `[data-theme='gece' | 'gunduz']` altında "R G B" CSS değişkenleridir; Tailwind `ink-*`, `brand-*`, `paper`, `muted`, `faint`, `onbrand` ve **`white`** bunları okur. `white` ön plan rengidir: gündüzde koyulaşır, böylece `text-white/50` gibi sınıflar her iki temada çalışır. Yeni renk yazarken sabit hex/`rgba(255,255,255,…)` yerine bu sınıfları ya da `rgb(var(--fg) / x)` kullan. Mentor adı gibi aksan **metinleri** `getAccent(..).text` ile (gündüzde koyu ton), çizgi/arka plan `hex` ile boyanır. Gündüzde düşük alfalı metinler ve `text-amber-*`/`text-red-*` globals.css'te okunur tonlara çekilir. Portre kartları `data-theme="gece"` ile her temada koyu kalır. Ana sayfada `.band` sarmalayıcısı gündüzde açık mavi şerit çizer. Seçim `lib/theme.ts` (localStorage + ilk boyamadan önce çalışan `THEME_INIT`), düğme `components/shared/ThemeSwitcher.tsx`. Paylaşım görselleri (OG, StoryCard, share/card) bilerek hep koyudur.
 - Ortak sınıflar `app/globals.css`: `btn-primary/secondary/ghost`, `glass`, `input-field`, `eyebrow`, `text-gradient`, `skeleton`, `glow-border` (akış sırasında dönen çerçeve, `--accent` değişkeniyle), `focus-ring-gradient`, `reveal`, `typing-dots`, `streaming-cursor`.
 - Animasyon keyframe'leri Tailwind config'te (`animate-fade-up`, `animate-word`, `animate-orbit`, `animate-dock-in`…). Hepsi `prefers-reduced-motion` altında kapanır.
 - **Aynı elemanda hem animasyon hem hover transform kullanma**: `animation-fill-mode: both` hover'daki `translate/scale`'i ezer. Animasyonu dış, hover'ı iç elemana koy (bkz. `MentorGalleryCard`).
@@ -106,6 +110,10 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 ## Kriz politikası
 
 Moderasyon (`lib/safety/moderation.ts`) girdiyi Türkçe küçültüp ASCII'ye katlar; desenler ASCII yazılır. Kriz/zararlı içerikte mentor çağrılmaz, kota düşülmez. Ürün sahibinin bilinçli kararı: **telefon numarası verilmez** (`prompts/shared.ts`). Bu alanı değiştirmeden önce kullanıcıya sor.
+
+## Ortam değişkenleri (Vercel)
+
+`ANTHROPIC_API_KEY`, Redis (`UPSTASH_REDIS_REST_*` ya da `KV_REST_API_*`), `ADMIN_SECRET` (≥12), `SHARE_CARD_SECRET`, `NEXT_PUBLIC_SITE_URL`, `RESEND_API_KEY`, `RESEND_FROM` (doğrulanmış alan adı), `ADMIN_EMAIL` (haftalık özet), `CRON_SECRET` (cron doğrulaması). Hangilerinin eksik olduğu `/api/health` ve admin "Genel bakış"ta görünür.
 
 ## Açık konular
 

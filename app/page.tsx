@@ -12,6 +12,7 @@ import { Faq } from '@/components/home/Faq';
 import { FinalCta } from '@/components/home/FinalCta';
 import { FlowSteps } from '@/components/home/FlowSteps';
 import { DailyQuestion } from '@/components/home/DailyQuestion';
+import { WelcomeCard } from '@/components/home/WelcomeCard';
 import { JourneyTeaser } from '@/components/home/JourneyTeaser';
 import { SelectionDock } from '@/components/home/SelectionDock';
 import { MentorGalleryCard } from '@/components/mentors/MentorGalleryCard';
@@ -266,6 +267,7 @@ export default function HomePage() {
       {view === 'gallery' && (
         <div className="flex-1">
           <Hero user={user} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
+          {user && user.questionsUsed === 0 && <WelcomeCard name={user.name} onPick={handlePickQuestion} />}
           {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
           <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
 

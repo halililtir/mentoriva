@@ -9,6 +9,7 @@ import { useSession } from '@/lib/session';
 import { TypingDots } from '@/components/ui/TypingDots';
 import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
+import { RateAnswer } from '@/components/shared/RateAnswer';
 import type { ChatStreamEvent, MentorId, Message } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -118,8 +119,9 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
                 {msg.content}
               </Bubble>
               {asked && (
-                <div className="mt-1.5 flex justify-start pl-1">
+                <div className="mt-1.5 flex flex-wrap items-start gap-3 pl-1">
                   <ShareCardButton data={{ source: 'answer', mentorId, question: asked, answer: msg.content }} compact className="!border-transparent opacity-70 hover:opacity-100" />
+                  <RateAnswer mentorId={mentorId} source="chat" />
                 </div>
               )}
             </div>

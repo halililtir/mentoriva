@@ -14,6 +14,7 @@ import { listUsers } from '@/lib/auth/users';
 import { getHealth } from '@/lib/health';
 import { EVENTS, getSeries, lastDays } from '@/lib/admin/metrics';
 import { topicTotals } from '@/lib/admin/topics';
+import { ratingSummary } from '@/lib/admin/ratings';
 import { MENTOR_IDS } from '@/types';
 import { todayKey } from '@/lib/time';
 
@@ -31,11 +32,12 @@ export async function GET(req: Request) {
   const today = todayKey();
   const now = Date.now();
 
-  const [health, users, series, topics, mentorTotals, mentorDaily, recentRaw, feedbackKeys] = await Promise.all([
+  const [health, users, series, topics, ratings, mentorTotals, mentorDaily, recentRaw, feedbackKeys] = await Promise.all([
     getHealth(),
     listUsers(),
     getSeries(dates),
     topicTotals(last7),
+    ratingSummary(last7),
     getMany<number | string>(MENTOR_IDS.map((id) => `stats:mentor:${id}`)),
     getMany<number | string>(MENTOR_IDS.flatMap((id) => last7.map((d) => `stats:mentor:${id}:${d}`))),
     kv.lrange<unknown>('stats:recent-questions', 0, 49),
@@ -83,7 +85,7 @@ export async function GET(req: Request) {
     .filter(Boolean);
 
   return NextResponse.json(
-    { health, members, dates, series, eventLabels: EVENTS, mentors, topics, recentQuestions, unreadFeedback },
+    { health, members, dates, series, eventLabels: EVENTS, mentors, topics, ratings, recentQuestions, unreadFeedback },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }

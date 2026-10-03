@@ -8,6 +8,7 @@ import { TypingDots } from '@/components/ui/TypingDots';
 import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
+import { RateAnswer } from '@/components/shared/RateAnswer';
 import type { MentorId, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -137,6 +138,9 @@ export function SingleResponseView({
 
       {/* Eylemler */}
       <div className="mt-8 min-h-[52px]">
+        {done && content && !crisis && (
+          <RateAnswer mentorId={mentorId} source="answer" className="mb-5 flex flex-col items-center animate-fade-up" />
+        )}
         {done && content && !crisis && (
           <div className="flex flex-col items-center justify-center gap-3 animate-fade-up sm:flex-row">
             <button onClick={() => onContinue(content)} className="btn-primary w-full sm:w-auto">

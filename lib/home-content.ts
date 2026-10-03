@@ -111,3 +111,17 @@ export const FAQ: Array<{ q: string; a: string }> = [
     a: 'Şifren geri döndürülemez biçimde saklanır, oturumun yalnızca tarayıcına özel bir çerezle tutulur. Soruların cevap üretmek için yapay zekâ sağlayıcımıza iletilir ve model eğitiminde kullanılmaz. Ayrıntılar Gizlilik Politikası’nda.',
   },
 ];
+
+/** Yeni üye karşılaması (components/home/WelcomeCard.tsx) — ilk soruyu kolaylaştırır. */
+export const WELCOME = {
+  steps: [
+    { title: 'Bir soru seç ya da yaz', body: 'Aşağıdaki sorulardan birine dokun ya da kendi sorunu yaz.' },
+    { title: 'Mentorlarını seç', body: 'Tek mentorla derinleş ya da birkaçını seçip cevapları yan yana gör.' },
+    { title: 'Sohbete devam et', body: 'Seni en çok düşündüren mentorla konuşmayı sürdür.' },
+  ],
+  starters: [
+    'Neden hep aynı hataları tekrarlıyorum?',
+    'Güvenli olanı mı seçmeliyim, sevdiğimi mi?',
+    'Beni kıran birini affetmek zorunda mıyım?',
+  ],
+};

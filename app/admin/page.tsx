@@ -14,9 +14,11 @@ import { AdminAuthError, Card, adminFetch, fmtDateTime, inputCls, smallBtn } fro
 import { Overview, type OverviewData } from '@/components/admin/Overview';
 import { Users, type AdminUser } from '@/components/admin/Users';
 import { FeedbackList, type AdminFeedback } from '@/components/admin/FeedbackList';
+import { ErrorsList, type ErrorEntry } from '@/components/admin/ErrorsList';
+import { WeeklyReportPanel } from '@/components/admin/WeeklyReportPanel';
 import { cn } from '@/lib/cn';
 
-type Tab = 'overview' | 'users' | 'feedback' | 'log';
+type Tab = 'overview' | 'users' | 'feedback' | 'errors' | 'report' | 'log';
 interface LogEntry { action: string; target: string; detail?: string; at: string }
 
 export default function AdminPage() {
@@ -26,6 +28,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [feedback, setFeedback] = useState<AdminFeedback[]>([]);
   const [log, setLog] = useState<LogEntry[]>([]);
+  const [errors, setErrors] = useState<ErrorEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -39,17 +42,19 @@ export default function AdminPage() {
     setLoading(true); setError('');
     try {
       // Biri hata verse de diğerleri gelsin
-      const [o, u, f, l] = await Promise.allSettled([
+      const [o, u, f, l, er] = await Promise.allSettled([
         adminFetch<OverviewData>('/api/admin/overview'),
         adminFetch<{ users: AdminUser[] }>('/api/v1/users'),
         adminFetch<{ feedbacks: AdminFeedback[] }>('/api/v1/feedback'),
         adminFetch<{ entries: LogEntry[] }>('/api/admin/log'),
+        adminFetch<{ entries: ErrorEntry[] }>('/api/admin/errors'),
       ]);
-      const failed = [o, u, f, l].find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
+      const failed = [o, u, f, l, er].find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
       if (o.status === 'fulfilled') setOverview(o.value);
       if (u.status === 'fulfilled') setUsers(u.value.users ?? []);
       if (f.status === 'fulfilled') setFeedback(f.value.feedbacks ?? []);
       if (l.status === 'fulfilled') setLog(l.value.entries ?? []);
+      if (er.status === 'fulfilled') setErrors(er.value.entries ?? []);
       if (failed) handleError(failed.reason);
       setUpdatedAt(new Date().toISOString());
     } finally {
@@ -78,6 +83,8 @@ export default function AdminPage() {
     { id: 'overview', label: 'Genel bakış' },
     { id: 'users', label: 'Üyeler', badge: users.length },
     { id: 'feedback', label: 'Geri bildirim', badge: unread || undefined },
+    { id: 'errors', label: 'Hatalar', badge: errors.length || undefined },
+    { id: 'report', label: 'Haftalık özet' },
     { id: 'log', label: 'İşlem kaydı' },
   ];
 
@@ -129,6 +136,8 @@ export default function AdminPage() {
         {tab === 'overview' && (overview ? <Overview data={overview} onOpenFeedback={() => setTab('feedback')} /> : <Skeleton />)}
         {tab === 'users' && <Users users={users} onChanged={load} onError={handleError} />}
         {tab === 'feedback' && <FeedbackList items={feedback} onChanged={load} onError={handleError} />}
+        {tab === 'errors' && <ErrorsList entries={errors} />}
+        {tab === 'report' && <WeeklyReportPanel onError={handleError} />}
         {tab === 'log' && (
           <Card title="Son admin işlemleri">
             {log.length === 0 ? (

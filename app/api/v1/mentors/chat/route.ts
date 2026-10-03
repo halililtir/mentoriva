@@ -19,6 +19,7 @@ import { streamMentorResponse } from '@/lib/claude/client';
 import { CRISIS_RESPONSE, INPUT_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
+import { logError } from '@/lib/admin/errors';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { recordAnswer } from '@/lib/share/answers';
@@ -144,12 +145,14 @@ export async function POST(request: Request): Promise<Response> {
             emit({ type: 'delta', text: chunk.text });
           } else if (chunk.type === 'error') {
             console.error('[chat] mentor hatası:', chunk.error);
+            await logError('server', `chat:${mentorId}`, chunk.error);
             failed = true;
             break;
           }
         }
       } catch (error) {
         console.error('[chat] beklenmeyen hata:', error);
+        await logError('server', `chat:${mentorId}`, error);
         failed = true;
       }
 

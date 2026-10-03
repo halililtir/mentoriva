@@ -50,6 +50,8 @@ export interface PublicUser {
   bonus: number;
   /** Bugün kullanılabilecek toplam: günlük kalan + bonus. */
   remaining: number;
+  /** Ömür boyu sorulan soru (yeni üye karşılaması için). */
+  questionsUsed: number;
 }
 
 const userKey = (username: string) => `user:${username}`;
@@ -110,6 +112,7 @@ export async function toPublicUser(user: StoredUser): Promise<PublicUser> {
     usedToday,
     bonus,
     remaining: Math.max(0, dailyLimit - usedToday) + bonus,
+    questionsUsed: user.questionsUsed ?? 0,
   };
 }
 

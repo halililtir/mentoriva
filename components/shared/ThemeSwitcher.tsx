@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DEFAULT_THEME, applyTheme, isThemeId, type ThemeId } from '@/lib/theme';
+import { DARK_QUERY, DEFAULT_THEME, applyTheme, isThemeId, storedTheme, systemTheme, type ThemeId } from '@/lib/theme';
 import { track } from '@/lib/analytics';
 
 /** Başlıktaki Gece / Gündüz düğmesi. Simge, geçilecek temayı gösterir. */
@@ -11,6 +11,18 @@ export function ThemeSwitcher() {
   useEffect(() => {
     const current = document.documentElement.dataset['theme'];
     if (isThemeId(current)) setTheme(current);
+
+    // Kullanıcı seçim yapmadıysa cihazın koyu/açık mod değişimini izle
+    const mq = window.matchMedia?.(DARK_QUERY);
+    if (!mq) return;
+    const onChange = () => {
+      if (storedTheme()) return;
+      const next = systemTheme();
+      applyTheme(next, false);
+      setTheme(next);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
   }, []);
 
   const next: ThemeId = theme === 'gece' ? 'gunduz' : 'gece';

@@ -19,9 +19,10 @@ export const TOPICS = {
   karar: { label: 'Karar ve kararsızlık', re: /(\bkarar|\bsecmeli|\bsecim|\bmi yoksa|(meli|mali) miyim|\bne yapmaliyim)/ },
   kaygi: { label: 'Kaygı ve korku', re: /\b(kayg|korku|korkuyor|endise|stres|panik|huzursuz)/ },
   ofke: { label: 'Öfke ve affetme', re: /\b(ofke|sinir|affet|kin|intikam|kirgin)/ },
-  kayip: { label: 'Kayıp ve yas', re: /\b(kayb|olum|oldu|yas\b|vefat|ozlem|ozluyorum)/ },
+  // "olumlu" ve "oldu" (olmak) yanlış eşleşmesin diye ölüm kelimesi tam yazılır
+  kayip: { label: 'Kayıp ve yas', re: /\b(kayb|olum(u|un|unu|den|le)?\b|olen\b|yas\b|vefat|ozlem|ozluyorum)/ },
   anlam: { label: 'Anlam ve amaç', re: /\b(anlam|amac|hayatin|neden yasi|bos(luk)?\b|varolus)/ },
-  benlik: { label: 'Kendini tanıma', re: /\b(kendimi|kim oldugum|ozguven|kendine|benlik|degismek|aliskanl|tekrar eden)/ },
+  benlik: { label: 'Kendini tanıma', re: /\b(kendimi|kim oldugum|ozguven|kendine|benlik|degismek|aliskanl|tekrar(l|\s*eden)|hata(lar|larimi|yi|mi)?\b|sabote)/ },
   yalnizlik: { label: 'Yalnızlık ve dostluk', re: /\b(yalniz|arkadas|dost|sosyal|kimse)/ },
 } as const;
 

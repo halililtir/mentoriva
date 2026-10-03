@@ -5,7 +5,7 @@
  * (ör. "Mentoriva <noreply@mentoriva.com.tr>"). Varsayılan `onboarding@resend.dev`
  * Resend'in deneme göndericisidir ve yalnızca hesap sahibinin adresine teslim eder.
  *
- * RESEND_API_KEY yoksa geliştirme ortamında kod konsola yazılır; production'da
+ * RESEND_API_KEY yoksa geliştirme ortamında içerik konsola yazılır; production'da
  * gönderim başarısız sayılır.
  */
 
@@ -18,13 +18,20 @@ const COPY: Record<CodePurpose, { subject: string; intro: string }> = {
   reset: { subject: 'Mentoriva — Şifre sıfırlama kodun', intro: 'Şifreni sıfırlamak için kodun:' },
 };
 
-export async function sendCodeEmail(to: string, code: string, purpose: CodePurpose): Promise<boolean> {
+export interface EmailMessage {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}
+
+/** Tek bir e-posta gönderir. Başarısızlıkta false döner, hata fırlatmaz. */
+export async function sendEmail({ to, subject, text, html }: EmailMessage): Promise<boolean> {
   const apiKey = process.env['RESEND_API_KEY'];
-  const { subject, intro } = COPY[purpose];
 
   if (!apiKey) {
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`[Email] RESEND_API_KEY yok (geliştirme). ${purpose} kodu → ${to}: ${code}`);
+      console.log(`[Email] RESEND_API_KEY yok (geliştirme). "${subject}" → ${to}\n${text}`);
       return true;
     }
     console.error('[Email] RESEND_API_KEY tanımlı değil');
@@ -35,13 +42,7 @@ export async function sendCodeEmail(to: string, code: string, purpose: CodePurpo
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        from: process.env['RESEND_FROM']?.trim() || DEFAULT_FROM,
-        to: [to],
-        subject,
-        text: `${intro} ${code}\n\nKod 10 dakika geçerlidir. Bu isteği sen yapmadıysan e-postayı yok sayabilirsin.`,
-        html: codeEmailHtml(intro, code),
-      }),
+      body: JSON.stringify({ from: process.env['RESEND_FROM']?.trim() || DEFAULT_FROM, to: [to], subject, text, html }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
@@ -53,6 +54,16 @@ export async function sendCodeEmail(to: string, code: string, purpose: CodePurpo
     console.error('[Email] Gönderim hatası:', e);
     return false;
   }
+}
+
+export async function sendCodeEmail(to: string, code: string, purpose: CodePurpose): Promise<boolean> {
+  const { subject, intro } = COPY[purpose];
+  return sendEmail({
+    to,
+    subject,
+    text: `${intro} ${code}\n\nKod 10 dakika geçerlidir. Bu isteği sen yapmadıysan e-postayı yok sayabilirsin.`,
+    html: codeEmailHtml(intro, code),
+  });
 }
 
 function codeEmailHtml(intro: string, code: string): string {

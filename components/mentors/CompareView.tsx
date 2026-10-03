@@ -8,6 +8,7 @@ import { TypingDots } from '@/components/ui/TypingDots';
 import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
+import { RateAnswer } from '@/components/shared/RateAnswer';
 import type { MentorId, MentorResponseState, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -135,6 +136,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
                   </div>
 
                   <div className="mt-5 border-t border-white/[0.06] pt-4">
+                    {st.status === 'completed' && <RateAnswer mentorId={mid} source="answer" className="mb-3" />}
                     {st.status === 'completed' ? (
                       <div className="flex gap-2">
                       <button

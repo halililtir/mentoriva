@@ -34,6 +34,10 @@ export interface Health {
   emailFrom: 'custom' | 'default';
   admin: 'missing' | 'too_short' | 'ok';
   shareSecret: 'custom' | 'fallback';
+  /** Haftalık özet e-postasının gideceği adres tanımlı mı? */
+  adminEmail: boolean;
+  /** Vercel cron isteklerini doğrulayan anahtar tanımlı mı? */
+  cronSecret: boolean;
   siteUrl: string | null;
 }
 
@@ -55,6 +59,8 @@ export async function getHealth(): Promise<Health> {
     emailFrom: process.env['RESEND_FROM'] ? 'custom' : 'default',
     admin: !admin ? 'missing' : admin.length < 12 ? 'too_short' : 'ok',
     shareSecret: process.env['SHARE_CARD_SECRET'] ? 'custom' : 'fallback',
+    adminEmail: !!process.env['ADMIN_EMAIL']?.trim(),
+    cronSecret: !!process.env['CRON_SECRET']?.trim(),
     siteUrl: process.env['NEXT_PUBLIC_SITE_URL'] ?? null,
   };
 }

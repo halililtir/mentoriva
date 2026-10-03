@@ -21,6 +21,8 @@ export const EVENTS = {
   feedback: 'Geri bildirim',
   crisis: 'Kriz filtresi',
   mentor_error: 'Mentor hatası',
+  server_error: 'Sunucu hatası',
+  client_error: 'Tarayıcı hatası',
 } as const;
 
 export type EventName = keyof typeof EVENTS;
