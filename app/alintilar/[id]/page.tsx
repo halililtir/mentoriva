@@ -71,7 +71,7 @@ export default function AlintiPage({ params }: Props) {
                 </span>
               )}
               <cite className="not-italic">
-                <span className="block font-display text-lg" style={{ color: a?.hex }}>{q.mentor?.name ?? q.author}</span>
+                <span className="block font-display text-lg" style={{ color: a?.text }}>{q.mentor?.name ?? q.author}</span>
                 <span className="block text-sm text-white/50">{`${q.quote.work} ${q.quote.ref}`.trim()}</span>
               </cite>
             </footer>

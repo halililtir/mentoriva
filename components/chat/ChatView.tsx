@@ -94,7 +94,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
           <Image src={mentor.portraitUrl} alt={mentor.name} fill sizes="44px" className="object-cover" style={{ objectPosition: mentor.portraitPosition ?? 'center' }} />
         </div>
         <div className="min-w-0">
-          <h2 className="truncate font-display text-lg" style={{ color: accent.hex }}>{mentor.name}</h2>
+          <h2 className="truncate font-display text-lg" style={{ color: accent.text }}>{mentor.name}</h2>
           <p className="flex items-center gap-1.5 text-[11px] text-white/40">
             <span className={cn('h-1.5 w-1.5 rounded-full', isStreaming ? 'animate-pulse' : '')} style={{ background: accent.hex }} />
             {isStreaming ? 'yazıyor…' : mentor.title}

@@ -86,7 +86,7 @@ export function TraditionsStrip() {
                       <Image src={m.portraitUrl} alt="" fill sizes="40px" className="object-cover grayscale-[30%] transition duration-500 group-hover:grayscale-0" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium" style={{ color: a.hex }}>{m.tradition}</p>
+                      <p className="truncate text-[13px] font-medium" style={{ color: a.text }}>{m.tradition}</p>
                       <p className="truncate text-xs text-white/45">
                         {m.shortName} <span className="tabular-nums text-white/25">· {m.lifespan}</span>
                       </p>

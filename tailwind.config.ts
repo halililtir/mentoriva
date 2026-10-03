@@ -11,7 +11,7 @@ const config: Config = {
       colors: {
         // Temel yüzeyler
         // Tema renkleri app/globals.css içindeki CSS değişkenlerinden gelir
-        // (html[data-theme] = gece | aksam | gunduz). "white" da temaya göre
+        // (html[data-theme] = gece | gunduz). "white" da temaya göre
         // ön plan rengidir: açık temada koyu metne döner; böylece text-white/50
         // gibi yüzlerce sınıf her temada doğru çalışır.
         white: 'rgb(var(--fg) / <alpha-value>)',

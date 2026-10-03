@@ -453,7 +453,8 @@ export default function QuizPage() {
 
             {/* Primary mentor */}
             <div
-              className="rounded-2xl border overflow-hidden"
+              data-theme="gece"
+              className="rounded-2xl border overflow-hidden bg-ink-0 text-paper"
               style={{ borderColor: getAccent(result.primary.mentor.accentColor).border }}
             >
               <div className="relative h-48 sm:h-56">
@@ -472,7 +473,7 @@ export default function QuizPage() {
                       <p className="text-xs text-white/50 mb-1">Ana mentorun</p>
                       <h2
                         className="font-display text-3xl"
-                        style={{ color: getAccent(result.primary.mentor.accentColor).hex }}
+                        style={{ color: getAccent(result.primary.mentor.accentColor).text }}
                       >
                         {result.primary.mentor.name}
                       </h2>
@@ -480,7 +481,7 @@ export default function QuizPage() {
                     </div>
                     <div
                       className="text-3xl font-display font-bold"
-                      style={{ color: getAccent(result.primary.mentor.accentColor).hex }}
+                      style={{ color: getAccent(result.primary.mentor.accentColor).text }}
                     >
                       %{result.primary.percentage}
                     </div>
@@ -500,8 +501,8 @@ export default function QuizPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-white/60 truncate">{r.mentor.name.split(' ').pop()}</span>
-                        <span style={{ color: a.hex }}>%{r.percentage}</span>
+                        <span className="text-white/60 truncate">{r.mentor.shortName}</span>
+                        <span style={{ color: a.text }}>%{r.percentage}</span>
                       </div>
                       <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${r.percentage}%`, background: a.hex }} />
@@ -526,7 +527,7 @@ export default function QuizPage() {
               >
                 <p
                   className="font-display text-xl sm:text-2xl leading-snug italic"
-                  style={{ color: getAccent(result.primary.mentor.accentColor).hex }}
+                  style={{ color: getAccent(result.primary.mentor.accentColor).text }}
                 >
                   {'\u201c'}{result.insightSlap}{'\u201d'}
                 </p>

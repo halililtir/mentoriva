@@ -96,9 +96,9 @@ export function DailyQuestion({ onAskYourself }: { onAskYourself: (question: str
                   disabled={!entry}
                   onClick={() => { setActive(m.id as MentorId); track('daily_tab', { mentor: m.id }); }}
                   className={cn('flex flex-shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors', selected ? 'bg-white/[0.06]' : 'text-white/50 hover:text-white/80')}
-                  style={selected ? { color: a.hex } : undefined}
+                  style={selected ? { color: a.text } : undefined}
                 >
-                  <span className="relative h-7 w-7 overflow-hidden rounded-full border" style={{ borderColor: selected ? a.hex : 'rgba(255,255,255,0.1)' }}>
+                  <span className="relative h-7 w-7 overflow-hidden rounded-full border" style={{ borderColor: selected ? a.hex : 'rgb(var(--fg) / 0.12)' }}>
                     <Image src={m.portraitUrl} alt="" fill sizes="28px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
                   </span>
                   {m.shortName}

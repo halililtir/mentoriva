@@ -96,7 +96,7 @@ export function SingleResponseView({
                 </div>
               </div>
               <div className="min-w-0">
-                <h2 className="font-display text-xl" style={{ color: accent.hex }}>{mentor.name}</h2>
+                <h2 className="font-display text-xl" style={{ color: accent.text }}>{mentor.name}</h2>
                 <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">{mentor.title}</p>
               </div>
               <div className="ml-auto text-xs text-white/40">

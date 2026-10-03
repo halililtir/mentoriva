@@ -79,12 +79,12 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
             mentors.map((m, i) => (
               <span key={m.id}>
                 {i > 0 && <span className="text-white/20"> · </span>}
-                <span style={{ color: getAccent(m.accentColor).hex }}>{m.shortName}</span>
+                <span style={{ color: getAccent(m.accentColor).text }}>{m.shortName}</span>
               </span>
             ))
           ) : (
             <>
-              <span style={{ color: getAccent(first.accentColor).hex }}>{first.shortName}</span> seni dinliyor
+              <span style={{ color: getAccent(first.accentColor).text }}>{first.shortName}</span> seni dinliyor
             </>
           )}
         </h1>

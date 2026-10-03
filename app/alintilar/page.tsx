@@ -49,7 +49,7 @@ export default function AlintilarPage() {
                     </span>
                   )}
                   <div>
-                    <h2 id={`h-${first.mentorId}`} className="font-display text-2xl" style={{ color: a?.hex }}>{first.mentor?.name ?? first.author}</h2>
+                    <h2 id={`h-${first.mentorId}`} className="font-display text-2xl" style={{ color: a?.text }}>{first.mentor?.name ?? first.author}</h2>
                     <p className="text-xs text-white/40">
                       {group.length} alıntı · {ORIGINAL_LANGUAGE[first.mentorId] ?? 'orijinal dil'} metinden doğrulandı
                     </p>
@@ -66,7 +66,7 @@ export default function AlintilarPage() {
                         <span className="font-display text-[17px] leading-snug text-white/85">&ldquo;{q.quote.text}&rdquo;</span>
                         <span className="mt-4 flex items-center justify-between text-xs text-white/40">
                           <span>{`${q.quote.work} ${q.quote.ref}`.trim()}</span>
-                          <span className="transition-transform group-hover:translate-x-0.5" style={{ color: a?.hex }}>→</span>
+                          <span className="transition-transform group-hover:translate-x-0.5" style={{ color: a?.text }}>→</span>
                         </span>
                       </Link>
                     </li>

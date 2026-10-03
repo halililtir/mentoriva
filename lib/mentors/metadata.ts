@@ -38,6 +38,8 @@ export interface MentorMetadata {
 }
 
 export interface AccentTheme {
+  /** Metin rengi (temaya göre: gündüzde koyulaşır). Arka plan/çizgi için hex kullan. */
+  text: string;
   hex: string;
   border: string;
   glow: string;
@@ -47,15 +49,15 @@ export interface AccentTheme {
 }
 
 export const ACCENT_THEMES: Record<MentorAccentColor, AccentTheme> = {
-  cyan:   { hex: '#00bcd4', border: 'rgba(0,188,212,0.3)',   glow: 'rgba(0,188,212,0.2)',   bg: 'rgba(0,188,212,0.08)',   bgHover: 'rgba(0,188,212,0.15)',   dark: '#0a2530' },
-  amber:  { hex: '#e89a3c', border: 'rgba(232,154,60,0.3)',  glow: 'rgba(232,154,60,0.2)',  bg: 'rgba(232,154,60,0.08)',  bgHover: 'rgba(232,154,60,0.15)',  dark: '#2a1a08' },
-  gold:   { hex: '#d4a574', border: 'rgba(212,165,116,0.3)', glow: 'rgba(212,165,116,0.2)', bg: 'rgba(212,165,116,0.08)', bgHover: 'rgba(212,165,116,0.15)', dark: '#1f1508' },
-  slate:  { hex: '#8b9bb4', border: 'rgba(139,155,180,0.3)', glow: 'rgba(139,155,180,0.15)',bg: 'rgba(139,155,180,0.08)', bgHover: 'rgba(139,155,180,0.15)', dark: '#0e1218' },
-  purple: { hex: '#b48eda', border: 'rgba(180,142,218,0.3)', glow: 'rgba(180,142,218,0.2)', bg: 'rgba(180,142,218,0.08)', bgHover: 'rgba(180,142,218,0.15)', dark: '#15102a' },
-  sky:    { hex: '#6ba8c7', border: 'rgba(107,168,199,0.3)', glow: 'rgba(107,168,199,0.2)', bg: 'rgba(107,168,199,0.08)', bgHover: 'rgba(107,168,199,0.15)', dark: '#0a1820' },
-  sage:   { hex: '#7eb89e', border: 'rgba(126,184,158,0.3)', glow: 'rgba(126,184,158,0.2)', bg: 'rgba(126,184,158,0.08)', bgHover: 'rgba(126,184,158,0.15)', dark: '#0a1a14' },
-  honey:  { hex: '#c9a84c', border: 'rgba(201,168,76,0.3)',  glow: 'rgba(201,168,76,0.2)',  bg: 'rgba(201,168,76,0.08)',  bgHover: 'rgba(201,168,76,0.15)',  dark: '#1a1508' },
-  terra:  { hex: '#c4816e', border: 'rgba(196,129,110,0.3)', glow: 'rgba(196,129,110,0.2)', bg: 'rgba(196,129,110,0.08)', bgHover: 'rgba(196,129,110,0.15)', dark: '#1a100a' },
+  cyan:   { text: 'rgb(var(--acc-cyan))', hex: '#00bcd4', border: 'rgba(0,188,212,0.3)',   glow: 'rgba(0,188,212,0.2)',   bg: 'rgba(0,188,212,0.08)',   bgHover: 'rgba(0,188,212,0.15)',   dark: '#0a2530' },
+  amber:  { text: 'rgb(var(--acc-amber))', hex: '#e89a3c', border: 'rgba(232,154,60,0.3)',  glow: 'rgba(232,154,60,0.2)',  bg: 'rgba(232,154,60,0.08)',  bgHover: 'rgba(232,154,60,0.15)',  dark: '#2a1a08' },
+  gold:   { text: 'rgb(var(--acc-gold))', hex: '#d4a574', border: 'rgba(212,165,116,0.3)', glow: 'rgba(212,165,116,0.2)', bg: 'rgba(212,165,116,0.08)', bgHover: 'rgba(212,165,116,0.15)', dark: '#1f1508' },
+  slate:  { text: 'rgb(var(--acc-slate))', hex: '#8b9bb4', border: 'rgba(139,155,180,0.3)', glow: 'rgba(139,155,180,0.15)',bg: 'rgba(139,155,180,0.08)', bgHover: 'rgba(139,155,180,0.15)', dark: '#0e1218' },
+  purple: { text: 'rgb(var(--acc-purple))', hex: '#b48eda', border: 'rgba(180,142,218,0.3)', glow: 'rgba(180,142,218,0.2)', bg: 'rgba(180,142,218,0.08)', bgHover: 'rgba(180,142,218,0.15)', dark: '#15102a' },
+  sky:    { text: 'rgb(var(--acc-sky))', hex: '#6ba8c7', border: 'rgba(107,168,199,0.3)', glow: 'rgba(107,168,199,0.2)', bg: 'rgba(107,168,199,0.08)', bgHover: 'rgba(107,168,199,0.15)', dark: '#0a1820' },
+  sage:   { text: 'rgb(var(--acc-sage))', hex: '#7eb89e', border: 'rgba(126,184,158,0.3)', glow: 'rgba(126,184,158,0.2)', bg: 'rgba(126,184,158,0.08)', bgHover: 'rgba(126,184,158,0.15)', dark: '#0a1a14' },
+  honey:  { text: 'rgb(var(--acc-honey))', hex: '#c9a84c', border: 'rgba(201,168,76,0.3)',  glow: 'rgba(201,168,76,0.2)',  bg: 'rgba(201,168,76,0.08)',  bgHover: 'rgba(201,168,76,0.15)',  dark: '#1a1508' },
+  terra:  { text: 'rgb(var(--acc-terra))', hex: '#c4816e', border: 'rgba(196,129,110,0.3)', glow: 'rgba(196,129,110,0.2)', bg: 'rgba(196,129,110,0.08)', bgHover: 'rgba(196,129,110,0.15)', dark: '#1a100a' },
 };
 
 export const ACTIVE_MENTORS: MentorMetadata[] = [

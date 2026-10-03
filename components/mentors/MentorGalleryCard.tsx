@@ -62,9 +62,11 @@ export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0 }: Pro
       {/* Animasyon (article), kalkış (bu katman) ve eğilme (iç katman) ayrı
           elemanlarda — üçü de transform kullandığı için birbirini ezmesin. */}
       <div className={cn('transition-transform duration-500 ease-out-expo', !isSoon && 'group-hover:-translate-y-1.5')}>
+      {/* Portre kartı gündüz temasında da koyu kalır (fotoğraf kartı) */}
       <div
+        data-theme="gece"
         className={cn(
-          'relative overflow-hidden rounded-2xl border transition-[transform,box-shadow,border-color] duration-500 ease-out-expo',
+          'relative overflow-hidden rounded-2xl border bg-ink-50 text-paper transition-[transform,box-shadow,border-color] duration-500 ease-out-expo',
           '[transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))]',
           isSoon ? 'border-white/[0.04]' : 'border-white/[0.07]',
         )}
@@ -111,7 +113,7 @@ export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0 }: Pro
             </p>
             <h3
               className="mt-1 font-display text-lg leading-tight sm:text-xl"
-              style={{ color: isSoon ? 'rgba(255,255,255,0.45)' : a.hex }}
+              style={{ color: isSoon ? 'rgb(var(--fg) / 0.5)' : a.text }}
             >
               {mentor.name}
             </h3>
@@ -140,7 +142,7 @@ export function MentorGalleryCard({ mentor, selected, onSelect, delay = 0 }: Pro
         {/* Ne zaman seçmeli — dokunmatik ekranlarda da görünür */}
         {!isSoon && mentor.bestFor && (
           <div className="border-t border-white/[0.06] bg-ink-0/60 px-4 py-3 sm:px-5">
-            <p className="text-[9px] font-medium uppercase tracking-[0.16em]" style={{ color: a.hex }}>Ne zaman seç?</p>
+            <p className="text-[9px] font-medium uppercase tracking-[0.16em]" style={{ color: a.text }}>Ne zaman seç?</p>
             <p className="mt-1 text-[12px] leading-snug text-white/60">{mentor.bestFor}</p>
           </div>
         )}

@@ -169,7 +169,7 @@ function PasswordMeter({ value }: { value: string }) {
           <span
             key={i}
             className="h-1 flex-1 rounded-full transition-colors duration-500"
-            style={{ background: i < score ? colors[score] : 'rgba(255,255,255,0.08)' }}
+            style={{ background: i < score ? colors[score] : 'rgb(var(--fg) / 0.1)' }}
           />
         ))}
       </div>

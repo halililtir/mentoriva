@@ -148,7 +148,7 @@ export function JourneyHome({ onBegin, notEnough }: { onBegin: () => void; notEn
                       <span className="block truncate text-[15px] text-white/85">{j.map.topic || j.startingPoint}</span>
                       <span className="block text-xs text-white/40">
                         {new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long' }).format(new Date(j.createdAt))} ·{' '}
-                        <span style={{ color: a.hex }}>{getActiveMentor(j.supportMentor).shortName}</span>
+                        <span style={{ color: a.text }}>{getActiveMentor(j.supportMentor).shortName}</span>
                       </span>
                     </span>
                     <span className={cn('text-white/40 transition-transform', isOpen && 'rotate-90')} aria-hidden="true">›</span>

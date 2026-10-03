@@ -103,13 +103,13 @@ export function DemoPreview() {
                 <div
                   key={m.id}
                   className={cn('relative min-h-[118px] overflow-hidden rounded-xl border p-3 transition-colors duration-500', streaming && 'glow-border')}
-                  style={{ borderColor: started ? a.border : 'rgba(255,255,255,0.06)', background: started ? a.bg : 'rgba(255,255,255,0.015)', '--accent': a.hex } as React.CSSProperties}
+                  style={{ borderColor: started ? a.border : 'rgb(var(--fg) / 0.08)', background: started ? a.bg : 'rgb(var(--fg) / 0.02)', '--accent': a.hex } as React.CSSProperties}
                 >
                   <div className="flex items-center gap-2">
                     <span className="relative h-6 w-6 flex-shrink-0 overflow-hidden rounded-full border" style={{ borderColor: a.hex }}>
                       <Image src={m.portraitUrl} alt="" fill sizes="24px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
                     </span>
-                    <span className="truncate text-[11px] font-medium" style={{ color: a.hex }}>{m.shortName}</span>
+                    <span className="truncate text-[11px] font-medium" style={{ color: a.text }}>{m.shortName}</span>
                   </div>
                   <p className="mt-2 text-[11.5px] leading-relaxed text-white/70">
                     {full.slice(0, shown)}

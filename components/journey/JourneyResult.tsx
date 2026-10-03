@@ -232,7 +232,7 @@ function MentorSuggestion({ label, mentorId, reason }: { label: string; mentorId
       </span>
       <div className="min-w-0">
         <p className="text-[10px] uppercase tracking-[0.14em] text-white/40">{label}</p>
-        <p className="font-display text-lg" style={{ color: a.hex }}>{m.name}</p>
+        <p className="font-display text-lg" style={{ color: a.text }}>{m.name}</p>
         <p className="mt-0.5 text-sm leading-snug text-white/55">{reason}</p>
       </div>
     </div>

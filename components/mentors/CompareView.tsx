@@ -111,7 +111,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
                       <Image src={m.portraitUrl} alt={m.name} fill sizes="44px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="truncate font-display text-base" style={{ color: a.hex }}>{m.name}</h3>
+                      <h3 className="truncate font-display text-base" style={{ color: a.text }}>{m.name}</h3>
                       <p className="truncate text-[10px] uppercase tracking-[0.14em] text-white/40">{m.title}</p>
                     </div>
                   </div>
@@ -140,7 +140,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
                       <button
                         onClick={() => onSelect(mid, st.content)}
                         className="group/btn flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 animate-fade-in"
-                        style={{ background: a.bg, borderColor: a.border, color: a.hex }}
+                        style={{ background: a.bg, borderColor: a.border, color: a.text }}
                       >
                         {m.shortName} ile devam et
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform group-hover/btn:translate-x-0.5" aria-hidden="true">

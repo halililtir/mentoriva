@@ -108,7 +108,7 @@ export function CouncilOrbit({ selectedIds, onToggle }: Props) {
                   </span>
                   <span
                     className="mt-2 whitespace-nowrap rounded-full border border-white/10 bg-ink-0/70 px-2.5 py-0.5 text-[11px] backdrop-blur-md transition-colors"
-                    style={{ color: selected ? a.hex : 'rgba(255,255,255,0.7)' }}
+                    style={{ color: selected ? a.text : 'rgb(var(--fg) / 0.75)' }}
                   >
                     {m.shortName}
                   </span>

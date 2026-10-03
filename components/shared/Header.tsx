@@ -245,7 +245,7 @@ function QuotaRing({ remaining, limit }: { remaining: number; limit: number }) {
   return (
     <span className="relative inline-flex h-8 w-8 items-center justify-center" title={`Bugün ${remaining}/${limit} soru hakkın kaldı`}>
       <svg width="32" height="32" viewBox="0 0 32 32" className="-rotate-90" aria-hidden="true">
-        <circle cx="16" cy="16" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="2.5" />
+        <circle cx="16" cy="16" r={r} fill="none" stroke="rgb(var(--fg) / 0.12)" strokeWidth="2.5" />
         <circle
           cx="16"
           cy="16"

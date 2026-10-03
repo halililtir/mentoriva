@@ -11,7 +11,7 @@
   /* --- Temalar ------------------------------------------
    * Renkler "R G B" üçlüsü olarak tutulur; Tailwind bunları
    * rgb(var(--x) / alfa) biçiminde kullanır (tailwind.config.ts).
-   * Tema html[data-theme] ile seçilir: gece (varsayılan), aksam, gunduz.
+   * Tema html[data-theme] ile seçilir: gece (varsayılan) ya da gunduz.
    * Seçim lib/theme.ts → ThemeSwitcher ile değişir. */
   :root,
   [data-theme='gece'] {
@@ -33,6 +33,15 @@
     --brand-600: 0 160 181;
     --brand-700: 0 125 140;
     --on-brand: 7 11 20;
+    --acc-cyan: 0 188 212;
+    --acc-amber: 232 154 60;
+    --acc-gold: 212 165 116;
+    --acc-slate: 139 155 180;
+    --acc-purple: 180 142 218;
+    --acc-sky: 107 168 199;
+    --acc-sage: 126 184 158;
+    --acc-honey: 201 168 76;
+    --acc-terra: 196 129 110;
     --atmo-base: linear-gradient(170deg, #070b14 0%, #0a1020 45%, #0d1426 70%, #080c16 100%);
     --atmo-glow: 1;
     --atmo-stars: 0.7;
@@ -41,61 +50,86 @@
     --gradient-text: linear-gradient(100deg, #5fe4ea 0%, #00bcd4 25%, #d4a574 50%, #e89a3c 70%, #5fe4ea 100%);
   }
 
-  /* Akşam: lacivert yerine nötr, hafif sıcak koyu; metin daha okunaklı */
-  [data-theme='aksam'] {
-    color-scheme: dark;
-    --ink-0: 16 17 20;
-    --ink-50: 23 25 29;
-    --ink-100: 27 29 34;
-    --ink-200: 35 37 43;
-    --ink-300: 45 48 55;
-    --ink-400: 62 65 74;
-    --fg: 248 244 236;
-    --paper: 244 239 230;
-    --muted: 168 165 158;
-    --faint: 98 97 100;
-    --brand-200: 160 232 236;
-    --brand-300: 120 218 224;
-    --brand-400: 80 202 210;
-    --brand-500: 44 184 193;
-    --brand-600: 30 154 162;
-    --brand-700: 20 120 128;
-    --on-brand: 10 22 24;
-    --atmo-base: linear-gradient(170deg, #101114 0%, #131418 45%, #16171c 70%, #0f1013 100%);
-    --atmo-glow: 0.55;
-    --atmo-stars: 0.25;
-    --atmo-vignette: rgba(6, 6, 8, 0.55);
-    --surface-shadow: rgba(0, 0, 0, 0.6);
-    --gradient-text: linear-gradient(100deg, #78dae0 0%, #2cb8c1 25%, #d4a574 50%, #e0985a 70%, #78dae0 100%);
-  }
-
-  /* Gündüz: krem zemin, beyaz kartlar, koyu metin */
+  /* Gündüz: beyaz zemin, açık mavi bantlar, beyaz kartlar, koyu metin */
   [data-theme='gunduz'] {
     color-scheme: light;
-    --ink-0: 246 243 238;
+    --ink-0: 244 248 251;
     --ink-50: 255 255 255;
-    --ink-100: 251 249 245;
-    --ink-200: 230 224 214;
-    --ink-300: 218 211 199;
-    --ink-400: 196 188 174;
-    --fg: 24 27 34;
-    --paper: 27 30 37;
-    --muted: 92 97 110;
-    --faint: 150 154 164;
-    --brand-200: 0 92 100;
-    --brand-300: 0 114 125;
-    --brand-400: 0 126 138;
-    --brand-500: 0 145 160;
-    --brand-600: 0 126 138;
-    --brand-700: 0 96 104;
+    --ink-100: 248 251 253;
+    --ink-200: 220 231 240;
+    --ink-300: 203 217 229;
+    --ink-400: 176 194 210;
+    --fg: 16 24 38;
+    --paper: 18 27 42;
+    --muted: 78 90 110;
+    --faint: 128 140 158;
+    --brand-200: 0 84 96;
+    --brand-300: 0 98 112;
+    --brand-400: 0 112 126;
+    --brand-500: 0 124 140;
+    --brand-600: 0 118 133;
+    --brand-700: 0 90 102;
     --on-brand: 255 255 255;
-    --atmo-base: linear-gradient(170deg, #f8f5f0 0%, #f4f0e9 45%, #f1ede5 70%, #f6f3ee 100%);
-    --atmo-glow: 0.5;
+    --acc-cyan: 0 118 133;
+    --acc-amber: 168 88 14;
+    --acc-gold: 140 94 40;
+    --acc-slate: 74 90 118;
+    --acc-purple: 112 72 168;
+    --acc-sky: 40 108 146;
+    --acc-sage: 46 120 88;
+    --acc-honey: 128 98 14;
+    --acc-terra: 156 76 54;
+    --atmo-base: linear-gradient(180deg, #e6f2f9 0%, #f4f8fb 32%, #ffffff 60%, #eef5fa 100%);
+    --atmo-glow: 0.45;
     --atmo-stars: 0;
-    --atmo-vignette: rgba(120, 100, 70, 0.08);
-    --surface-shadow: rgba(80, 60, 30, 0.14);
-    --gradient-text: linear-gradient(100deg, #00727d 0%, #00919f 25%, #a86d34 50%, #b85f1c 70%, #00727d 100%);
+    --atmo-vignette: transparent;
+    --surface-shadow: rgba(30, 60, 90, 0.12);
+    --band-bg: linear-gradient(180deg, rgba(225, 239, 248, 0) 0%, #e2eff8 14%, #e2eff8 86%, rgba(225, 239, 248, 0) 100%);
+    --gradient-text: linear-gradient(100deg, #006a78 0%, #008c9e 25%, #8c5e28 50%, #a8580e 70%, #006a78 100%);
   }
+
+  /* Gündüz: soluk (düşük alfalı) metinler beyaz zeminde okunmaz;
+     aynı sınıfları daha yüksek opaklığa çeker. Hover sınıfları
+     utilities katmanında olduğu için bunları yine ezer. */
+  [data-theme='gunduz'] .text-white\/10 { color: rgb(var(--fg) / 0.38); }
+  [data-theme='gunduz'] .text-white\/20 { color: rgb(var(--fg) / 0.6); }
+  [data-theme='gunduz'] .text-white\/25 { color: rgb(var(--fg) / 0.6); }
+  [data-theme='gunduz'] .text-white\/30 { color: rgb(var(--fg) / 0.62); }
+  [data-theme='gunduz'] .text-white\/35 { color: rgb(var(--fg) / 0.65); }
+  [data-theme='gunduz'] .text-white\/40 { color: rgb(var(--fg) / 0.66); }
+  [data-theme='gunduz'] .text-white\/45 { color: rgb(var(--fg) / 0.7); }
+  [data-theme='gunduz'] .text-white\/50 { color: rgb(var(--fg) / 0.72); }
+  [data-theme='gunduz'] .text-white\/55 { color: rgb(var(--fg) / 0.75); }
+  [data-theme='gunduz'] .text-white\/60 { color: rgb(var(--fg) / 0.78); }
+  [data-theme='gunduz'] .text-white\/65 { color: rgb(var(--fg) / 0.8); }
+  [data-theme='gunduz'] .text-white\/70 { color: rgb(var(--fg) / 0.83); }
+  [data-theme='gunduz'] .text-white\/75 { color: rgb(var(--fg) / 0.86); }
+  [data-theme='gunduz'] .text-white\/80 { color: rgb(var(--fg) / 0.88); }
+  [data-theme='gunduz'] .text-white\/85 { color: rgb(var(--fg) / 0.9); }
+  [data-theme='gunduz'] .text-white\/90 { color: rgb(var(--fg) / 0.94); }
+  [data-theme='gunduz'] .placeholder\:text-white\/20::placeholder,
+  [data-theme='gunduz'] .placeholder\:text-white\/25::placeholder { color: rgb(var(--fg) / 0.45); }
+
+  /* Koyu zemin için seçilmiş açık durum renkleri */
+  [data-theme='gunduz'] .text-amber-100,
+  [data-theme='gunduz'] .text-amber-200,
+  [data-theme='gunduz'] .text-amber-300,
+  [data-theme='gunduz'] .text-amber-400 { color: #9a5200; }
+  [data-theme='gunduz'] .text-red-200,
+  [data-theme='gunduz'] .text-red-300,
+  [data-theme='gunduz'] .text-red-400 { color: #b42318; }
+  [data-theme='gunduz'] .text-emerald-300,
+  [data-theme='gunduz'] .text-emerald-400 { color: #0f7a4f; }
+  [data-theme='gunduz'] .text-brand-300\/80,
+  [data-theme='gunduz'] .text-brand-300\/85,
+  [data-theme='gunduz'] .text-brand-300\/90,
+  [data-theme='gunduz'] .text-brand-400\/70 { color: rgb(var(--brand-300)); }
+  [data-theme='gunduz'] .text-purple-400 { color: #6b3fa0; }
+  [data-theme='gunduz'] .text-cyan-400 { color: #00798a; }
+
+  /* Bant: ana sayfada sırayla gelen bölümlerin arkasındaki geniş zemin.
+     Gece temasında görünmez; gündüzde açık mavi şerit olur. */
+  .band { background: var(--band-bg, none); }
 
   html {
     @apply bg-ink-0 text-paper;

@@ -265,26 +265,27 @@ export default function HomePage() {
       {view === 'gallery' && (
         <div className="flex-1">
           <Hero user={user} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
-          <DailyQuestion onAskYourself={handlePickQuestion} />
+          {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
+          <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
 
           {user ? (
             <>
               {mentorSection}
-              <JourneyTeaser />
+              <div className="band"><JourneyTeaser /></div>
               <UseCases onPick={handlePickQuestion} />
-              <HowItWorks id="nasil-calisir" />
+              <div className="band"><HowItWorks id="nasil-calisir" /></div>
               <Faq />
             </>
           ) : (
             <>
               <TraditionsStrip />
-              <WhyMentoriva />
+              <div className="band"><WhyMentoriva /></div>
               <JourneyTeaser />
-              <HowItWorks id="nasil-calisir" />
+              <div className="band"><HowItWorks id="nasil-calisir" /></div>
               {mentorSection}
-              <UseCases onPick={handlePickQuestion} />
+              <div className="band"><UseCases onPick={handlePickQuestion} /></div>
               <GoodToKnow />
-              <Faq />
+              <div className="band"><Faq /></div>
             </>
           )}
 

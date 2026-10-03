@@ -5,9 +5,8 @@
  */
 
 export const THEMES = [
-  { id: 'gece', label: 'Gece', hint: 'Lacivert, parlak' },
-  { id: 'aksam', label: 'Akşam', hint: 'Yumuşak koyu, göz yormaz' },
-  { id: 'gunduz', label: 'Gündüz', hint: 'Açık, krem zemin' },
+  { id: 'gece', label: 'Gece', hint: 'Koyu lacivert' },
+  { id: 'gunduz', label: 'Gündüz', hint: 'Beyaz ve açık mavi' },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -18,8 +17,7 @@ export const THEME_KEY = 'mentoriva_theme';
 /** Tarayıcı çubuğu rengi (meta theme-color). */
 export const THEME_COLORS: Record<ThemeId, string> = {
   gece: '#070b14',
-  aksam: '#101114',
-  gunduz: '#f6f3ee',
+  gunduz: '#f4f8fb',
 };
 
 export function isThemeId(v: unknown): v is ThemeId {

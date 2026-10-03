@@ -88,7 +88,7 @@ export default function AboutPage() {
                       <Image src={m.portraitUrl} alt={m.name} fill sizes="64px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-display text-lg leading-tight" style={{ color: a.hex }}>{m.name}</h3>
+                      <h3 className="font-display text-lg leading-tight" style={{ color: a.text }}>{m.name}</h3>
                       <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/40">
                         {m.tradition}{m.lifespan ? ` · ${m.lifespan}` : ''}
                       </p>

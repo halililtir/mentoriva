@@ -56,7 +56,7 @@ export function ShareCardButton({ data, className, compact }: { data: ShareSourc
           compact && '!px-2.5 !py-1.5 text-xs',
           className,
         )}
-        style={{ borderColor: accent.border, color: accent.hex, background: 'rgba(255,255,255,0.02)' }}
+        style={{ borderColor: accent.border, color: accent.text, background: 'rgb(var(--fg) / 0.03)' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />
@@ -164,13 +164,13 @@ function ShareCardDialog({ data, onClose }: { data: ShareSource; onClose: () => 
         aria-label="Paylaşım kartı oluştur"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="glass relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl p-6 outline-none animate-fade-up sm:rounded-3xl sm:p-7"
+        className="glass relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl !bg-ink-50 p-6 outline-none animate-fade-up sm:rounded-3xl sm:p-7"
       >
         <button onClick={onClose} className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white" aria-label="Kapat">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
         </button>
 
-        <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: accent.hex }}>Paylaşım kartı</p>
+        <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: accent.text }}>Paylaşım kartı</p>
         <h2 className="mt-1 font-display text-2xl">
           {state === 'ready' ? 'Kartın hazır' : 'Karta hangi cümle girsin?'}
         </h2>
