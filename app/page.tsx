@@ -162,6 +162,20 @@ export default function HomePage() {
     scrollToGallery();
   }, [saveDraft, session.status, selectedIds.length, user, requireAccount, scrollToGallery, guestUsed, guestTrialOver]);
 
+  /** Örnek sorudan: soru + ona yakışan mentorlar seçili gelir, doğrudan soru ekranı. */
+  const handlePickWithMentors = useCallback((q: string, mentors: MentorId[]) => {
+    const usable = mentors.filter((id) => canUseMentor(id, perks, earlyMentors)).slice(0, maxSelected);
+    if (usable.length === 0) return handlePickQuestion(q);
+    saveDraft(q);
+    setSelectedIds(usable);
+    if (session.status !== 'user') {
+      if (guestUsed) return requireAccount(guestTrialOver);
+      return setView('ask');
+    }
+    if (user && user.remaining <= 0) return setView('limit');
+    setView('ask');
+  }, [perks, earlyMentors, maxSelected, handlePickQuestion, saveDraft, session.status, guestUsed, requireAccount, guestTrialOver, user]);
+
   const handleSubmitQuestion = useCallback((q: string) => {
     if (user && user.remaining <= 0) return setView('limit');
     if (isGuest) { markGuestTrialUsed(); setGuestUsed(true); }
@@ -310,7 +324,7 @@ export default function HomePage() {
             <>
               {mentorSection}
               <div className="band"><JourneyTeaser /></div>
-              <UseCases onPick={handlePickQuestion} />
+              <UseCases onPick={handlePickWithMentors} onOwn={scrollToGallery} />
               <div className="band"><HowItWorks id="nasil-calisir" /></div>
               <Faq />
             </>
@@ -321,7 +335,7 @@ export default function HomePage() {
               <JourneyTeaser />
               <div className="band"><HowItWorks id="nasil-calisir" /></div>
               {mentorSection}
-              <div className="band"><UseCases onPick={handlePickQuestion} /></div>
+              <div className="band"><UseCases onPick={handlePickWithMentors} onOwn={scrollToGallery} /></div>
               <GoodToKnow />
               <div className="band"><Faq /></div>
             </>

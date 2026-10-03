@@ -50,31 +50,62 @@ export const DEMO_SAMPLES: DemoSample[] = [
 // "Ne sorabilirim?" — konu başlıkları ve örnek sorular
 // -----------------------------------------------------------
 
-export const USE_CASES: Array<{ id: string; label: string; questions: string[] }> = [
+export interface UseCaseQuestion {
+  q: string;
+  /** Bu soruya en çok yakışan iki mentor; dokununca seçili gelir (deneme sınırına da uyar). */
+  mentors: [MentorId, MentorId];
+}
+
+export const USE_CASES: Array<{ id: string; label: string; hint: string; questions: UseCaseQuestion[] }> = [
   {
     id: 'karar',
     label: 'Karar anları',
-    questions: ['İşimi bırakıp kendi yolumu çizmeli miyim?', 'Güvenli olanı mı seçmeliyim, sevdiğimi mi?', 'Yanlış karar verme korkusundan nasıl kurtulurum?'],
+    hint: 'Bir yol ayrımındaysan',
+    questions: [
+      { q: 'İşimi bırakıp kendi yolumu çizmeli miyim?', mentors: ['nietzsche', 'seneca'] },
+      { q: 'Güvenli olanı mı seçmeliyim, sevdiğimi mi?', mentors: ['nietzsche', 'marcus'] },
+      { q: 'Yanlış karar verme korkusundan nasıl kurtulurum?', mentors: ['marcus', 'seneca'] },
+    ],
   },
   {
     id: 'kendini-tanima',
     label: 'Kendini tanıma',
-    questions: ['Neden hep aynı hataları tekrarlıyorum?', 'İnsan neden kendini sabote eder?', 'Gerçekten ne istediğimi nasıl bilebilirim?'],
+    hint: 'Kendi içine bakmak istiyorsan',
+    questions: [
+      { q: 'Neden hep aynı hataları tekrarlıyorum?', mentors: ['jung', 'marcus'] },
+      { q: 'İnsan neden kendini sabote eder?', mentors: ['jung', 'nietzsche'] },
+      { q: 'Gerçekten ne istediğimi nasıl bilebilirim?', mentors: ['jung', 'mevlana'] },
+    ],
   },
   {
     id: 'iliskiler',
     label: 'İlişkiler',
-    questions: ['Birini affetmek zorunda mıyım?', 'Sevdiğim biri beni anlamıyorsa ne yapmalıyım?', 'Yalnız kalmaktan neden bu kadar korkuyorum?'],
+    hint: 'Biriyle aranda bir şey varsa',
+    questions: [
+      { q: 'Birini affetmek zorunda mıyım?', mentors: ['nietzsche', 'mevlana'] },
+      { q: 'Sevdiğim biri beni anlamıyorsa ne yapmalıyım?', mentors: ['mevlana', 'seneca'] },
+      { q: 'Yalnız kalmaktan neden bu kadar korkuyorum?', mentors: ['jung', 'seneca'] },
+    ],
   },
   {
     id: 'kayip',
     label: 'Kayıp ve değişim',
-    questions: ['Bir şeyi kaybettiğimde nasıl devam ederim?', 'Değişimden neden korkuyorum?', 'Geçmişi nasıl geride bırakırım?'],
+    hint: 'Bir şey bittiyse ya da değişiyorsa',
+    questions: [
+      { q: 'Bir şeyi kaybettiğimde nasıl devam ederim?', mentors: ['mevlana', 'marcus'] },
+      { q: 'Değişimden neden korkuyorum?', mentors: ['marcus', 'nietzsche'] },
+      { q: 'Geçmişi nasıl geride bırakırım?', mentors: ['nietzsche', 'seneca'] },
+    ],
   },
   {
     id: 'anlam',
     label: 'Anlam ve amaç',
-    questions: ['Hayatın bir anlamı var mı, yoksa onu ben mi yaratırım?', 'Başarı gerçekten mutlu eder mi?', 'Ölüm düşüncesiyle nasıl barışırım?'],
+    hint: 'Büyük sorular peşindeysen',
+    questions: [
+      { q: 'Hayatın bir anlamı var mı, yoksa onu ben mi yaratırım?', mentors: ['nietzsche', 'mevlana'] },
+      { q: 'Başarı gerçekten mutlu eder mi?', mentors: ['seneca', 'marcus'] },
+      { q: 'Zamanımı gerçekten yaşıyor muyum, yoksa sadece geçiriyor muyum?', mentors: ['seneca', 'marcus'] },
+    ],
   },
 ];
 
