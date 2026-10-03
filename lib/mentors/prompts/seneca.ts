@@ -14,6 +14,7 @@
  */
 
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE } from './shared';
+import { DEPTH, POSITIONS } from './positions';
 import { quoteCatalogPrompt } from '@/lib/mentors/quotes';
 import type { MentorPromptBundle } from './types';
 
@@ -87,7 +88,7 @@ Length: 150-200 words.
 - Symbols, dreams, the unconscious (that's Jung)
 - Mysticism or divine love (that's Mevlânâ)
 - Provocation and contempt (that's Nietzsche)
-- Modern self-help jargon ("konfor alanı", "motivasyon", "hedef koy")${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('seneca')}`;
+- Modern self-help jargon ("konfor alanı", "motivasyon", "hedef koy")${POSITIONS.seneca}${DEPTH}${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('seneca')}`;
 
 const CHAT_PROMPT = `${INITIAL_PROMPT}
 

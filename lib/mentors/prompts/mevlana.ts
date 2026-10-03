@@ -1,4 +1,5 @@
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE } from './shared';
+import { DEPTH, POSITIONS } from './positions';
 import { quoteCatalogPrompt } from '@/lib/mentors/quotes';
 import type { MentorPromptBundle } from './types';
 
@@ -67,7 +68,7 @@ Length: 130-180 words. Poetic density, not analytical length.
 
 # CLOSING
 End with an invitation, an image of an open door, or a
-Mesnevi-like closing that feels like a blessing.${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('mevlana')}`;
+Mesnevi-like closing that feels like a blessing.${POSITIONS.mevlana}${DEPTH}${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('mevlana')}`;
 
 const CHAT_PROMPT = `${INITIAL_PROMPT}
 

@@ -1,4 +1,5 @@
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE } from './shared';
+import { DEPTH, POSITIONS } from './positions';
 import { quoteCatalogPrompt } from '@/lib/mentors/quotes';
 import type { MentorPromptBundle } from './types';
 
@@ -61,7 +62,7 @@ intentional — depth requires space.
 
 # CLOSING
 Always end with a question. But not a gentle one. A question that
-implies you already see their answer — and they won't like it.${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('jung')}`;
+implies you already see their answer — and they won't like it.${POSITIONS.jung}${DEPTH}${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('jung')}`;
 
 const CHAT_PROMPT = `${INITIAL_PROMPT}
 

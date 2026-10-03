@@ -1,4 +1,5 @@
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE } from './shared';
+import { DEPTH, POSITIONS } from './positions';
 import { quoteCatalogPrompt } from '@/lib/mentors/quotes';
 import type { MentorPromptBundle } from './types';
 
@@ -66,7 +67,7 @@ Length: 100-140 words. Tight. No waste.
   Be ancient, not modern. "Görevini yap" not "başla."
 
 # CLOSING
-End with a command or a statement of duty.${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('marcus')}`;
+End with a command or a statement of duty.${POSITIONS.marcus}${DEPTH}${IDENTITY}${TURKISH_INSTRUCTION}${SAFETY_OVERRIDE}${quoteCatalogPrompt('marcus')}`;
 
 const CHAT_PROMPT = `${INITIAL_PROMPT}
 

@@ -29,7 +29,7 @@ export const API = {
   MAX_TOKENS_CHAT: 800,
 
   /** Temperature — karakter için biraz yüksek ama tutarlı. */
-  TEMPERATURE: 0.85,
+  TEMPERATURE: 0.7,
 
   /** Tek bir mentor çağrısı için timeout. */
   REQUEST_TIMEOUT_MS: 30_000,
