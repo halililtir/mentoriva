@@ -64,7 +64,7 @@ export function TraditionsStrip() {
             </p>
           </div>
 
-          <ul className="grid sm:grid-cols-2 lg:grid-cols-5">
+          <ul className="m-rail grid sm:grid-cols-2 lg:grid-cols-5">
             {ACTIVE_MENTORS.map((m, i) => {
               const a = getAccent(m.accentColor);
               return (
@@ -132,16 +132,19 @@ const COMPARISON: Array<{ label: string; general: string; mentoriva: string }> =
 
 export function WhyMentoriva() {
   return (
-    <section className="mx-auto max-w-content px-5 py-20 sm:py-28" aria-labelledby="why-title">
-      <div className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+    <section className="mx-auto max-w-content px-5 py-12 sm:py-28" aria-labelledby="why-title">
+      <div className="grid items-start gap-8 sm:gap-12 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="lg:sticky lg:top-28">
           <SectionHeading eyebrow="Neden Mentoriva?" title="Bilgi için asistan," accent="düşünmek için Mentoriva." id="why-title" align="left">
+            <span className="sm:hidden">Asistanlar bilgi verir; kişisel sorularda ise dengeli ama mesafeli kalır. Mentoriva sana ne yapacağını söylemez, <span className="text-white/80">kendi cevabına farklı açılardan bakmanı sağlar.</span></span>
+            <span className="hidden sm:inline">
             Genel amaçlı yapay zekâ asistanları bilgiye ulaşmakta harikadır. Ama &ldquo;ne yapmalıyım?&rdquo; gibi kişisel
             sorularda çoğu zaman her ihtimali tartan, dengeli ama mesafeli bir cevap verirler. İnsanlık ise bu sorulara
             yüzyıllardır çok farklı cevaplar verdi. Mentoriva bu farklılığı bir araya getirir; amacı sana ne yapacağını
             söylemek değil, <span className="text-white/80">kendi cevabına daha geniş bir açıdan bakmanı sağlamaktır.</span>
+            </span>
           </SectionHeading>
-          <Reveal delay={120}>
+          <Reveal delay={120} className="hidden sm:block">
             <blockquote className="mt-8 border-l-2 border-brand-500/60 pl-5 font-display text-xl italic leading-snug text-white/75">
               &ldquo;Doğru cevaptan önce doğru soru gelir.&rdquo;
             </blockquote>
@@ -166,12 +169,12 @@ export function WhyMentoriva() {
                   key={row.label}
                   className={`grid sm:grid-cols-[120px_1fr_1fr] ${i < COMPARISON.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
                 >
-                  <dt className="px-5 pb-1 pt-4 text-[12px] font-medium text-white/70 sm:py-5">{row.label}</dt>
-                  <dd className="px-5 pb-2 text-[13.5px] leading-relaxed text-white/45 sm:py-5">
+                  <dt className="px-4 pb-0.5 pt-3 text-[12px] font-medium text-white/70 sm:px-5 sm:py-5">{row.label}</dt>
+                  <dd className="px-4 pb-1.5 text-[13px] leading-relaxed text-white/45 sm:px-5 sm:py-5 sm:text-[13.5px]">
                     <span className="mr-1.5 text-[10px] uppercase tracking-wider text-white/30 sm:hidden">Asistan:</span>
                     {row.general}
                   </dd>
-                  <dd className="border-white/[0.06] bg-brand-500/[0.035] px-5 pb-4 pt-2 text-[13.5px] leading-relaxed text-white/85 sm:border-l sm:py-5">
+                  <dd className="border-white/[0.06] bg-brand-500/[0.035] px-4 pb-3 pt-1.5 text-[13px] leading-relaxed text-white/85 sm:border-l sm:px-5 sm:py-5 sm:text-[13.5px]">
                     <span className="mr-1.5 text-[10px] uppercase tracking-wider text-brand-300 sm:hidden">Mentoriva:</span>
                     {row.mentoriva}
                   </dd>
@@ -179,7 +182,7 @@ export function WhyMentoriva() {
               ))}
             </dl>
           </div>
-          <p className="mt-4 px-1 text-xs leading-relaxed text-white/35">
+          <p className="mt-4 hidden px-1 text-xs leading-relaxed text-white/35 sm:block">
             İkisi birbirinin alternatifi değil: bir konuyu öğrenmek için asistana, o konuda ne hissettiğini ve ne yapmak
             istediğini düşünmek için Mentoriva&apos;ya gelirsin.
           </p>
@@ -222,12 +225,12 @@ const STEPS = [
 
 export function HowItWorks({ id }: { id?: string }) {
   return (
-    <section id={id} className="mx-auto max-w-content scroll-mt-24 px-5 py-20 sm:py-28" aria-labelledby="how-title">
+    <section id={id} className="mx-auto max-w-content scroll-mt-24 px-5 py-12 sm:py-28" aria-labelledby="how-title">
       <SectionHeading eyebrow="Nasıl çalışır?" title="Dört adımda" accent="ilk cevaplarına" id="how-title">
         Kurulum yok, öğrenmen gereken bir şey yok. İlk sorundan ilk cevabına bir dakikadan kısa sürer.
       </SectionHeading>
 
-      <ol className="relative mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      <ol className="m-rail-md relative mt-8 grid gap-5 sm:mt-14 md:grid-cols-2 lg:grid-cols-4">
         <div className="pointer-events-none absolute left-[12%] right-[12%] top-[2.25rem] hidden h-px bg-gradient-to-r from-transparent via-brand-500/30 to-transparent lg:block" />
         {STEPS.map((s, i) => (
           <Reveal as="li" key={s.title} delay={i * 110} className="group relative">
@@ -278,9 +281,9 @@ const GOOD_TO_KNOW = [
 
 export function GoodToKnow() {
   return (
-    <section className="mx-auto max-w-content px-5 py-20 sm:py-24" aria-labelledby="know-title">
+    <section className="mx-auto max-w-content px-5 py-12 sm:py-24" aria-labelledby="know-title">
       <SectionHeading eyebrow="Bilmen gerekenler" title="Açık ve dürüst:" accent="Mentoriva ne değildir?" id="know-title" />
-      <div className="mt-12 grid gap-5 md:grid-cols-3">
+      <div className="m-rail-md mt-8 grid gap-5 sm:mt-12 md:grid-cols-3">
         {GOOD_TO_KNOW.map((g, i) => (
           <Reveal key={g.title} delay={i * 100}>
             <div className="glass h-full rounded-2xl p-6">

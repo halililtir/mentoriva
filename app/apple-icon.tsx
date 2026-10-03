@@ -7,6 +7,8 @@ import { ImageResponse } from 'next/og';
 
 export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
+// Node'da next/og Windows'ta font yolu hatası verir (bkz. paylaşım kartı).
+export const runtime = 'edge';
 
 export default function AppleIcon() {
   return new ImageResponse(

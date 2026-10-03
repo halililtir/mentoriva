@@ -12,7 +12,7 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="mx-auto max-w-content px-5 py-20 sm:py-24" aria-labelledby="faq-title">
+    <section className="mx-auto max-w-content px-5 py-12 sm:py-24" aria-labelledby="faq-title">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr]">
         <div>
           <SectionHeading eyebrow="Sık sorulan sorular" title="Aklındaki" accent="sorular" id="faq-title" align="left">

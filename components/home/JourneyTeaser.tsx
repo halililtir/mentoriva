@@ -4,7 +4,7 @@ import { Reveal } from '@/components/ui/Reveal';
 /** Ana sayfada Kendine Yolculuk tanıtımı — Mentoriva'nın asıl amacına açılan kapı. */
 export function JourneyTeaser() {
   return (
-    <section className="mx-auto max-w-content px-5 py-16 sm:py-20" aria-labelledby="journey-teaser-title">
+    <section className="mx-auto max-w-content px-5 py-10 sm:py-20" aria-labelledby="journey-teaser-title">
       <Reveal>
         <div className="glass relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-12 sm:py-14">
           <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-500/15 blur-3xl" />

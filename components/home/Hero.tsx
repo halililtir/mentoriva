@@ -24,7 +24,7 @@ const TRUST = ['Kredi kartı istenmez', 'Her gün 5 ücretsiz soru', 'Kurulum yo
 
 export function Hero({ user, onStart, onHowItWorks }: Props) {
   return (
-    <section className="relative mx-auto grid max-w-content items-center gap-12 px-5 pb-12 pt-8 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pb-20">
+    <section className="relative mx-auto grid max-w-content items-center gap-8 px-5 pb-8 pt-6 sm:gap-12 sm:pb-12 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pb-20">
       <div className="text-center lg:text-left">
         <span className="eyebrow animate-fade-up">
           <span className="relative flex h-1.5 w-1.5">
@@ -47,16 +47,19 @@ export function Hero({ user, onStart, onHowItWorks }: Props) {
         </h1>
 
         {/* Ne işe yaradığını tek satırda söyleyen dönen cümle */}
-        <p className="mt-5 min-h-[3.2em] text-[17px] leading-snug text-white/80 animate-fade-up sm:min-h-[1.8em] sm:text-lg" style={{ animationDelay: '600ms' }}>
+        <p className="mt-4 min-h-[2.8em] text-[16px] leading-snug text-white/80 animate-fade-up sm:mt-5 sm:min-h-[1.8em] sm:text-lg" style={{ animationDelay: '600ms' }}>
           Mentoriva ile <RotatingText phrases={PHRASES} className="font-medium text-brand-300" />
         </p>
 
-        <p className="mx-auto mt-4 max-w-[540px] text-[15px] leading-relaxed text-white/50 animate-fade-up lg:mx-0" style={{ animationDelay: '700ms' }}>
-          Aklındaki soruyu yaz; Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca kendi düşünce sistemleriyle aynı anda
-          cevap versin. Cevapları yan yana koy, seni en çok düşündürenle sohbete devam et.
+        <p className="mx-auto mt-3 max-w-[540px] text-[14.5px] leading-relaxed text-white/55 animate-fade-up sm:mt-4 sm:text-[15px] lg:mx-0" style={{ animationDelay: '700ms' }}>
+          <span className="sm:hidden">Bir soru yaz; farklı düşünürler aynı anda cevap versin, seni en çok düşündürenle konuşmaya devam et.</span>
+          <span className="hidden sm:inline">
+            Aklındaki soruyu yaz; Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca kendi düşünce sistemleriyle aynı anda
+            cevap versin. Cevapları yan yana koy, seni en çok düşündürenle sohbete devam et.
+          </span>
         </p>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 animate-fade-up sm:flex-row lg:justify-start" style={{ animationDelay: '800ms' }}>
+        <div className="mt-6 flex flex-col items-center justify-center gap-2.5 animate-fade-up sm:mt-8 sm:flex-row sm:gap-3 lg:justify-start" style={{ animationDelay: '800ms' }}>
           {user ? (
             <button onClick={onStart} className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
               Mentorunu seç
@@ -68,7 +71,7 @@ export function Hero({ user, onStart, onHowItWorks }: Props) {
               <Arrow />
             </Link>
           )}
-          <button onClick={onHowItWorks} className="btn-secondary w-full !px-7 !py-3.5 sm:w-auto">
+          <button onClick={onHowItWorks} className="btn-ghost justify-center py-2 text-sm sm:btn-secondary sm:w-auto sm:!px-7 sm:!py-3.5 sm:text-base">
             Nasıl çalışır?
           </button>
         </div>
@@ -79,9 +82,9 @@ export function Hero({ user, onStart, onHowItWorks }: Props) {
             <span className="font-semibold text-brand-300">{user.remaining}</span> soru hakkın var.
           </p>
         ) : (
-          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 animate-fade-up lg:justify-start" style={{ animationDelay: '900ms' }}>
-            {TRUST.map((t) => (
-              <li key={t} className="flex items-center gap-1.5 text-[13px] text-white/45">
+          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 animate-fade-up sm:mt-6 sm:gap-x-5 lg:justify-start" style={{ animationDelay: '900ms' }}>
+            {TRUST.map((t, i) => (
+              <li key={t} className={`items-center gap-1.5 text-[12.5px] text-white/50 sm:text-[13px] ${i === 2 ? 'hidden sm:flex' : 'flex'}`}>
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M3 8l3.5 3.5L13 5" stroke="#33d4dc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>

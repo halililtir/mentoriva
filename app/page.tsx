@@ -221,7 +221,7 @@ export default function HomePage() {
 
   // Mentor seçimi — hem misafir hem üye akışında kullanılır
   const mentorSection = (
-    <section ref={galleryRef} id="mentorlar" className="mx-auto max-w-content scroll-mt-24 px-5 py-16 sm:py-20" aria-labelledby="mentors-title">
+    <section ref={galleryRef} id="mentorlar" className="mx-auto max-w-content scroll-mt-24 px-5 py-10 sm:py-20" aria-labelledby="mentors-title">
       <SectionHeading eyebrow="Mentorlar" title="Mentorunu" accent="seç" id="mentors-title">
         Derinleşmek için birini, farklı bakışları yan yana görmek için birkaç mentor seç. Kararsızsan birden fazla mentor seç;
         cevaplar geldikten sonra seni en çok düşündürenle devam edersin.
@@ -243,7 +243,7 @@ export default function HomePage() {
         <FlowSteps current={0} className="max-w-md" />
       </Reveal>
 
-      <div className="mt-10 grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
+      <div className="m-rail m-rail-narrow mt-6 grid grid-cols-2 gap-3.5 sm:mt-10 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
         {ACTIVE_MENTORS.map((m, i) => (
           <MentorGalleryCard
             key={m.id}
@@ -263,7 +263,7 @@ export default function HomePage() {
           <span className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
         </div>
       </Reveal>
-      <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
+      <div className="m-rail m-rail-narrow mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
         {COMING_SOON_MENTORS.map((m, i) => (
           <Reveal key={m.id} delay={i * 70}>
             <MentorGalleryCard mentor={m} />

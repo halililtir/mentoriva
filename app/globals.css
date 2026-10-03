@@ -360,6 +360,42 @@
 /* Utilities                                                 */
 /* -------------------------------------------------------- */
 @layer utilities {
+  /* Mobil şerit: telefonda kart grupları alt alta yığılmak yerine yana kaydırılır
+     (sayfa boyunu ~yarıya indirir). Tablet/masaüstünde ızgara olduğu gibi kalır.
+     .m-rail → 640px altı, .m-rail-md → 768px altı. Çocuk genişliği: varsayılan %82,
+     .m-rail-narrow ile %62 (portre kartları). */
+  @media (max-width: 639px) {
+    .m-rail {
+      display: flex !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 12px;
+      margin-left: -20px;
+      margin-right: -20px;
+      padding: 4px 20px 14px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .m-rail > * { flex: 0 0 82%; scroll-snap-align: center; min-width: 0; }
+    .m-rail.m-rail-narrow > * { flex-basis: 62%; }
+    .m-rail::-webkit-scrollbar { display: none; }
+  }
+  @media (max-width: 767px) {
+    .m-rail-md {
+      display: flex !important;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 12px;
+      margin-left: -20px;
+      margin-right: -20px;
+      padding: 4px 20px 14px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .m-rail-md > * { flex: 0 0 82%; scroll-snap-align: center; min-width: 0; }
+    .m-rail-md::-webkit-scrollbar { display: none; }
+  }
+
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
 

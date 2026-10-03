@@ -37,7 +37,7 @@ export function WelcomeCard({ name, onPick }: { name: string; onPick: (q: string
           {name}, ilk sorun bir dakika uzağında.
         </h2>
 
-        <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+        <ol className="m-rail mt-6 grid gap-3 sm:grid-cols-3">
           {WELCOME.steps.map((s, i) => (
             <li key={s.title} className="rounded-2xl border border-white/[0.08] bg-ink-0/40 p-4">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-onbrand">{i + 1}</span>

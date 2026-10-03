@@ -12,7 +12,7 @@ export function UseCases({ onPick }: { onPick: (question: string) => void }) {
   const current = USE_CASES.find((u) => u.id === active) ?? USE_CASES[0]!;
 
   return (
-    <section className="mx-auto max-w-content px-5 py-20 sm:py-24" aria-labelledby="usecases-title">
+    <section className="mx-auto max-w-content px-5 py-12 sm:py-24" aria-labelledby="usecases-title">
       <SectionHeading eyebrow="Ne sorabilirim?" title="Seni meşgul eden" accent="her şeyi." id="usecases-title">
         Kararsız kaldığın bir an, tekrar eden bir duygu, cevabını bulamadığın büyük bir soru. Bir konu seç, bir soruya
         dokun; onu mentorlarına sormaya hazır hale getirelim.
@@ -38,7 +38,7 @@ export function UseCases({ onPick }: { onPick: (question: string) => void }) {
           ))}
         </div>
 
-        <div key={current.id} role="tabpanel" className="mx-auto mt-8 grid max-w-4xl gap-3 md:grid-cols-3">
+        <div key={current.id} role="tabpanel" className="m-rail-md mx-auto mt-6 grid max-w-4xl gap-3 sm:mt-8 md:grid-cols-3">
           {current.questions.map((q, i) => (
             <button
               key={q}

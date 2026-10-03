@@ -25,6 +25,8 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
   );
   const [crisis, setCrisis] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
+  /** Telefonda tek seferde bir cevap gösterilir (sekmeler); geniş ekranda hepsi yan yana. */
+  const [tab, setTab] = useState<MentorId>(mentorIds[0]!);
   const { start } = useSSEStream<StreamEvent>();
   const started = useRef(false);
   const handlers = useRef({ onQuota, onAuthRequired, onQuotaExceeded });
@@ -60,10 +62,10 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
   const doneCount = Object.values(states).filter((s) => s.status === 'completed' || s.status === 'error').length;
 
   return (
-    <div className="mx-auto w-full max-w-content px-5 py-10 sm:py-14">
+    <div className="mx-auto w-full max-w-content px-5 py-6 sm:py-14">
       <div className="text-center animate-fade-up">
         <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Sorun</p>
-        <h1 className="mx-auto mt-3 max-w-3xl font-display text-[clamp(1.4rem,3.4vw,2rem)] leading-snug text-white/90 text-balance">
+        <h1 className="mx-auto mt-2 max-w-3xl font-display text-[clamp(1.25rem,3.4vw,2rem)] leading-snug text-white/90 text-balance sm:mt-3">
           “{question}”
         </h1>
         {!crisis && !fatal && (
@@ -87,9 +89,38 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
           <div className="mt-4"><button onClick={onBack} className="btn-secondary !py-2 text-sm">Geri dön</button></div>
         </div>
       ) : (
+        <>
+        {mentorIds.length > 1 && (
+          <div className="sticky top-[60px] z-20 -mx-5 mt-5 flex gap-1.5 overflow-x-auto bg-ink-0/85 px-5 py-2 backdrop-blur-md md:hidden" role="tablist" aria-label="Mentor cevapları">
+            {mentorIds.map((mid) => {
+              const m = getActiveMentor(mid);
+              const a = getAccent(m.accentColor);
+              const st = states[mid];
+              const busy = st?.status === 'pending' || st?.status === 'streaming';
+              const on = tab === mid;
+              return (
+                <button
+                  key={mid}
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setTab(mid)}
+                  className={cn('flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 text-[13px] transition-colors', on ? 'bg-white/[0.06]' : 'border-transparent text-white/55')}
+                  style={on ? { borderColor: a.border, color: a.text } : undefined}
+                >
+                  <span className="relative h-6 w-6 overflow-hidden rounded-full border" style={{ borderColor: a.hex }}>
+                    <Image src={m.portraitUrl} alt="" fill sizes="24px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
+                  </span>
+                  {m.shortName}
+                  {busy && <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: a.hex }} aria-label="yazıyor" />}
+                  {st?.status === 'completed' && !on && <span className="text-[10px] text-white/40">✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div
           className={cn(
-            'mt-10 grid gap-5',
+            'mt-4 grid gap-5 md:mt-10',
             mentorIds.length <= 2 ? 'mx-auto max-w-4xl md:grid-cols-2' : mentorIds.length === 3 ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-4',
           )}
         >
@@ -102,7 +133,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
             return (
               <article
                 key={mid}
-                className={cn('glass relative flex min-h-[320px] flex-col overflow-hidden rounded-3xl animate-fade-up', active && 'glow-border')}
+                className={cn('glass relative min-h-[260px] flex-col overflow-hidden rounded-3xl animate-fade-up md:flex md:min-h-[320px]', active && 'glow-border', tab === mid || mentorIds.length === 1 ? 'flex' : 'hidden')}
                 style={{ animationDelay: `${i * 90}ms`, '--accent': a.hex } as React.CSSProperties}
               >
                 <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${a.hex}, transparent)` }} />
@@ -165,6 +196,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
             );
           })}
         </div>
+        </>
       )}
 
       {!crisis && (

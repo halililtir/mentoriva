@@ -192,7 +192,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
           </div>
         )}
         {!outOfQuota && (
-          <p className="mt-2 text-center text-[10px] text-white/25">Enter ile gönder · Shift+Enter yeni satır · her mesaj 1 hak kullanır</p>
+          <p className="mt-2 text-center text-[10px] text-white/25"><span className="hidden sm:inline">Enter ile gönder · Shift+Enter yeni satır · </span>her mesaj 1 hak kullanır</p>
         )}
       </div>
     </div>
