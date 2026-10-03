@@ -40,14 +40,29 @@ export function apiError(status: number, code: string, message: string, headers?
 
 /**
  * Oturum + rate limit kontrolü. Başarılıysa kullanıcıyı, değilse
- * hazır hata yanıtını döner.
+ * hazır hata yanıtını döner. allowGuest: oturum yoksa misafir olarak
+ * (yalnızca IP sınırıyla) geçirir; deneme hakkını route ayırır.
  */
+export async function authorizeMentorRequest(request: Request, scope: 'respond' | 'chat'): Promise<{ user: StoredUser } | { response: Response }>;
 export async function authorizeMentorRequest(
   request: Request,
   scope: 'respond' | 'chat',
-): Promise<{ user: StoredUser } | { response: Response }> {
+  opts: { allowGuest: true },
+): Promise<{ user: StoredUser } | { guest: { ip: string } } | { response: Response }>;
+export async function authorizeMentorRequest(
+  request: Request,
+  scope: 'respond' | 'chat',
+  opts: { allowGuest?: boolean } = {},
+): Promise<{ user: StoredUser } | { guest: { ip: string } } | { response: Response }> {
   const user = await getSessionUser(request);
   if (!user) {
+    if (opts.allowGuest) {
+      const ip = getClientIp(request);
+      if (!(await hitAll([['mentor-ip', ip, RATE_LIMITS.MENTOR_IP]]))) {
+        return { response: apiError(429, 'RATE_LIMITED', 'Çok hızlı gidiyorsun. Biraz bekleyip tekrar dene.', { 'Retry-After': '60' }) };
+      }
+      return { guest: { ip } };
+    }
     return { response: apiError(401, 'UNAUTHORIZED', 'Devam etmek için giriş yapmalısın.') };
   }
 

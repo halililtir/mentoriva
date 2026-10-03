@@ -38,9 +38,9 @@ describe('bonus haklar', () => {
   });
 
   it('kalan hak, günlük kalan ile bonusun toplamıdır', async () => {
-    const u = await mk('a@b.com', 5);
+    const u = await mk('a@b.com', 7);
     await addBonus(u.username, 3);
-    expect((await toPublicUser(u)).remaining).toBe(8);
+    expect((await toPublicUser(u)).remaining).toBe(10);
   });
 });
 

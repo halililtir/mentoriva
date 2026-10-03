@@ -4,6 +4,7 @@
  */
 
 import type { MentorId } from '@/types';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 // -----------------------------------------------------------
 // Hero'daki canlı örnek (gerçek API çağrısı değil, temsili)
@@ -88,7 +89,7 @@ export const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Ücretli mi?',
-    a: 'Hayır. Üyelik ücretsizdir, kayıt olurken kredi kartı istenmez. Her gün 5 soru hakkın olur ve haklar her gece yarısı (Türkiye saati) yenilenir.',
+    a: `Hayır. Üyelik ücretsizdir, kayıt olurken kredi kartı istenmez. Her gün ${DEFAULT_DAILY_LIMIT} soru hakkın olur ve haklar her gece yarısı (Türkiye saati) yenilenir. Üye olmadan da günde bir soruyla (en fazla iki mentor) deneyebilirsin.`,
   },
   {
     q: 'Bir "soru hakkı" neye harcanır?',

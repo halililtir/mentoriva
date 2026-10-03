@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     email: username,
     name: str(body['name'], 40) || undefined,
     password: await hashPassword(password),
-    dailyLimit: parseLimit(body['dailyLimit']) ?? DEFAULT_DAILY_LIMIT,
+    ...(parseLimit(body['dailyLimit']) !== null ? { dailyLimit: parseLimit(body['dailyLimit'])!, limitByAdmin: true } : {}),
     questionsUsed: 0,
     isActive: true,
     isVerified: true,
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     notes: str(body['notes'], 200),
   };
   await saveUser(user);
-  await logAdminAction('Üye oluşturuldu', username, `günlük ${user.dailyLimit}`);
+  await logAdminAction('Üye oluşturuldu', username, `günlük ${dailyLimitOf(user)}`);
   return NextResponse.json({ success: true, user: withoutPassword(user) });
 }
 
@@ -133,6 +133,7 @@ export async function PUT(req: Request) {
   if (newLimit !== null && newLimit !== dailyLimitOf(user)) {
     changes.push(`günlük limit ${dailyLimitOf(user)} → ${newLimit}`);
     user.dailyLimit = newLimit;
+    user.limitByAdmin = true;
     delete user.questionLimit;
   }
   if ('isActive' in body) {

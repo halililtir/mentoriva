@@ -4,9 +4,12 @@ import Link from 'next/link';
 import { DemoPreview } from '@/components/home/DemoPreview';
 import { RotatingText } from '@/components/ui/RotatingText';
 import type { SessionUser } from '@/lib/session';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 interface Props {
   user: SessionUser | null;
+  /** Misafirin bugünkü deneme hakkı duruyor: ana çağrı "Kayıt olmadan dene" olur. */
+  guestTrial?: boolean;
   /** Mentor seçimine kaydır. */
   onStart: () => void;
   /** "Nasıl çalışır" bölümüne kaydır. */
@@ -20,9 +23,9 @@ const PHRASES = [
   'kendi cevabını bulmanı sağlayacak soruları gör.',
 ];
 
-const TRUST = ['Kredi kartı istenmez', 'Her gün 5 ücretsiz soru', 'Kurulum yok, tarayıcıda çalışır'];
+const TRUST = ['Kayıt olmadan 1 soru dene', `Üyelere her gün ${DEFAULT_DAILY_LIMIT} ücretsiz soru`, 'Kredi kartı istenmez'];
 
-export function Hero({ user, onStart, onHowItWorks }: Props) {
+export function Hero({ user, guestTrial = false, onStart, onHowItWorks }: Props) {
   return (
     <section className="relative mx-auto grid max-w-content items-center gap-8 px-5 pb-8 pt-6 sm:gap-12 sm:pb-12 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pb-20">
       <div className="text-center lg:text-left">
@@ -63,6 +66,11 @@ export function Hero({ user, onStart, onHowItWorks }: Props) {
           {user ? (
             <button onClick={onStart} className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
               Mentorunu seç
+              <Arrow />
+            </button>
+          ) : guestTrial ? (
+            <button onClick={onStart} className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
+              Kayıt olmadan dene
               <Arrow />
             </button>
           ) : (

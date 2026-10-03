@@ -29,6 +29,8 @@ import { track } from '@/lib/analytics';
 import type { MentorId } from '@/types';
 import { canUseMentor, maxMentorsFor } from '@/lib/mentors/access';
 import { useEarlyMentors } from '@/lib/useEarlyMentors';
+import { DEFAULT_DAILY_LIMIT, GUEST_MAX_MENTORS } from '@/lib/auth/limits';
+import { guestTrialUsedToday, markGuestTrialUsed } from '@/lib/guest-trial';
 
 type View = 'gallery' | 'ask' | 'single-response' | 'compare' | 'chat' | 'limit';
 
@@ -50,6 +52,10 @@ export default function HomePage() {
   const [chat, setChat] = useState<ChatState | null>(null);
   const [cachedResponses, setCachedResponses] = useState<Record<string, string>>({});
   const galleryRef = useRef<HTMLElement>(null);
+  /** Kayıt olmadan deneme: misafir bugün bir soru sorabilir (sunucu IP ile denetler). */
+  const isGuest = session.status === 'guest';
+  const [guestUsed, setGuestUsed] = useState(false);
+  useEffect(() => { setGuestUsed(guestTrialUsedToday()); }, []);
 
   // Görünüm değişince sayfanın başına dön
   useEffect(() => {
@@ -93,7 +99,7 @@ export default function HomePage() {
 
   // Seçim sınırı ve erken erişim işaret ayrıcalıklarına bağlı (sunucu da denetler: lib/mentors/access.ts)
   const perks = useMemo(() => session.user?.perks ?? [], [session.user?.perks]);
-  const maxSelected = maxMentorsFor(perks);
+  const maxSelected = isGuest ? GUEST_MAX_MENTORS : maxMentorsFor(perks);
   const earlyMentors = useEarlyMentors();
 
   const toggleMentor = useCallback((id: MentorId) => {
@@ -105,7 +111,9 @@ export default function HomePage() {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
       if (prev.length >= maxSelected) {
         showToast(
-          perks.includes('tam-meclis')
+          isGuest
+            ? `Denemede en fazla ${maxSelected} mentor seçebilirsin; ücretsiz üye olunca dört mentora birden sorabilirsin.`
+            : perks.includes('tam-meclis')
             ? `En fazla ${maxSelected} mentor seçebilirsin`
             : `En fazla ${maxSelected} mentor seçebilirsin. Çok Sesli işaretini kazanınca hepsine birden sorabilirsin.`,
           'warning',
@@ -114,7 +122,7 @@ export default function HomePage() {
       }
       return [...prev, id];
     });
-  }, [perks, maxSelected, earlyMentors]);
+  }, [perks, maxSelected, earlyMentors, isGuest]);
 
   const scrollToGallery = useCallback(() => {
     galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -124,44 +132,51 @@ export default function HomePage() {
     document.getElementById('nasil-calisir')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const requireAccount = useCallback(() => {
-    showToast('Soru sormak için ücretsiz hesabını oluştur ya da giriş yap', 'info');
+  const requireAccount = useCallback((message = 'Soru sormak için ücretsiz hesabını oluştur ya da giriş yap') => {
+    showToast(message, 'info');
     router.push('/kayit?next=/');
   }, [router]);
 
+  const guestTrialOver = `Bugünkü deneme hakkını kullandın. Ücretsiz üye ol, her gün ${DEFAULT_DAILY_LIMIT} soru sor.`;
+
   const goToAsk = useCallback(() => {
     if (selectedIds.length === 0) return;
-    if (session.status !== 'user') return requireAccount();
+    if (session.status !== 'user') {
+      if (guestUsed) return requireAccount(guestTrialOver);
+      return setView('ask');
+    }
     if (user && user.remaining <= 0) return setView('limit');
     setView('ask');
-  }, [selectedIds, session.status, user, requireAccount]);
+  }, [selectedIds, session.status, user, requireAccount, guestUsed, guestTrialOver]);
 
   /** "Ne sorabilirim?" bölümünden bir soru seçildi. */
   const handlePickQuestion = useCallback((q: string) => {
     saveDraft(q);
-    if (session.status !== 'user') return requireAccount();
+    if (session.status !== 'user' && guestUsed) return requireAccount(guestTrialOver);
     if (selectedIds.length > 0) {
       if (user && user.remaining <= 0) return setView('limit');
       return setView('ask');
     }
     showToast('Güzel soru. Şimdi kime soracağını seç.', 'success');
     scrollToGallery();
-  }, [saveDraft, session.status, selectedIds.length, user, requireAccount, scrollToGallery]);
+  }, [saveDraft, session.status, selectedIds.length, user, requireAccount, scrollToGallery, guestUsed, guestTrialOver]);
 
   const handleSubmitQuestion = useCallback((q: string) => {
     if (user && user.remaining <= 0) return setView('limit');
+    if (isGuest) { markGuestTrialUsed(); setGuestUsed(true); }
     saveDraft('');
-    track('question_asked', { mentors: selectedIds.length });
+    track(isGuest ? 'guest_question' : 'question_asked', { mentors: selectedIds.length });
     setQuestion(q);
     setView(selectedIds.length === 1 ? 'single-response' : 'compare');
-  }, [selectedIds, user, saveDraft]);
+  }, [selectedIds, user, saveDraft, isGuest]);
 
   const handleContinueToChat = useCallback((mentorId: MentorId, response: string) => {
+    if (isGuest) return requireAccount(`${getActiveMentor(mentorId).shortName} ile sohbete devam etmek için ücretsiz üye ol.`);
     // Cevabı cache'le — geri dönülürse aynı soru tekrar ücretlendirilmesin
     setCachedResponses((prev) => ({ ...prev, [`${mentorId}:${question}`]: response }));
     setChat({ mentorId, question, response });
     setView('chat');
-  }, [question]);
+  }, [question, isGuest, requireAccount]);
 
   /** Sunucu oturum düştü (401) veya kota bitti (429) dediğinde. */
   const handleAuthRequired = useCallback(() => {
@@ -170,7 +185,8 @@ export default function HomePage() {
   }, [router, session]);
 
   const handleQuotaExceeded = useCallback(() => {
-    session.setRemaining(0);
+    if (session.status !== 'user') { markGuestTrialUsed(); setGuestUsed(true); }
+    else session.setRemaining(0);
     setView('limit');
   }, [session]);
 
@@ -283,7 +299,7 @@ export default function HomePage() {
           üyeye ise doğrudan mentor seçimi ve örnek sorular gösterilir. */}
       {view === 'gallery' && (
         <div className="flex-1">
-          <Hero user={user} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
+          <Hero user={user} guestTrial={isGuest && !guestUsed} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
           {user && user.questionsUsed === 0 && <WelcomeCard name={user.name} onPick={handlePickQuestion} />}
           {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
           <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
@@ -320,9 +336,13 @@ export default function HomePage() {
                 ? user.remaining === 0
                   ? 'Bugünkü hakların doldu'
                   : `Bugün ${user.remaining} soru hakkın kaldı`
-                : draft
-                  ? 'Sorun hazır — devam et'
-                  : null
+                : isGuest
+                  ? guestUsed
+                    ? 'Deneme hakkını bugün kullandın'
+                    : 'Kayıt olmadan 1 soru deneyebilirsin'
+                  : draft
+                    ? 'Sorun hazır — devam et'
+                    : null
             }
           />
           <div className={selectedIds.length > 0 ? 'h-24' : ''} />
@@ -340,6 +360,7 @@ export default function HomePage() {
           onBack={backToGallery}
           remaining={user?.remaining}
           initialValue={draft}
+          guest={isGuest}
         />
       )}
 
@@ -352,6 +373,7 @@ export default function HomePage() {
           cachedResponse={cachedResponses[`${selectedIds[0]}:${question}`]}
           onContinue={(resp) => handleContinueToChat(selectedIds[0]!, resp)}
           onBack={resetToGallery}
+          consent={isGuest}
           {...streamHandlers}
         />
       )}
@@ -366,6 +388,7 @@ export default function HomePage() {
             question={question}
             onSelect={handleContinueToChat}
             onBack={backToAsk}
+            consent={isGuest}
             {...streamHandlers}
           />
         </div>

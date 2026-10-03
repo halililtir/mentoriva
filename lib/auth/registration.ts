@@ -8,7 +8,7 @@
  */
 
 import { getKV, getMany, scanKeys } from '@/lib/kv';
-import { DEFAULT_DAILY_LIMIT, getUser, saveUser, type StoredUser } from '@/lib/auth/users';
+import { getUser, saveUser, type StoredUser } from '@/lib/auth/users';
 import { applyReferral } from '@/lib/auth/referral';
 import { recordEvent } from '@/lib/admin/metrics';
 import type { PendingRegistration } from '@/lib/auth/codes';
@@ -63,7 +63,6 @@ export async function completeRegistration(
     email,
     name: pending.name,
     password: pending.passwordHash,
-    dailyLimit: DEFAULT_DAILY_LIMIT,
     questionsUsed: 0,
     isActive: true,
     isVerified: true,

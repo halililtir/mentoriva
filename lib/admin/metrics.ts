@@ -13,6 +13,7 @@ import { todayKey } from '@/lib/time';
 
 export const EVENTS = {
   question: 'Soru',
+  guest_question: 'Deneme sorusu (misafir)',
   chat: 'Sohbet mesajı',
   signup: 'Yeni üye',
   journey: 'Yolculuk',

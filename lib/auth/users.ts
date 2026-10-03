@@ -11,7 +11,7 @@
 
 import { getKV, getMany, scanKeys } from '@/lib/kv';
 import { todayKey } from '@/lib/time';
-import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
+import { DEFAULT_DAILY_LIMIT, LEGACY_DEFAULT_LIMIT } from '@/lib/auth/limits';
 import { getBonus, refundBonus, spendBonus } from '@/lib/auth/bonus';
 import { FOUNDER_DAILY_BONUS, deleteBadgeData, getPerks, hasBadge, type PerkId } from '@/lib/badges';
 import { deleteAllChats } from '@/lib/chats';
@@ -26,6 +26,8 @@ export interface StoredUser {
   name?: string;
   password: string; // scrypt hash (eski kayıtlarda düz metin olabilir)
   dailyLimit?: number;
+  /** Günlük limiti admin elle verdi; varsayılan değişse de korunur. */
+  limitByAdmin?: boolean;
   /** Eski alan — dailyLimit yoksa günlük limit olarak okunur. */
   questionLimit?: number;
   /** Ömür boyu toplam soru (istatistik). */
@@ -65,7 +67,10 @@ const userKey = (username: string) => `user:${username}`;
 const usageKey = (username: string, day = todayKey()) => `usage:${username}:${day}`;
 
 export function dailyLimitOf(user: StoredUser): number {
-  const limit = Number(user.dailyLimit ?? user.questionLimit ?? DEFAULT_DAILY_LIMIT);
+  const stored = user.dailyLimit ?? user.questionLimit;
+  // Kayıtta otomatik yazılmış eski varsayılan (5) → yeni varsayılan; admin'in verdiği korunur
+  if (stored === undefined || (stored === LEGACY_DEFAULT_LIMIT && !user.limitByAdmin)) return DEFAULT_DAILY_LIMIT;
+  const limit = Number(stored);
   return Number.isFinite(limit) && limit >= 0 ? limit : DEFAULT_DAILY_LIMIT;
 }
 

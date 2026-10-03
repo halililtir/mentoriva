@@ -125,7 +125,7 @@ export function routeStreamError(error: StreamError, handlers: MentorStreamHandl
     handlers.onAuthRequired();
     return true;
   }
-  if (error.code === 'QUOTA_EXCEEDED') {
+  if (error.code === 'QUOTA_EXCEEDED' || error.code === 'GUEST_USED') {
     handlers.onQuotaExceeded();
     return true;
   }

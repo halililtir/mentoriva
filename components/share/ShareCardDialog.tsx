@@ -8,6 +8,7 @@ import { checkBadges } from '@/components/shared/BadgeToaster';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
 import { genitive } from '@/lib/tr';
+import { useSession } from '@/lib/session';
 
 export interface ShareSource {
   source: 'answer' | 'daily';
@@ -48,7 +49,10 @@ function bestIndex(sentences: string[]): number {
 
 export function ShareCardButton({ data, className, compact }: { data: ShareSource; className?: string; compact?: boolean }) {
   const [open, setOpen] = useState(false);
+  const { status } = useSession();
   const accent = getAccent(getActiveMentor(data.mentorId).accentColor);
+  // Cevap kartı, cümlenin üyeye üretilmiş bir cevapta geçtiğini doğrular; misafirde gösterilmez
+  if (data.source === 'answer' && status !== 'user') return null;
   return (
     <>
       <button

@@ -17,9 +17,11 @@ interface Props extends MentorStreamHandlers {
   question: string;
   onSelect: (mentorId: MentorId, response: string) => void;
   onBack: () => void;
+  /** Misafir denemesinde soru ekranında verilen onay. */
+  consent?: boolean;
 }
 
-export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, onAuthRequired, onQuotaExceeded }: Props) {
+export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, onAuthRequired, onQuotaExceeded, consent }: Props) {
   const [states, setStates] = useState<Record<string, MentorResponseState>>(() =>
     Object.fromEntries(mentorIds.map((id) => [id, { status: 'pending', content: '' }])),
   );
@@ -38,7 +40,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
 
     void start({
       url: '/api/v1/mentors/respond',
-      body: { question, mentorIds },
+      body: { question, mentorIds, ...(consent ? { consent: true } : {}) },
       onEvent: (ev) => {
         if (ev.type === 'quota') return handlers.current.onQuota(ev.remaining);
         if (ev.type === 'crisis') return setCrisis(ev.message);
@@ -57,6 +59,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
         if (!routeStreamError(e, handlers.current)) setFatal(e.message);
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onay yalnızca ilk istekte okunur
   }, [mentorIds, question, start]);
 
   const doneCount = Object.values(states).filter((s) => s.status === 'completed' || s.status === 'error').length;

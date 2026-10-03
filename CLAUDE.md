@@ -45,7 +45,7 @@ Next.js 14 (App Router) · React 18 · TypeScript (strict + `noUncheckedIndexedA
 
 - `session.ts` — `mentoriva_session` (30 gün) ve `mentoriva_admin` (12 saat) httpOnly çerezleri. Redis'te `session:<sha256(token)>` / `admin-session:<sha256(token)>`.
 - `password.ts` — scrypt; düz metin eski kayıtları tanır (`needsRehash`), login'de hash'e çevrilir.
-- `users.ts` — `user:<email>` kaydı + günlük sayaç `usage:<email>:<YYYY-MM-DD>` (atomik INCR, Europe/Istanbul günü, `lib/time.ts`). Günlük limit `dailyLimit ?? questionLimit ?? 5`. `dailyUsed`/`dailyResetDate` eski alanlardır, okunmaz.
+- `users.ts` — `user:<email>` kaydı + günlük sayaç `usage:<email>:<YYYY-MM-DD>` (atomik INCR, Europe/Istanbul günü, `lib/time.ts`). Günlük limit `dailyLimitOf()`: varsayılan `DEFAULT_DAILY_LIMIT` (10, `lib/auth/limits.ts`). Kayıtta artık limit yazılmaz; eski kayıtlardaki otomatik 5 (`LEGACY_DEFAULT_LIMIT`) varsayılana döner, admin'in verdiği limit (`limitByAdmin`) korunur. Arayüz metinlerinde sayıyı elle yazma, sabiti kullan. `dailyUsed`/`dailyResetDate` eski alanlardır, okunmaz.
 - `codes.ts` — kayıt/şifre sıfırlama kodları: hash'li saklanır, 10 dk TTL, 5 yanlışta kilit.
 - `registration.ts` — kayıt sırasında `pending:<email>` (ad, parola özeti, davet; 7 gün) da yazılır. `completeRegistration` hem kodla doğrulamada hem admin onayında kullanılır (Üyeler sekmesi → "Doğrulama bekleyenler", `/api/admin/pending`). E-posta ulaşmayan biri böyle açılır.
 - E-posta: `lib/email.ts` (`sendEmailDetailed` hata nedenini döner ve admin Hatalar'a yazar; kod konu satırında). Admin "E-posta ayarları" kartından deneme e-postası (`/api/admin/email-test`).
@@ -84,7 +84,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ### Redis anahtarları
 
-`user:*`, `usage:*`, `bonus:*`, `chats:*`, `chat:*`, `pending:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
+`user:*`, `usage:*`, `bonus:*`, `guest:*`, `guest-count:*`, `chats:*`, `chat:*`, `pending:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
 
 ## Büyüme özellikleri
 
@@ -108,6 +108,12 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 - **Ayrıcalıklar (PERKS, `lib/badges-public.ts`):** ilke "daha çok soru değil, yeni bir kapı". `tam-meclis` (Çok Sesli: bir soruda bütün mentorlar; varsayılan en fazla `DEFAULT_MAX_MENTORS`=4), `sohbet-indir` (Derinleşen: `components/chat/ChatExport.tsx`, .txt ve yazdırarak PDF, tamamen tarayıcıda), `erken-erisim` (Kurucu Üye, Destekçi), `gunluk-arti-bir` (Kurucu Üye). `getPerks()` sunucuda, `toPublicUser().perks` istemcide. Yeni işaret kazanılınca `BadgeToaster` oturumu tazeler.
 - **Mentor erişimi:** kurallar `lib/mentors/access.ts` (saf; istemci de kullanır), depolama `lib/mentors/access-server.ts` (Redis `access:early-mentors`, admin "Erken erişim" sekmesi, `/api/admin/access`; herkese açık liste `GET /api/v1/access`). respond/chat seçim sınırını ve erken erişimi **sunucuda** denetler (403 `MENTOR_NOT_ALLOWED`). Yeni mentoru önce erken erişime al.
 - Bildirim: SSE `{type:'badges', ids}` → `announceBadges()`; SSE dışı olaylar (yolculuk, paylaşım) için `checkBadges()`. `BadgeToaster` layout'ta `SessionProvider` içinde.
+
+## Kayıt olmadan deneme (misafir)
+
+- Oturumsuz ziyaretçi IP başına günde 1 soru sorabilir, en fazla `GUEST_MAX_MENTORS` (2) mentor. `POST /api/v1/mentors/respond` misafiri `authorizeMentorRequest(..., { allowGuest: true })` ile geçirir; `lib/auth/guest.ts` → `guest:<gün>:<sha256(ip)>` (düz IP yok) ve günlük toplam sigortası `GUEST_DAILY_CAP` (300). Hiçbir mentor cevap veremezse hak iade edilir.
+- Misafir kayıt formunu görmediği için 18+ ve yurt dışı aktarım onayı soru ekranında alınır (`AskView guest`); istek `consent: true` taşımazsa 403 `CONSENT_REQUIRED`. Kullanıldı 429 `GUEST_USED` → `LimitReachedView` misafir hâli.
+- Misafirde: sohbete devam ve kayıt yok (üyeliğe yönlendirilir), cevap paylaşım kartı gizli, rozet/answers yazılmaz. Metrik olayı `guest_question`. Tarayıcı tarafı `lib/guest-trial.ts` (yalnızca arayüz yönlendirmesi).
 
 ## Kayıtlı sohbetler (`/sohbetlerim`)
 

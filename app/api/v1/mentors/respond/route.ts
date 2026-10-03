@@ -28,6 +28,8 @@ import { checkMentorSelection } from '@/lib/mentors/access';
 import { getEarlyMentors } from '@/lib/mentors/access-server';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
+import { releaseGuest, reserveGuest } from '@/lib/auth/guest';
+import { DEFAULT_DAILY_LIMIT, GUEST_MAX_MENTORS } from '@/lib/auth/limits';
 import { todayKey } from '@/lib/time';
 import { recordAnswer } from '@/lib/share/answers';
 import { MENTOR_IDS } from '@/types';
@@ -74,10 +76,11 @@ function validateRequest(body: unknown):
 // -----------------------------------------------------------
 
 export async function POST(request: Request): Promise<Response> {
-  // 1. Oturum + rate limit
-  const auth = await authorizeMentorRequest(request, 'respond');
+  // 1. Oturum + rate limit. Oturum yoksa misafir denemesi (IP başına günde 1 soru, en fazla 2 mentor)
+  const auth = await authorizeMentorRequest(request, 'respond', { allowGuest: true });
   if ('response' in auth) return auth.response;
-  const { user } = auth;
+  const user = 'user' in auth ? auth.user : null;
+  const guestIp = 'guest' in auth ? auth.guest.ip : null;
 
   // 2. Request parsing & validation
   let body: unknown;
@@ -91,9 +94,16 @@ export async function POST(request: Request): Promise<Response> {
   const { question, mentorIds } = validation.data;
 
   // Seçim sınırı ve erken erişim (arayüz de uygular; asıl denetim burada)
-  const [perks, early] = await Promise.all([getPerks(user.username), getEarlyMentors()]);
+  const [perks, early] = await Promise.all([user ? getPerks(user.username) : Promise.resolve([]), getEarlyMentors()]);
   const selectionError = checkMentorSelection(mentorIds, perks, early);
   if (selectionError) return apiError(403, 'MENTOR_NOT_ALLOWED', selectionError);
+  // Misafir kayıt formunu görmediği için 18+ ve yurt dışı aktarım onayı soru ekranında alınır
+  if (!user && (body as Record<string, unknown>)['consent'] !== true) {
+    return apiError(403, 'CONSENT_REQUIRED', 'Denemek için onay kutusunu işaretlemelisin.');
+  }
+  if (!user && mentorIds.length > GUEST_MAX_MENTORS) {
+    return apiError(403, 'MENTOR_NOT_ALLOWED', `Denemede en fazla ${GUEST_MAX_MENTORS} mentor seçebilirsin.`);
+  }
 
   // 3. Moderation — kriz/zararlı içerikte kota düşülmez, analitiğe yazılmaz
   const moderation = moderateInput(question);
@@ -104,13 +114,23 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // 4. Kota ayır (bir soru = bir hak, kaç mentor seçildiğinden bağımsız)
-  const reservation = await reserveQuestion(user);
-  if (!reservation) {
+  const reservation = user ? await reserveQuestion(user) : null;
+  if (user && !reservation) {
     return apiError(429, 'QUOTA_EXCEEDED', 'Bugünkü soru hakkın doldu. Yarın yeniden görüşmek üzere.');
+  }
+  const guestReservation = guestIp ? await reserveGuest(guestIp) : null;
+  if (guestReservation && !guestReservation.ok) {
+    return apiError(
+      429,
+      'GUEST_USED',
+      guestReservation.reason === 'used'
+        ? `Bugünkü deneme hakkını kullandın. Ücretsiz üye ol, her gün ${DEFAULT_DAILY_LIMIT} soru sor.`
+        : `Deneme hakları bugünlük doldu. Ücretsiz üye olarak her gün ${DEFAULT_DAILY_LIMIT} soru sorabilirsin.`,
+    );
   }
 
   // Admin metrikleri (hata fırlatmaz; sunucusuz ortamda kesilmesin diye beklenir)
-  await Promise.all([recordAnalytics(question, mentorIds), recordEvent('question'), recordTopics(question)]);
+  await Promise.all([recordAnalytics(question, mentorIds), recordEvent(user ? 'question' : 'guest_question'), recordTopics(question)]);
 
   // 5. Mentorlara paralel streaming
   const abortController = new AbortController();
@@ -126,23 +146,27 @@ export async function POST(request: Request): Promise<Response> {
         }
       };
 
-      emit({ type: 'quota', remaining: reservation.remaining });
+      if (reservation) emit({ type: 'quota', remaining: reservation.remaining });
 
       const results = await Promise.allSettled(
         mentorIds.map((mentorId) => runMentor(mentorId, question, abortController.signal, emit)),
       );
       const completed = results.flatMap((r, i) => (r.status === 'fulfilled' && r.value !== null ? [{ mentorId: mentorIds[i]!, text: r.value }] : []));
       const anySucceeded = completed.length > 0;
-      // Paylaşım kartı yalnızca gerçekten üretilmiş cevaplardan cümle basabilsin
-      await Promise.all(completed.map((c) => recordAnswer(user.username, { mentorId: c.mentorId, question, text: c.text })));
-
-      if (anySucceeded) {
-        await recordQuestion(user.username).catch(() => {});
-        const earned = await awardBadges(user.username, { type: 'answered', mentorIds: completed.map((c) => c.mentorId) });
-        if (earned.length) emit({ type: 'badges', ids: earned });
-      } else {
-        await releaseQuestion(user, reservation).catch(() => {});
-        emit({ type: 'quota', remaining: reservation.remaining + 1 });
+      if (user && reservation) {
+        // Paylaşım kartı yalnızca gerçekten üretilmiş cevaplardan cümle basabilsin
+        await Promise.all(completed.map((c) => recordAnswer(user.username, { mentorId: c.mentorId, question, text: c.text })));
+        if (anySucceeded) {
+          await recordQuestion(user.username).catch(() => {});
+          const earned = await awardBadges(user.username, { type: 'answered', mentorIds: completed.map((c) => c.mentorId) });
+          if (earned.length) emit({ type: 'badges', ids: earned });
+        } else {
+          await releaseQuestion(user, reservation).catch(() => {});
+          emit({ type: 'quota', remaining: reservation.remaining + 1 });
+        }
+      } else if (guestReservation?.ok && !anySucceeded) {
+        // Misafir: hiçbir mentor cevap veremediyse deneme hakkı geri verilir
+        await releaseGuest(guestReservation).catch(() => {});
       }
 
       try {

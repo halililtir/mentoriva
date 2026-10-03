@@ -10,6 +10,7 @@ import { readNextPath } from '@/lib/next-path';
 import { REF_KEY } from '@/lib/flow-keys';
 import { track } from '@/lib/analytics';
 import { MIN_AGE } from '@/lib/legal';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 const MIN_PASSWORD = 8;
 /** "Kodu tekrar gönder" için bekleme (sunucu da e-posta başına sınırlar). */
@@ -133,7 +134,7 @@ export default function KayitPage() {
     <AuthShell
       eyebrow="Ücretsiz"
       title="Mentoriva’ya katıl"
-      subtitle="Hesabını oluştur, her gün 5 soru hakkıyla mentorlarınla konuşmaya başla."
+      subtitle={`Hesabını oluştur, her gün ${DEFAULT_DAILY_LIMIT} soru hakkıyla mentorlarınla konuşmaya başla.`}
       footer={
         <>
           Zaten hesabın var mı?{' '}

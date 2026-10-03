@@ -5,6 +5,7 @@ import { CouncilOrbit } from '@/components/home/CouncilOrbit';
 import { Reveal } from '@/components/ui/Reveal';
 import type { SessionUser } from '@/lib/session';
 import type { MentorId } from '@/types';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 interface Props {
   user: SessionUser | null;
@@ -32,7 +33,7 @@ export function FinalCta({ user, selectedIds, onToggle, onStart }: Props) {
               <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/50 lg:mx-0">
                 {user
                   ? 'Bir portreye dokunarak mentorunu seç, sonra aklındaki soruyu yaz.'
-                  : 'Ücretsiz üye ol, her gün 5 soruyla farklı zihinlere danış. Kredi kartı istenmez.'}
+                  : `Ücretsiz üye ol, her gün ${DEFAULT_DAILY_LIMIT} soruyla farklı zihinlere danış. Kredi kartı istenmez.`}
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
                 {user ? (

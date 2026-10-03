@@ -18,6 +18,8 @@ interface Props extends MentorStreamHandlers {
   cachedResponse?: string;
   onContinue: (response: string) => void;
   onBack: () => void;
+  /** Misafir denemesinde soru ekranında verilen onay (sunucu misafirden ister). */
+  consent?: boolean;
 }
 
 export function SingleResponseView({
@@ -29,6 +31,7 @@ export function SingleResponseView({
   onQuota,
   onAuthRequired,
   onQuotaExceeded,
+  consent,
 }: Props) {
   const mentor = getActiveMentor(mentorId);
   const accent = getAccent(mentor.accentColor);
@@ -48,7 +51,7 @@ export function SingleResponseView({
     let text = '';
     void start({
       url: '/api/v1/mentors/respond',
-      body: { question, mentorIds: [mentorId] },
+      body: { question, mentorIds: [mentorId], ...(consent ? { consent: true } : {}) },
       onEvent: (ev) => {
         if (ev.type === 'quota') handlers.current.onQuota(ev.remaining);
         else if (ev.type === 'delta') { text += ev.text; setContent(text); }
@@ -62,6 +65,7 @@ export function SingleResponseView({
       },
       onComplete: () => setDone(true),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onay yalnızca ilk istekte okunur
   }, [mentorId, question, start]);
 
   const thinking = !content && !error && !crisis;

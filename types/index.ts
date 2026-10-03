@@ -59,4 +59,4 @@ export type ChatStreamEvent =
   | { type: 'crisis'; message: string };
 
 /** Mentor uçlarının JSON hata kodları. */
-export type ApiErrorCode = 'UNAUTHORIZED' | 'RATE_LIMITED' | 'QUOTA_EXCEEDED' | 'INVALID_REQUEST';
+export type ApiErrorCode = 'UNAUTHORIZED' | 'RATE_LIMITED' | 'QUOTA_EXCEEDED' | 'INVALID_REQUEST' | 'GUEST_USED' | 'CONSENT_REQUIRED' | 'MENTOR_NOT_ALLOWED';

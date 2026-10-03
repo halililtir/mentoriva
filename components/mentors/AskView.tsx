@@ -7,6 +7,10 @@ import { INPUT_LIMITS } from '@/lib/features';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
 import { dative } from '@/lib/tr';
+import Link from 'next/link';
+import { hasGuestConsent, setGuestConsent } from '@/lib/guest-trial';
+import { MIN_AGE } from '@/lib/legal';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 interface Props {
   mentorIds: MentorId[];
@@ -15,6 +19,8 @@ interface Props {
   remaining?: number;
   /** Örnek sorulardan seçilen taslak soru. */
   initialValue?: string;
+  /** Kayıt olmadan deneme: 18+ ve yurt dışı aktarım onayı burada alınır. */
+  guest?: boolean;
 }
 
 const EXAMPLES = [
@@ -25,8 +31,10 @@ const EXAMPLES = [
   'Sevdiğim işi mi yapmalıyım, güvenli olanı mı?',
 ];
 
-export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue = '' }: Props) {
+export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue = '', guest = false }: Props) {
   const [value, setValue] = useState(initialValue);
+  const [consent, setConsent] = useState(false);
+  useEffect(() => { if (guest) setConsent(hasGuestConsent()); }, [guest]);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const mentors = mentorIds.map((id) => getActiveMentor(id));
   const isMulti = mentors.length > 1;
@@ -44,7 +52,7 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
   const trimmed = value.trim();
   const tooShort = trimmed.length < INPUT_LIMITS.MIN_QUESTION_LENGTH;
   const tooLong = trimmed.length > INPUT_LIMITS.MAX_QUESTION_LENGTH;
-  const canSubmit = !tooShort && !tooLong;
+  const canSubmit = !tooShort && !tooLong && (!guest || consent);
 
   const submit = () => { if (canSubmit) onSubmit(trimmed); };
 
@@ -127,6 +135,30 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
             </div>
           </div>
         </div>
+
+        {guest && (
+          <div className="mx-auto mt-4 max-w-[560px] rounded-2xl border border-brand-400/25 bg-brand-500/[0.05] px-4 py-3 text-left">
+            <p className="text-[13px] font-medium text-white/85">Kayıt olmadan deneme · bugün 1 soru</p>
+            <label className="mt-2 flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => { setConsent(e.target.checked); setGuestConsent(e.target.checked); }}
+                className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-white/[0.04] accent-brand-500"
+              />
+              <span className="text-xs leading-relaxed text-white/60">
+                {MIN_AGE} yaşından büyüğüm; sorumun cevap üretilmesi için yurt dışındaki yapay zekâ sağlayıcısına (Anthropic, ABD)
+                aktarılmasına açık rıza veriyorum.{' '}
+                <Link href="/kullanim-sartlari" target="_blank" className="text-brand-300/80 hover:underline">Şartlar</Link>
+                {' · '}
+                <Link href="/gizlilik" target="_blank" className="text-brand-300/80 hover:underline">Gizlilik</Link>
+              </span>
+            </label>
+            <p className="mt-2 text-[11.5px] leading-relaxed text-white/45">
+              Beğenirsen ücretsiz üye ol: her gün {DEFAULT_DAILY_LIMIT} soru, mentorla sohbet ve sohbetlerini kaydetme.
+            </p>
+          </div>
+        )}
 
         {typeof remaining === 'number' && (
           <p className="mt-3 text-center text-xs text-white/35">

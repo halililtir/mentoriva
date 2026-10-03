@@ -53,7 +53,7 @@ export default function KullanimSartlariPage() {
 
           <div>
             <h2 className="mb-2 font-display text-lg text-white/80">7. Ücretsiz üyelik ve sınırlar</h2>
-            <p>Ücretsiz üyelikte günlük soru hakkı ve kaydedilebilecek sohbet sayısı (şu an 5) sınırlıdır. Bu sınırlar hizmetin sürdürülebilirliği için değişebilir. İleride ek özellikler sunan ücretli bir üyelik (Premium) gelebilir; ücretli bir hizmet başlatılırsa koşulları, fiyatı ve cayma hakkı satın almadan önce ayrıca ve açıkça bildirilir. Şu an hiçbir ücret alınmaz.</p>
+            <p>Üye olmadan, şartları ve yurt dışı aktarımı soru ekranında onaylayarak günde bir deneme sorusu (en fazla iki mentor) sorabilirsin; sohbete devam etmek ve kaydetmek üyelik gerektirir. Ücretsiz üyelikte günlük soru hakkı ve kaydedilebilecek sohbet sayısı (şu an 5) sınırlıdır. Bu sınırlar hizmetin sürdürülebilirliği için değişebilir. İleride ek özellikler sunan ücretli bir üyelik (Premium) gelebilir; ücretli bir hizmet başlatılırsa koşulları, fiyatı ve cayma hakkı satın almadan önce ayrıca ve açıkça bildirilir. Şu an hiçbir ücret alınmaz.</p>
           </div>
 
           <div>

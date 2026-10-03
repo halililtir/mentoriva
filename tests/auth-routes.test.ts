@@ -36,7 +36,7 @@ describe('giriş', () => {
     expect((await getUser('eski@kullanici.com'))!.password.startsWith('scrypt$')).toBe(true);
 
     const meRes = await me(new Request('http://localhost/api/v1/auth/me', { headers: { cookie: sessionCookie(res) } }));
-    expect((await meRes.json()).user).toMatchObject({ username: 'eski@kullanici.com', remaining: 5 });
+    expect((await meRes.json()).user).toMatchObject({ username: 'eski@kullanici.com', remaining: 10 });
   });
 
   it('yanlış şifre 401 döner, yanıtta şifre sızmaz', async () => {
@@ -52,8 +52,9 @@ describe('yetkilendirme', () => {
     expect(res.status).toBe(401);
   });
 
-  it('mentor ucu sahte kullanıcı başlığıyla çalışmaz', async () => {
-    const res = await respond(post('/api/v1/mentors/respond', { question: 'Hayatın anlamı nedir sence?' }, { 'x-mentoriva-user': 'admin' }));
-    expect(res.status).toBe(401);
+  it('mentor ucu sahte kullanıcı başlığıyla üye sayılmaz (misafir yoluna düşer, onay ister)', async () => {
+    const res = await respond(post('/api/v1/mentors/respond', { question: 'Hayatın anlamı nedir sence?', mentorIds: ['jung'] }, { 'x-mentoriva-user': 'admin' }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error.code).toBe('CONSENT_REQUIRED');
   });
 });

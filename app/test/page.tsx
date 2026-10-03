@@ -15,6 +15,7 @@ import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
 import { PRESELECT_KEY } from '@/lib/flow-keys';
 import type { MentorId } from '@/types';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 // -----------------------------------------------------------
 // Soru & puanlama verisi
@@ -245,7 +246,7 @@ function AskMentorCta({ mentor, compact }: { mentor: MentorMetadata; compact?: b
       <button onClick={go} className="btn-primary w-full sm:w-auto">
         {mentor.shortName}&apos;a ilk sorunu sor →
       </button>
-      {status !== 'user' && <p className="mt-2 text-[11px] text-white/35">Ücretsiz · kredi kartı istenmez · günde 5 soru</p>}
+      {status !== 'user' && <p className="mt-2 text-[11px] text-white/35">Ücretsiz · kredi kartı istenmez · günde {DEFAULT_DAILY_LIMIT} soru</p>}
       {!compact && (
         <p className="mt-4 text-xs text-white/45">
           Bu test eğlenceli bir başlangıç. Kendini daha derinden tanımak istersen{' '}

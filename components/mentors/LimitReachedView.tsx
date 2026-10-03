@@ -5,11 +5,42 @@ import Link from 'next/link';
 import { showToast } from '@/components/shared/Toast';
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
 import { useSession } from '@/lib/session';
+import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 const PERKS = ['Sınırsız mentor sohbeti', 'Derin analiz modu', 'Tüm mentorlarla karşılaştırma', 'Yeni mentorlara öncelikli erişim'];
 
 /** Günlük hak bittiğinde gösterilen premium bekleme listesi ekranı. */
 export function LimitReachedView({ onHome }: { onHome: () => void }) {
+  const { user, status } = useSession();
+  if (status === 'guest') return <GuestTrialOver onHome={onHome} />;
+  return <MemberLimit onHome={onHome} />;
+}
+
+/** Misafir denemesini kullandı: üyeliğe davet. */
+function GuestTrialOver({ onHome }: { onHome: () => void }) {
+  return (
+    <div className="mx-auto w-full max-w-[520px] px-5 py-12 sm:py-20">
+      <div className="glass relative overflow-hidden rounded-3xl p-8 text-center animate-scale-in sm:p-10">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/70 to-transparent" />
+        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-brand-300">Deneme hakkın doldu</p>
+        <h2 className="mt-4 font-display text-3xl leading-tight text-balance">
+          Beğendiysen, <span className="italic text-gradient">sohbet şimdi başlıyor.</span>
+        </h2>
+        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-white/60">
+          Ücretsiz üye ol: her gün {DEFAULT_DAILY_LIMIT} soru, dört mentora birden sorma, seçtiğin mentorla sohbete devam etme
+          ve sohbetlerini kaydetme. Kredi kartı istenmez.
+        </p>
+        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link href="/kayit?next=/" className="btn-primary w-full !px-7 sm:w-auto">Ücretsiz üye ol</Link>
+          <Link href="/giris?next=/" className="btn-secondary w-full !px-7 sm:w-auto">Giriş yap</Link>
+        </div>
+        <button onClick={onHome} className="btn-ghost mt-4 text-sm">← Ana sayfaya dön</button>
+      </div>
+    </div>
+  );
+}
+
+function MemberLimit({ onHome }: { onHome: () => void }) {
   const { user } = useSession();
   const [email, setEmail] = useState(user?.username ?? '');
   const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle');
