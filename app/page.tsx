@@ -13,6 +13,7 @@ import { FinalCta } from '@/components/home/FinalCta';
 import { FlowSteps } from '@/components/home/FlowSteps';
 import { DailyQuestion } from '@/components/home/DailyQuestion';
 import { WelcomeCard } from '@/components/home/WelcomeCard';
+import { StepReminder } from '@/components/home/StepReminder';
 import { JourneyTeaser } from '@/components/home/JourneyTeaser';
 import { SelectionDock } from '@/components/home/SelectionDock';
 import { MentorGalleryCard } from '@/components/mentors/MentorGalleryCard';
@@ -301,6 +302,7 @@ export default function HomePage() {
         <div className="flex-1">
           <Hero user={user} guestTrial={isGuest && !guestUsed} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
           {user && user.questionsUsed === 0 && <WelcomeCard name={user.name} onPick={handlePickQuestion} />}
+          {user && <StepReminder />}
           {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
           <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
 

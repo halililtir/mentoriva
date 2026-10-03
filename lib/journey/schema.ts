@@ -21,6 +21,8 @@ export interface JourneyQuestion {
 }
 
 export interface JourneyResult {
+  /** Sonuç ekranını açan tek cümle: yazdıklarından öne çıkan fark ediş. */
+  insight: string;
   windows: {
     psychological: string;
     mentor: { mentorId: MentorId; text: string };
@@ -90,6 +92,8 @@ export function parseResult(raw: unknown): ParsedOrCrisis<JourneyResult> {
     .slice(0, 3);
 
   const result: JourneyResult = {
+    // Eski/eksik çıktıda örüntü cümlesine düşer
+    insight: clean(o['insight'], 260) || clean(m['pattern'], 260),
     windows: {
       psychological: clean(w['psychological'], 600),
       mentor: { mentorId: isMentor(wm['mentorId']) ? wm['mentorId'] : 'marcus', text: clean(wm['text'], 600) },

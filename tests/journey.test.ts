@@ -59,3 +59,14 @@ describe('yolculuk talimatları', () => {
     expect(msg).toContain('(cevap vermedi)');
   });
 });
+
+describe('yolculuk sonucu: fark ediş', () => {
+  it('insight alanı okunur; yoksa örüntü cümlesine düşer', () => {
+    const raw = extractJson(mockResult()) as Record<string, unknown>;
+    const withInsight = parseResult(raw);
+    expect(withInsight.ok && withInsight.value.insight).toContain('ihtiyac');
+    const { insight: _drop, ...old } = raw;
+    const fallback = parseResult(old);
+    expect(fallback.ok && fallback.value.insight).toBe(fallback.ok && fallback.value.map.pattern);
+  });
+});

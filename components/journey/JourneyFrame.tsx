@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/cn';
 
-const STAGES = ['Neredesin', 'Anlat', 'Sorular', 'Pencereler', 'Adım'];
+const STAGES = ['Neredesin', 'Anlat', 'Sorular', 'Fark ediş', 'Adım'];
 
 interface Props {
   /** 0-4 arası aşama; null ise gösterge gizlenir. */

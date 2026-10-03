@@ -18,7 +18,7 @@ export function JourneyTeaser() {
                 Bir cevaptan fazlası: <span className="italic text-gradient">kendini fark etmek.</span>
               </h2>
               <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-white/55">
-                Neredesin, ne hissediyorsun, aslında neye ihtiyacın var? Üç kısa soru, üç farklı pencere ve sonunda küçük bir adım.
+                Neredesin, ne hissediyorsun, aslında neye ihtiyacın var? Üç kısa soru, sana özel bir fark ediş ve sonunda küçük bir adım.
                 Test değil, etiket yok; yazdıkların kaydedilmez.
               </p>
               <Link href="/yolculuk" className="btn-primary mt-7 inline-flex">Yolculuğa başla →</Link>

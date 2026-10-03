@@ -131,7 +131,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ## Kendine Yolculuk (`/yolculuk`)
 
-- Akış: neredesin → anlat → 3 Sokratik soru (her ekranda bir) → üç pencere (Psikolojik çerçeve, mentor penceresi, Tefekkür) + 6 kartlık geçici harita → küçük adım → mentorla devam (yalnızca öneri sorusu taslak olarak gider).
+- Akış: neredesin → anlat → 3 Sokratik soru (her ekranda bir) → sonuç ekranı sade: önce tek cümlelik fark ediş (`insight`), sonra tek küçük adım (diğerleri "başka adım") ve tek mentorla devam (yalnızca öneri sorusu taslak olarak gider); üç pencere (İçeriden bakış, mentor penceresi, Tefekkür), 6 kartlık geçici harita ve ikinci mentor "Daha derine bak" altında katlıdır. Bekleyen adımı olan üyeye ana sayfada nazik hatırlatma (`components/home/StepReminder.tsx`, 12 saatten eski adım, "Sonra" o gün gizler).
 - `POST /api/v1/journey/start`: `JOURNEY_COST` (2) hak düşer, sorular üretilemezse iade. Anlatım saklanmaz; 1 saatlik imzalı izne (`lib/signing.ts`, amaç `journey`) konur. `POST /api/v1/journey/result`: izinle sonuç; tek kullanımlık (`journey-done:<id>`).
 - Yapay zekâ çağrısı akışsız: `completeText` (`lib/claude/client.ts`) → JSON → `lib/journey/schema.ts` ile doğrulanır. Talimatlar `lib/journey/prompts.ts`: tanı/etiket yasağı, inanç varsaymama, alıntı yok, mentorlardan üçüncü şahısla söz edilir, kriz → `{"crisis": true}`.
 - Saklama YALNIZCA kullanıcı isterse: `journey-step:<email>`, `journeys:<email>` (`lib/journey/store.ts`). Admin panelinde gösterilmez; `deleteUser` bunları da siler. Yeni bir özellik eklerken yolculuk metinlerini başka isteklere taşıma ve loglama.

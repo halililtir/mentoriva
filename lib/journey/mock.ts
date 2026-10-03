@@ -12,6 +12,7 @@ export function mockQuestions(): string {
 
 export function mockResult(): string {
   return JSON.stringify({
+    insight: 'Herkese yetişmeye çalışırken asıl yorulan, kendi ihtiyacını sıranın en sonuna koyan yanın olabilir.',
     windows: {
       psychological:
         'Anlattıklarında hissettiğin yorgunluk ile aslında karşılanmasını istediğin ihtiyaç birbirine karışmış olabilir. Bazen “her şeyi ben toparlamalıyım” düşüncesi, sınır koymayı zorlaştırır. Bu bir tanı değil, kendini gözlemlemen için bir çerçevedir.',

@@ -254,7 +254,7 @@ export default function YolculukPage() {
                 disabled={!answers[qIndex]?.trim()}
                 className="btn-primary"
               >
-                {qIndex < QUESTION_COUNT - 1 ? 'Devam' : 'Pencereleri aç'}
+                {qIndex < QUESTION_COUNT - 1 ? 'Devam' : 'Sonucumu gör'}
               </button>
               <button
                 onClick={() => (qIndex < QUESTION_COUNT - 1 ? setQIndex(qIndex + 1) : void submitAnswers())}
@@ -276,7 +276,7 @@ export default function YolculukPage() {
               <span className="h-3 w-3 rounded-full bg-brand-300" />
             </span>
             <p className="mt-8 font-display text-2xl text-white/85">Cevapların üzerine düşünülüyor</p>
-            <p className="mt-2 text-sm text-white/45">Derin bir nefes al. Birazdan üç pencere açılacak.</p>
+            <p className="mt-2 text-sm text-white/45">Derin bir nefes al. Yazdıklarına birlikte bakıyoruz.</p>
           </div>
         </JourneyFrame>
       )}

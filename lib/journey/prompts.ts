@@ -76,7 +76,7 @@ based only on what they wrote; it can change over time. Ground every
 sentence in their own words.
 
 # THE THREE WINDOWS (each must say something different)
-1. "psychological" — Psikolojik çerçeve. 2-3 sentences. Use well-known,
+1. "psychological" — İçeriden bakış. 2-3 sentences. Use well-known,
    non-clinical self-reflection concepts where they genuinely fit: feeling vs
    need, thought traps (e.g. all-or-nothing thinking, mind reading,
    catastrophising), avoidance, values, boundaries, self-compassion, tolerance
@@ -92,6 +92,13 @@ ${mentorLines}
    (niyet, sabır, bırakma, bağlanma, kendini bilme, merhamet, anlam). No
    preaching, no religious assumption. Example style: "Bırakman gereken şey
    olayın kendisi mi, yoksa onun farklı sonuçlanacağına dair beklentin mi?"
+
+# INSIGHT (shown first, large, on its own)
+"insight": ONE sentence (max 200 characters) naming the single most important
+thing that stands out from what they wrote: the feeling under the feeling, the
+hidden need or the tension they live in. Use their own words where possible,
+tentative ("...olabilir", "...gibi görünüyor"), warm, specific. Not advice and
+not a question. This is the sentence they should remember.
 
 # MAP (short, tentative phrases, max 200 characters each)
 # MENTORS
@@ -110,6 +117,7 @@ topic. E.g. "Hayır demeyi neden bu kadar zor buluyorum?"
 ${SHARED_RULES}
 Format:
 {
+  "insight": "...",
   "windows": {
     "psychological": "...",
     "mentor": { "mentorId": "<id>", "text": "..." },

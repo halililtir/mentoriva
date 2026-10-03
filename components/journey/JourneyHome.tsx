@@ -14,7 +14,7 @@ const FLOW = [
   { t: 'Şu an neredesin?', d: 'Bir başlangıç noktası seç.' },
   { t: 'İçinden geçeni anlat', d: 'Kendi kelimelerinle, olduğun yerden.' },
   { t: 'Üç soru', d: 'Sana kendi durumunu açan kısa sorular.' },
-  { t: 'Üç pencere', d: 'Psikolojik çerçeve, bir mentorun bakışı ve tefekkür.' },
+  { t: 'Bir fark ediş', d: 'Yazdıklarından öne çıkan tek cümle; istersen üç farklı pencereden daha derine bakarsın.' },
   { t: 'Küçük bir adım', d: 'Farkındalığı bugüne taşıyan tek bir eylem.' },
 ];
 
