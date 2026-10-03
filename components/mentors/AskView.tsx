@@ -6,6 +6,7 @@ import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
 import { INPUT_LIMITS } from '@/lib/features';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
+import { dative } from '@/lib/tr';
 
 interface Props {
   mentorIds: MentorId[];
@@ -107,7 +108,7 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
                   submit();
                 }
               }}
-              placeholder={isMulti ? 'Mentorlarına soracağın soruyu yaz…' : `${first.shortName}'a ne sormak istersin?`}
+              placeholder={isMulti ? 'Mentorlarına soracağın soruyu yaz…' : `${dative(first.shortName)} ne sormak istersin?`}
               className="block min-h-[140px] w-full resize-none bg-transparent px-5 pb-3 pt-5 text-[17px] leading-relaxed text-paper placeholder:text-white/25 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               maxLength={INPUT_LIMITS.MAX_QUESTION_LENGTH + 10}
               aria-label="Sorunuz"

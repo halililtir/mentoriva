@@ -11,6 +11,7 @@
 import { getKV } from '@/lib/kv';
 import { RATE_LIMITS } from '@/lib/features';
 import { digest, newVerificationCode } from '@/lib/auth/tokens';
+import type { ConsentRecord } from '@/lib/legal';
 
 export type CodePurpose = 'verify' | 'reset';
 
@@ -70,4 +71,6 @@ export interface PendingRegistration {
   passwordHash: string;
   /** Davet linkiyle geldiyse davet kodu. */
   ref?: string | null;
+  /** Kayıt formunda verilen onaylar (lib/legal.ts). */
+  consent?: ConsentRecord;
 }

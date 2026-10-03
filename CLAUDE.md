@@ -84,7 +84,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ### Redis anahtarları
 
-`user:*`, `usage:*`, `bonus:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
+`user:*`, `usage:*`, `bonus:*`, `chats:*`, `chat:*`, `pending:*`, `ref-count:*`, `session:*`, `admin-session:*`, `code:*`, `code-attempts:*`, `rl:*`, `feedback:*`, `stats:mentor:*`, `stats:day:*`, `stats:topic:*`, `stats:recent-questions`, `admin-log`, `answers:*`, `daily:*`, `journey*`. Tek giriş noktası `lib/kv.ts → getKV()` (asla null dönmez; env yoksa bellek deposu — veri `globalThis.__mentorivaMemoryStore` Map'inde, metotlar her yüklemede yeniden kurulur). Toplu okuma `getMany()` (MGET), desen taraması `scanKeys()` (SCAN; `KEYS` kullanma).
 
 ## Büyüme özellikleri
 
@@ -109,6 +109,18 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 - **Mentor erişimi:** kurallar `lib/mentors/access.ts` (saf; istemci de kullanır), depolama `lib/mentors/access-server.ts` (Redis `access:early-mentors`, admin "Erken erişim" sekmesi, `/api/admin/access`; herkese açık liste `GET /api/v1/access`). respond/chat seçim sınırını ve erken erişimi **sunucuda** denetler (403 `MENTOR_NOT_ALLOWED`). Yeni mentoru önce erken erişime al.
 - Bildirim: SSE `{type:'badges', ids}` → `announceBadges()`; SSE dışı olaylar (yolculuk, paylaşım) için `checkBadges()`. `BadgeToaster` layout'ta `SessionProvider` içinde.
 
+## Kayıtlı sohbetler (`/sohbetlerim`)
+
+- Yalnızca kullanıcı sohbet başlığındaki "Kaydet"e basarsa (`components/chat/ChatSave.tsx`). Depo `lib/chats.ts`: `chats:<email>` (hash: id → özet), `chat:<email>:<id>` (tamamı). Ücretsizde `SAVED_CHAT_LIMIT` = 5; dolunca 403 `CHAT_LIMIT` ve "Premium yakında" bilgilendirmesi (ücretli plan henüz yok).
+- Kayıtlı sohbet devam ettikçe ChatView her tamamlanan cevaptan sonra PUT ile günceller; mesajlar `toSavable` ile soru-cevap çiftlerine indirgenir (sunucu sırayla değişen rolleri ister). En fazla 80 mesaj (ilk soru-cevap korunur).
+- API `/api/v1/chats` (GET liste, POST) ve `/api/v1/chats/[id]` (GET, PUT, DELETE). Admin panelinde gösterilmez; `deleteUser` hepsini siler.
+
+## Hukuki
+
+- `lib/legal.ts`: `LEGAL_VERSION`, `MIN_AGE` (18). Kayıtta iki ayrı onay: (1) 18+ ve Kullanım Şartları kabulü + Gizlilik/Aydınlatma okundu, (2) yurt dışı aktarım (Anthropic, ABD) açık rızası. `/api/v1/auth/register` ikisini de zorunlu tutar; onay kaydı `pending.consent` → `user.consent`.
+- `/gizlilik` metnindeki saklama süreleri koddakiyle aynı olmalı; değişirse metni ve `LEGAL_VERSION`'ı güncelle.
+- Mentor adına ek: `lib/tr.ts` (`dative`, `genitive`, `comitative`); `'a` gibi sabit ek yazma.
+
 ## Kendine Yolculuk (`/yolculuk`)
 
 - Akış: neredesin → anlat → 3 Sokratik soru (her ekranda bir) → üç pencere (Psikolojik çerçeve, mentor penceresi, Tefekkür) + 6 kartlık geçici harita → küçük adım → mentorla devam (yalnızca öneri sorusu taslak olarak gider).
@@ -129,7 +141,7 @@ Tek kaynak `lib/features.ts`: `API` (model, token, timeout), `INPUT_LIMITS`, `RA
 
 ## Kriz politikası
 
-Moderasyon (`lib/safety/moderation.ts`) girdiyi Türkçe küçültüp ASCII'ye katlar; desenler ASCII yazılır. Kriz/zararlı içerikte mentor çağrılmaz, kota düşülmez. Ürün sahibinin bilinçli kararı: **telefon numarası verilmez** (`prompts/shared.ts`). Bu alanı değiştirmeden önce kullanıcıya sor.
+Moderasyon (`lib/safety/moderation.ts`) girdiyi Türkçe küçültüp ASCII'ye katlar; desenler ASCII yazılır. Kriz/zararlı içerikte mentor çağrılmaz, kota düşülmez. Ürün sahibinin kararı (2026-10-03): **112 yalnızca moderasyonun kriz algıladığı kartta** verilir (`components/mentors/EmergencyLine.tsx`; CrisisNotice ve sohbet uyarısı). Mentor cevaplarında ve Kendine Yolculuk metinlerinde numara yoktur (`prompts/shared.ts`). Bu alanı değiştirmeden önce kullanıcıya sor.
 
 ## Ortam değişkenleri (Vercel)
 

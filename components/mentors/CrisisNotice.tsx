@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { EmergencyLine } from '@/components/mentors/EmergencyLine';
 
 /**
  * Moderasyon kriz ya da zararlı içerik algıladığında mentor cevabı yerine
@@ -14,6 +15,7 @@ export function CrisisNotice({ message, onBack }: { message: string; onBack?: ()
         </svg>
       </span>
       <p className="mt-5 text-[15px] leading-relaxed text-white/80">{message}</p>
+      <EmergencyLine message={message} className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] px-4 py-3 text-[15px] leading-relaxed text-white/85" />
       <p className="mt-3 text-sm leading-relaxed text-white/45">
         Yalnız değilsin. Güvendiğin biriyle konuşmak ya da bir uzmana ulaşmak iyi bir ilk adım olabilir.
       </p>

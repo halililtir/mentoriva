@@ -7,6 +7,7 @@ import { track } from '@/lib/analytics';
 import { checkBadges } from '@/components/shared/BadgeToaster';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
+import { genitive } from '@/lib/tr';
 
 export interface ShareSource {
   source: 'answer' | 'daily';
@@ -136,7 +137,7 @@ function ShareCardDialog({ data, onClose }: { data: ShareSource; onClose: () => 
     const file = new File([image.blob], fileName, { type: 'image/png' });
     try {
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Mentoriva', text: `${mentor.shortName}'ın cevabı` });
+        await navigator.share({ files: [file], title: 'Mentoriva', text: `${genitive(mentor.shortName)} cevabı` });
         track('share_card_shared', { mentor: data.mentorId });
         return;
       }

@@ -14,6 +14,8 @@ import { todayKey } from '@/lib/time';
 import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 import { getBonus, refundBonus, spendBonus } from '@/lib/auth/bonus';
 import { FOUNDER_DAILY_BONUS, deleteBadgeData, getPerks, hasBadge, type PerkId } from '@/lib/badges';
+import { deleteAllChats } from '@/lib/chats';
+import type { ConsentRecord } from '@/lib/legal';
 
 export { DEFAULT_DAILY_LIMIT };
 const USAGE_TTL_SECONDS = 60 * 60 * 48;
@@ -37,6 +39,8 @@ export interface StoredUser {
   referralCode?: string;
   /** Bu kullanıcıyı davet eden kişinin e-postası. */
   referredBy?: string;
+  /** Kayıtta verilen onaylar (yaş, şartlar, yurt dışı aktarım; lib/legal.ts). */
+  consent?: ConsentRecord;
   // Eski sürümden kalan, artık okunmayan alanlar
   dailyUsed?: number;
   dailyResetDate?: string;
@@ -94,6 +98,7 @@ export async function deleteUser(username: string): Promise<void> {
     `journeys:${username}`,
   );
   await deleteBadgeData(username);
+  await deleteAllChats(username);
 }
 
 export async function listUsers(): Promise<StoredUser[]> {

@@ -8,6 +8,7 @@ import type { SavedJourney, SavedStep } from '@/lib/journey/store';
 import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { comitative } from '@/lib/tr';
 
 const FLOW = [
   { t: 'Şu an neredesin?', d: 'Bir başlangıç noktası seç.' },
@@ -65,7 +66,7 @@ export function JourneyHome({ onBegin, notEnough }: { onBegin: () => void; notEn
           <div className="mt-2 flex flex-wrap gap-2">
             <button onClick={() => setStepStatus('done')} className="btn-secondary !px-4 !py-2 text-sm">Yaptım</button>
             <button onClick={() => setStepStatus('skipped')} className="btn-secondary !px-4 !py-2 text-sm">Bu sefer olmadı</button>
-            <Link href={`/?mentor=${step.mentorId}`} className="btn-ghost text-sm">{getActiveMentor(step.mentorId).shortName}’la konuş →</Link>
+            <Link href={`/?mentor=${step.mentorId}`} className="btn-ghost text-sm">{comitative(getActiveMentor(step.mentorId).shortName)} konuş →</Link>
           </div>
         </div>
       )}

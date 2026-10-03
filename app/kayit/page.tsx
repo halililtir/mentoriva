@@ -9,6 +9,7 @@ import { useSession } from '@/lib/session';
 import { readNextPath } from '@/lib/next-path';
 import { REF_KEY } from '@/lib/flow-keys';
 import { track } from '@/lib/analytics';
+import { MIN_AGE } from '@/lib/legal';
 
 const MIN_PASSWORD = 8;
 /** "Kodu tekrar gönder" için bekleme (sunucu da e-posta başına sınırlar). */
@@ -24,6 +25,7 @@ export default function KayitPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accepted, setAccepted] = useState(false);
+  const [transfer, setTransfer] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,7 @@ export default function KayitPage() {
   }, [cooldown]);
   const { setUser } = useSession();
 
-  const formValid = name.trim().length >= 2 && email.trim().includes('@') && password.length >= MIN_PASSWORD && accepted;
+  const formValid = name.trim().length >= 2 && email.trim().includes('@') && password.length >= MIN_PASSWORD && accepted && transfer;
 
   const handleRegister = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -49,7 +51,7 @@ export default function KayitPage() {
       const res = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), password, ref: readRef() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), password, ref: readRef(), adult: accepted, terms: accepted, transfer }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error ?? 'Kayıt başarısız'); return; }
@@ -154,20 +156,35 @@ export default function KayitPage() {
           <PasswordMeter value={password} />
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 py-1 text-left">
+        <div className="space-y-2.5">
+        <label className="flex cursor-pointer items-start gap-3 text-left">
           <input
             type="checkbox"
             checked={accepted}
             onChange={(e) => setAccepted(e.target.checked)}
             className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-white/[0.04] accent-brand-500"
           />
-          <span className="text-xs leading-relaxed text-white/45">
+          <span className="text-xs leading-relaxed text-white/55">
+            {MIN_AGE} yaşından büyüğüm.{' '}
             <Link href="/kullanim-sartlari" target="_blank" className="text-brand-300/80 underline-offset-2 hover:underline">Kullanım Şartları</Link>
-            {'’'}nı ve{' '}
-            <Link href="/gizlilik" target="_blank" className="text-brand-300/80 underline-offset-2 hover:underline">Gizlilik Politikası</Link>
-            {'’'}nı okudum, kabul ediyorum.
+            {'’'}nı kabul ediyorum,{' '}
+            <Link href="/gizlilik" target="_blank" className="text-brand-300/80 underline-offset-2 hover:underline">Gizlilik ve Aydınlatma Metni</Link>
+            {'’'}ni okudum.
           </span>
         </label>
+        <label className="flex cursor-pointer items-start gap-3 text-left">
+          <input
+            type="checkbox"
+            checked={transfer}
+            onChange={(e) => setTransfer(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-white/[0.04] accent-brand-500"
+          />
+          <span className="text-xs leading-relaxed text-white/55">
+            Yazdıklarımın cevap üretilmesi için yurt dışındaki yapay zekâ sağlayıcısına (Anthropic, ABD) aktarılmasına{' '}
+            <b className="font-medium text-white/75">açık rıza</b> veriyorum.
+          </span>
+        </label>
+        </div>
 
         <FormError>{error}</FormError>
         <button type="submit" disabled={loading || !formValid} className="btn-primary w-full !py-3.5">

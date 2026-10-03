@@ -82,7 +82,7 @@ export function ChatExport({ mentorName, messages, unlocked }: { mentorName: str
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="sm:relative">
       <button
         onClick={() => setOpen((v) => !v)}
         className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 text-[11px] text-white/65 transition-colors hover:text-white"
@@ -95,7 +95,7 @@ export function ChatExport({ mentorName, messages, unlocked }: { mentorName: str
         İndir
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-30 mt-2 w-64 glass rounded-2xl !bg-ink-50 p-2 animate-fade-down">
+        <div role="menu" className="absolute inset-x-0 top-full z-30 mt-2 glass sm:inset-x-auto sm:right-0 sm:w-64 rounded-2xl !bg-ink-50 p-2 animate-fade-down">
           {unlocked ? (
             <>
               <button role="menuitem" onClick={downloadText} className="block w-full rounded-xl px-3 py-2.5 text-left text-sm text-white/80 hover:bg-white/[0.05]">Metin olarak indir (.txt)</button>
@@ -104,7 +104,7 @@ export function ChatExport({ mentorName, messages, unlocked }: { mentorName: str
             </>
           ) : (
             <div className="px-3 py-2.5">
-              <p className={cn('text-sm text-white/85')}>Sohbeti saklama</p>
+              <p className={cn('text-sm text-white/85')}>Sohbeti indirme</p>
               <p className="mt-1 text-[12px] leading-relaxed text-white/60">
                 Bir mentorla aynı sohbette beş mesaj yazınca <b className="text-white/80">Derinleşen</b> işaretini kazanırsın; sohbetlerini metin ya da PDF olarak indirebilirsin.
               </p>

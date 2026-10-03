@@ -12,6 +12,8 @@ import { verifyPassword } from '@/lib/auth/password';
 const SECRET = 'test-admin-anahtari-123';
 const json = (url: string, body: unknown, headers: Record<string, string> = {}) =>
   new Request(`http://localhost${url}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '10.0.0.8', ...headers }, body: JSON.stringify(body) });
+/** Kayıt formundaki zorunlu onaylar (yaş + şartlar, yurt dışı aktarım). */
+const CONSENT = { adult: true, terms: true, transfer: true };
 
 async function adminCookie() {
   process.env['ADMIN_SECRET'] = SECRET;
@@ -26,10 +28,11 @@ beforeEach(() => {
 
 describe('kayıt ve doğrulama', () => {
   it('kayıt bekleyen kaydı saklar (parola özetiyle, düz değil)', async () => {
-    const res = await register(json('/api/v1/auth/register', { name: 'Ayşe', email: 'Ayse@Ornek.com', password: 'guclu-sifre-1' }));
+    const res = await register(json('/api/v1/auth/register', { name: 'Ayşe', email: 'Ayse@Ornek.com', password: 'guclu-sifre-1', ...CONSENT }));
     expect(res.status).toBe(200);
     const p = await getPending('ayse@ornek.com');
     expect(p?.name).toBe('Ayşe');
+    expect(p?.consent).toMatchObject({ adult: true, terms: true, transfer: true });
     expect(p?.passwordHash).not.toContain('guclu-sifre-1');
     expect((await listPending())[0]).toMatchObject({ email: 'ayse@ornek.com', name: 'Ayşe' });
     expect(JSON.stringify(await listPending())).not.toContain('passwordHash');
@@ -46,7 +49,7 @@ describe('kayıt ve doğrulama', () => {
   });
 
   it('admin onayı hesabı kişinin kendi şifresiyle açar', async () => {
-    await register(json('/api/v1/auth/register', { name: 'Can', email: 'can@ornek.com', password: 'can-sifresi-9' }));
+    await register(json('/api/v1/auth/register', { name: 'Can', email: 'can@ornek.com', password: 'can-sifresi-9', ...CONSENT }));
     const cookie = await adminCookie();
     const res = await pendingAction(json('/api/admin/pending', { email: 'can@ornek.com', action: 'approve' }, { cookie }));
     expect(res.status).toBe(200);

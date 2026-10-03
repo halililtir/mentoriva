@@ -71,6 +71,7 @@ export async function completeRegistration(
     // Admin onayında kişi henüz giriş yapmadı
     lastSeen: how === 'email' ? now : null,
     notes: how === 'email' ? 'mail ile kayıt' : 'admin onayıyla kayıt',
+    ...(pending.consent ? { consent: pending.consent } : {}),
   };
   await saveUser(user);
   await deletePending(email);

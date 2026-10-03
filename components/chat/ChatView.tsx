@@ -11,27 +11,41 @@ import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
 import { announceBadges } from '@/components/shared/BadgeToaster';
+import { EmergencyLine } from '@/components/mentors/EmergencyLine';
 import { ChatExport } from '@/components/chat/ChatExport';
+import { ChatSave, toSavable } from '@/components/chat/ChatSave';
 import type { ChatStreamEvent, MentorId, Message } from '@/types';
+import { dative } from '@/lib/tr';
 
 interface Props extends MentorStreamHandlers {
   mentorId: MentorId;
-  initialQuestion: string;
-  initialResponse: string;
+  initialQuestion?: string;
+  initialResponse?: string;
+  /** Kayıtlı bir sohbete devam ederken (/sohbetlerim/[id]) bütün geçmiş. */
+  initialMessages?: Message[];
+  /** Kayıtlı sohbetin kimliği; verilirse yeni mesajlar kayda eklenir. */
+  savedChatId?: string;
 }
 
 let idSeq = 0;
 const nextId = (p: string) => `${p}${Date.now()}-${idSeq++}`;
 
-export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, onAuthRequired, onQuotaExceeded }: Props) {
+export function ChatView({ mentorId, initialQuestion = '', initialResponse = '', initialMessages, savedChatId, onQuota, onAuthRequired, onQuotaExceeded }: Props) {
   const mentor = getActiveMentor(mentorId);
   const accent = getAccent(mentor.accentColor);
   const { user } = useSession();
 
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'user', content: initialQuestion, id: 'iq' },
-    { role: 'assistant', content: initialResponse, id: 'ir' },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() =>
+    initialMessages?.length
+      ? initialMessages.map((m, i) => ({ ...m, id: m.id ?? `s${i}` }))
+      : [
+          { role: 'user', content: initialQuestion, id: 'iq' },
+          { role: 'assistant', content: initialResponse, id: 'ir' },
+        ],
+  );
+  const [savedId, setSavedId] = useState<string | null>(savedChatId ?? null);
+  /** Kayda yazılmış soru-cevap mesajı sayısı; fazlası gelince kayıt güncellenir. */
+  const syncedCount = useRef(savedChatId ? toSavable(initialMessages ?? []).length : 0);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +55,21 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   const outOfQuota = user ? user.remaining <= 0 : false;
+
+  // Kayıtlı sohbet: mentor cevabı tamamlandıkça kayıt güncellenir (kayıt silinmişse bağ kopar)
+  useEffect(() => {
+    if (!savedId || isStreaming) return;
+    const payload = toSavable(messages);
+    if (payload.length <= syncedCount.current) return;
+    syncedCount.current = payload.length;
+    void fetch(`/api/v1/chats/${savedId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: payload }),
+    })
+      .then((res) => { if (res.status === 404) setSavedId(null); })
+      .catch(() => { syncedCount.current = 0; });
+  }, [messages, savedId, isStreaming]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -93,7 +122,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
   return (
     <div className="mx-auto flex h-[calc(100dvh-64px)] w-full max-w-3xl flex-col px-4 sm:px-5" style={{ '--accent': accent.hex } as React.CSSProperties}>
       {/* Mentor başlığı */}
-      <div className="flex items-center gap-3 border-b border-white/[0.06] py-4 animate-fade-down">
+      <div className="relative z-20 flex items-center gap-3 border-b border-white/[0.06] py-4 animate-fade-down">
         <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border-2" style={{ borderColor: accent.hex, boxShadow: `0 0 24px -4px ${accent.glow}` }}>
           <Image src={mentor.portraitUrl} alt={mentor.name} fill sizes="44px" className="object-cover" style={{ objectPosition: mentor.portraitPosition ?? 'center' }} />
         </div>
@@ -104,7 +133,15 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
             {isStreaming ? 'yazıyor…' : mentor.title}
           </p>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1.5">
+          {user && (
+            <ChatSave
+              mentorId={mentorId}
+              messages={messages}
+              savedId={savedId}
+              onSaved={(id, count) => { syncedCount.current = count; setSavedId(id); }}
+            />
+          )}
           <ChatExport mentorName={mentor.name} messages={messages} unlocked={!!user?.perks?.includes('sohbet-indir')} />
         </div>
         {user && (
@@ -148,6 +185,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
         {notice && (
           <div role="alert" className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-100/85 animate-fade-up">
             {notice}
+            <EmergencyLine message={notice} className="mt-2 font-medium text-amber-100" />
           </div>
         )}
         {error && (
@@ -171,7 +209,7 @@ export function ChatView({ mentorId, initialQuestion, initialResponse, onQuota, 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
-                placeholder={`${mentor.shortName}'a cevap ver…`}
+                placeholder={`${dative(mentor.shortName)} cevap ver…`}
                 className="max-h-40 min-h-[44px] flex-1 resize-none bg-transparent py-2.5 text-[15px] leading-relaxed text-paper placeholder:text-white/25 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 maxLength={INPUT_LIMITS.MAX_CHAT_MESSAGE_LENGTH}
                 disabled={isStreaming}

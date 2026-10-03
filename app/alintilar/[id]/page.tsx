@@ -9,6 +9,7 @@ import { allQuotes, findQuote, ORIGINAL_LANGUAGE, sourceLine } from '@/lib/quote
 
 const ORIGINAL_LANG_CODE: Record<string, string> = { seneca: 'la', marcus: 'grc', nietzsche: 'de', mevlana: 'fa' };
 import { SITE_URL } from '@/lib/site';
+import { dative } from '@/lib/tr';
 
 interface Props {
   params: { id: string };
@@ -103,11 +104,11 @@ export default function AlintiPage({ params }: Props) {
           <h2 className="font-display text-2xl text-white/90">Bu konu sana da tanıdık mı geliyor?</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/55">
             {isActive
-              ? `Kendi sorunu ${q.mentor?.shortName}’a sor; sana kendi felsefesiyle, senin durumuna özel cevap versin.`
+              ? `Kendi sorunu ${dative(q.mentor?.shortName ?? '')} sor; sana kendi felsefesiyle, senin durumuna özel cevap versin.`
               : `${q.mentor?.shortName ?? q.author} yakında aramıza katılıyor. O gelene kadar sorunu diğer mentorlara sorabilirsin.`}
           </p>
           <Link href={isActive ? `/?mentor=${q.mentorId}#mentorlar` : '/#mentorlar'} className="btn-primary mt-5 inline-flex">
-            {isActive ? `${q.mentor?.shortName}’a sor` : 'Mentorlarla tanış'} →
+            {isActive ? `${dative(q.mentor?.shortName ?? '')} sor` : 'Mentorlarla tanış'} →
           </Link>
         </section>
 

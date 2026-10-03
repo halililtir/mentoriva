@@ -169,6 +169,15 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
                     </p>
                   </div>
                   <Link
+                    href="/sohbetlerim"
+                    role="menuitem"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white/75 transition-colors hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Sohbetlerim
+                    <span aria-hidden="true" className="text-brand-300">❝</span>
+                  </Link>
+                  <Link
                     href="/isaretlerim"
                     role="menuitem"
                     onClick={() => setUserMenuOpen(false)}
