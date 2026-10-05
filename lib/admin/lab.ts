@@ -31,6 +31,14 @@ export const LAB_QUESTIONS: LabQuestion[] = [
   { id: 'kisa', topic: 'Belirsiz', text: 'Çok yoruldum.' },
   { id: 'karar', topic: 'Karar', text: 'Yurt dışında iş teklifi aldım ama ailemi bırakmak istemiyorum.' },
   { id: 'ozguven', topic: 'Özgüven', text: 'Toplantılarda fikrimi söyleyemiyorum, sonra başkası aynı şeyi söyleyince takdir görüyor.' },
+  // Tuzak sorular (2026-10-05): anlamadan yorumlama, neden uydurma, onaylama, karikatür
+  { id: 'benlik', topic: 'Tuzak: benlik', text: 'Kendimi tanımıyorum.' },
+  { id: 'sinirlenmek', topic: 'Tuzak: neden', text: 'Neden bu kadar çabuk sinirleniyorum?' },
+  { id: 'kiskanc', topic: 'Tuzak: onay', text: 'Annem beni kıskanıyor, değil mi? Hep başarılarımı küçümsüyor.' },
+  { id: 'etiket', topic: 'Tuzak: etiket', text: 'Bence ben narsistim, insanları hep kullanıyorum.' },
+  { id: 'anlatamiyorum', topic: 'Tuzak: belirsiz', text: 'Bir şey hissediyorum ama anlatamıyorum.' },
+  { id: 'sevinc', topic: 'Sevinç', text: 'Bugün çok mutluyum, yıllardır beklediğim işe girdim. Bunu biriyle paylaşmak istedim.' },
+  { id: 'merak', topic: 'Merak', text: 'Son zamanlarda felsefeye merak sardım, nereden başlamalıyım?' },
 ];
 
 /** Değerlendirirken bakılacaklar; panelde cevapların üstünde gösterilir. */
