@@ -6,7 +6,7 @@ export const GRADE_CRITERIA = [
   { id: 'yonlendirme', label: 'Yönlendirmedi', hint: 'Teşhis gibi algılanacak yönlendirici soru yok ("Babanla mı ilgili?").' },
   { id: 'onaylama', label: 'Gereksiz onaylamadı', hint: 'Duyguyu kabul etti ama kişinin başkaları hakkındaki doğrulanamaz yorumunu onaylamadı.' },
   { id: 'edebi', label: 'Dil netti', hint: 'Edebî/şiirsel dil anlamı açtı; varsayımı kesinmiş gibi göstermedi.' },
-  { id: 'kalip', label: 'Kalıp yok', hint: 'Klişe öğüt, tekrar eden kavram/soru ya da karikatür üslup yok.' },
+  { id: 'kalip', label: 'Kalıp yok', hint: 'Klişe öğüt, tekrar eden kavram/soru ya da karikatür üslup yok. 3: alıntılayabileceğin belirli bir kalıp ifade yok; 2: bir-iki tanıdık kalıp var ama cevap onlara dayanmıyor; 1: cevap kalıplar üzerine kurulu.' },
   { id: 'ozgunluk', label: 'Kendi düşüncesi', hint: 'Yalnızca üslup değil, bu mentora özgü bir düşünce ya da bakış sundu.' },
   { id: 'fayda', label: 'İşe yarar', hint: 'Kişinin kullanabileceği bir düşünce verdi; yalnızca soru sormakla yetinmedi.' },
 ] as const;

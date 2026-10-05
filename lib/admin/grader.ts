@@ -33,6 +33,8 @@ consolation letter to his mother, Rumi's loss of Shams, Marcus burying
 several of his children or writing his notebook as reminders to himself)
 does not. Repeating such a self-reference in a stock way may count against
 "kalip" instead.
+For "kalip", give 3 unless you can quote a specific stock phrase from the
+answer; if you give 1 or 2, quote that phrase in the note.
 A closing quotation formatted as "“…”
 — Author, Work ref" comes from a
 source-verified catalog: do not judge its authenticity, only whether it fits.
