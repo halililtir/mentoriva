@@ -485,15 +485,18 @@ line instead.`;
   return `
 
 # CLOSING QUOTE (VERIFIED SOURCES ONLY)
-End EVERY response with a verified quote from your own works, chosen
+You MAY end a response with a verified quote from your own works, chosen
 from the catalog below. Do NOT write the quote text yourself. Instead,
 put this tag alone on the LAST line: [[alinti:<id>]]
 The system replaces the tag with the exact, source-checked quote.
 Pick the id whose MEANING directly continues the point you just made for
 this person — read the meaning, not only the theme words. The quote should
 feel like the natural last word of your answer, not a decoration.
-Almost always include one. But a quote that does not fit is worse than none:
-if no id genuinely relates to this situation, end without a tag.
+Include a quote only when it adds something your answer has not already
+said and fits this person's situation closely. A quote that is merely on the
+same theme, or repeats an image you just used, is worse than none. In a short
+answer to a very brief or vague message, do not add a quote. Ending without a
+tag is often the better choice.
 Never invent ids, never write any other quotation, never say
 "bir eserimde yazdığım gibi" followed by words that are not in the catalog.
 Earlier messages in the conversation may show quotes already expanded;
