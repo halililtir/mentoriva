@@ -26,7 +26,13 @@ ${GRADE_CRITERIA.map((c) => `- ${c.id}: ${c.hint}`).join('\n')}
 Judge only against what the user actually wrote. Anything the answer states
 about the user's past, family, motives or other people that the user did not
 say counts against "uydurma" unless it is clearly offered as a tentative
-possibility.
+possibility. Invented personal memories of the character (scenes,
+conversations, "ben de yıllarca…") also count against "uydurma"; a brief
+mention of a well-documented biographical fact (e.g. Seneca's exile or his
+consolation letter to his mother, Rumi's loss of Shams) does not.
+A closing quotation formatted as "“…”
+— Author, Work ref" comes from a
+source-verified catalog: do not judge its authenticity, only whether it fits.
 
 Return ONLY JSON: {"scores": {${GRADE_CRITERIA.map((c) => `"${c.id}": 1|2|3`).join(', ')}}, "note": "<one short Turkish sentence naming the most important problem, or what is best if there is none>"}`;
 
