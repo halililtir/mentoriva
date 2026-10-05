@@ -32,6 +32,7 @@ import { canUseMentor, maxMentorsFor } from '@/lib/mentors/access';
 import { useEarlyMentors } from '@/lib/useEarlyMentors';
 import { DEFAULT_DAILY_LIMIT, GUEST_MAX_MENTORS } from '@/lib/auth/limits';
 import { guestTrialUsedToday, markGuestTrialUsed } from '@/lib/guest-trial';
+import type { QuestionContext } from '@/lib/clarify';
 
 type View = 'gallery' | 'ask' | 'single-response' | 'compare' | 'chat' | 'limit';
 
@@ -49,6 +50,8 @@ export default function HomePage() {
   const [view, setView] = useState<View>('gallery');
   const [selectedIds, setSelectedIds] = useState<MentorId[]>([]);
   const [question, setQuestion] = useState('');
+  /** Netleştirme adımında eklenen bağlam (yalnızca mentorlara not olarak gider). */
+  const [questionContext, setQuestionContext] = useState<QuestionContext | null>(null);
   const [draft, setDraft] = useState('');
   const [chat, setChat] = useState<ChatState | null>(null);
   const [cachedResponses, setCachedResponses] = useState<Record<string, string>>({});
@@ -178,11 +181,12 @@ export default function HomePage() {
     setView('ask');
   }, [perks, earlyMentors, maxSelected, handlePickQuestion, saveDraft, session.status, guestUsed, requireAccount, guestTrialOver, user]);
 
-  const handleSubmitQuestion = useCallback((q: string) => {
+  const handleSubmitQuestion = useCallback((q: string, ctx?: QuestionContext) => {
     if (user && user.remaining <= 0) return setView('limit');
     if (isGuest) { markGuestTrialUsed(); setGuestUsed(true); }
     saveDraft('');
-    track(isGuest ? 'guest_question' : 'question_asked', { mentors: selectedIds.length });
+    track(isGuest ? 'guest_question' : 'question_asked', { mentors: selectedIds.length, clarified: !!ctx });
+    setQuestionContext(ctx ?? null);
     setQuestion(q);
     setView(selectedIds.length === 1 ? 'single-response' : 'compare');
   }, [selectedIds, user, saveDraft, isGuest]);
@@ -392,6 +396,7 @@ export default function HomePage() {
           onContinue={(resp) => handleContinueToChat(selectedIds[0]!, resp)}
           onBack={resetToGallery}
           consent={isGuest}
+          context={questionContext}
           {...streamHandlers}
         />
       )}
@@ -407,6 +412,7 @@ export default function HomePage() {
             onSelect={handleContinueToChat}
             onBack={backToAsk}
             consent={isGuest}
+            context={questionContext}
             {...streamHandlers}
           />
         </div>

@@ -31,6 +31,7 @@ import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/use
 import { GUEST_COOKIE, guestCookieHeader, guestDeviceId, releaseGuest, reserveGuest } from '@/lib/auth/guest';
 import { readCookie } from '@/lib/auth/session';
 import { synthesize } from '@/lib/mentors/synthesis';
+import { messageForMentor, sanitizeContext } from '@/lib/clarify';
 import { GUEST_MAX_MENTORS } from '@/lib/auth/limits';
 import { todayKey } from '@/lib/time';
 import { recordAnswer } from '@/lib/share/answers';
@@ -94,6 +95,9 @@ export async function POST(request: Request): Promise<Response> {
   const validation = validateRequest(body);
   if (!validation.ok) return apiError(400, 'INVALID_REQUEST', validation.error);
   const { question, mentorIds } = validation.data;
+  // Netleştirme adımından gelen isteğe bağlı bağlam (lib/clarify.ts); ekranda görünen soru değişmez
+  const context = sanitizeContext((body as Record<string, unknown>)['context']);
+  const mentorMessage = messageForMentor(question, context);
 
   // Seçim sınırı ve erken erişim (arayüz de uygular; asıl denetim burada)
   const [perks, early] = await Promise.all([user ? getPerks(user.username) : Promise.resolve([]), getEarlyMentors()]);
@@ -108,7 +112,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // 3. Moderation — kriz/zararlı içerikte kota düşülmez, analitiğe yazılmaz
-  const moderation = moderateInput(question);
+  const moderation = moderateInput(context?.detail ? `${question}
+${context.detail}` : question);
   if (!moderation.allowed) {
     await recordEvent('crisis');
     const event: StreamEvent = { type: 'crisis', message: CRISIS_RESPONSE[moderation.reason] };
@@ -155,7 +160,7 @@ export async function POST(request: Request): Promise<Response> {
       if (reservation) emit({ type: 'quota', remaining: reservation.remaining });
 
       const results = await Promise.allSettled(
-        mentorIds.map((mentorId) => runMentor(mentorId, question, abortController.signal, emit)),
+        mentorIds.map((mentorId) => runMentor(mentorId, mentorMessage, abortController.signal, emit)),
       );
       const completed = results.flatMap((r, i) => (r.status === 'fulfilled' && r.value !== null ? [{ mentorId: mentorIds[i]!, text: r.value }] : []));
       const anySucceeded = completed.length > 0;

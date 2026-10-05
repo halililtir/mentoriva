@@ -6,7 +6,8 @@
  * üçüncü şahısla söz edilir; alıntı yapılmaz.
  */
 
-import { ACTIVE_MENTORS } from '@/lib/mentors/metadata';
+import { ACTIVE_MENTORS, EARLY_ACCESS_MENTORS } from '@/lib/mentors/metadata';
+import type { MentorId } from '@/types';
 import { MAP_FIELDS, QUESTION_COUNT, SMALL_STEPS } from './content';
 
 const SHARED_RULES = `
@@ -62,7 +63,8 @@ Good examples of the style:
 ${SHARED_RULES}
 Format: {"questions": ["...", "...", "..."]}`;
 
-const mentorLines = ACTIVE_MENTORS.map((m) => `- ${m.id}: ${m.name} — ${m.tradition}. ${m.bestFor ?? ''}`).join('\n');
+// Erken erişimdeki mentor önerilmesin (kullanıcı seçemeyebilir)
+const mentorLines = ACTIVE_MENTORS.filter((m) => !EARLY_ACCESS_MENTORS.includes(m.id as MentorId)).map((m) => `- ${m.id}: ${m.name} — ${m.tradition}. ${m.bestFor ?? ''}`).join('\n');
 const stepLines = Object.entries(SMALL_STEPS).map(([id, label]) => `- ${id}: ${label}`).join('\n');
 const mapLines = MAP_FIELDS.map((f) => `"${f.key}": "${f.label} (max 200 karakter)"`).join(',\n    ');
 

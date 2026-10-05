@@ -21,6 +21,7 @@ import { MENTOR_IDS, type MentorId } from '@/types';
 export { BADGES, BADGE_BY_ID, GRANTABLE, FOUNDER_DAILY_BONUS, PERKS, DEFAULT_MAX_MENTORS, perksFromBadges } from '@/lib/badges-public';
 export type { BadgeDef, BadgeKind, PerkId } from '@/lib/badges-public';
 import { BADGE_BY_ID, perksFromBadges, type PerkId } from '@/lib/badges-public';
+import { getEarlyMentors } from '@/lib/mentors/access-server';
 
 const badgesKey = (u: string) => `badges:${u}`;
 const progressKey = (u: string) => `progress:${u}`;
@@ -101,7 +102,9 @@ export async function awardBadges(username: string, event: BadgeEvent): Promise<
       const fields = Object.keys(progress);
 
       if (event.type === 'answered') await give('ilk-adim');
-      if (MENTOR_IDS.every((m) => fields.includes(`m:${m}`))) await give('cok-sesli');
+      // Erken erişimdeki mentorlar sayılmaz: herkesin kazanabileceği bir işaret kalsın
+      const early = await getEarlyMentors();
+      if (MENTOR_IDS.filter((m) => !early.includes(m)).every((m) => fields.includes(`m:${m}`))) await give('cok-sesli');
       if (fields.filter((f) => f.startsWith('d:')).length >= 7) await give('dusunme-aliskanligi');
       if (event.type === 'chat' && event.userMessages >= 5) await give('derinlesen');
     }

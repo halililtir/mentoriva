@@ -42,6 +42,7 @@ export const MENTOR_INVITES: Record<MentorId, string> = {
   mevlana: 'Kendine daha merhametli bakmayı Mevlânâ’yla dene',
   marcus: 'Kontrol edebileceğin adıma Marcus’la dön',
   seneca: 'Zamanını ve öfkeni Seneca’yla gözden geçir',
+  sokrates: 'Bunun neye dayandığını Sokrates’le birlikte sına',
 };
 
 export const MAP_FIELDS = [

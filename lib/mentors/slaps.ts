@@ -79,6 +79,16 @@ const SLAPS: Record<MentorId, string[]> = {
     'Rahatsızlıktan kaçmak, seni rahat ettirmiyor.',
     'Güçlü olan dayanıklı değil, doğru anda hareket edendir.',
   ],
+  sokrates: [
+    'Bildiğini sandığın şeyin tanımını hiç yaptın mı?',
+    'Çok şey biliyorsun; neyi bilmediğini biliyor musun?',
+    'Doğru dediğin şeyi kimden öğrendiğini hatırlıyor musun?',
+    'Kazanmak için tartışıyorsun, anlamak için değil.',
+    'Başkalarını tarttığın ölçüyle kendini tartmıyorsun.',
+    'Neyi istediğini biliyorsun; neden istediğini henüz sormadın.',
+    'Herkesin dediğini dinliyorsun, işi bilenin dediğini değil.',
+    'Cevaba koşuyorsun, soruyu doğru sormadan.',
+  ],
   seneca: [
     'Meşgulsün ama hiçbir şey yapmıyorsun.',
     'Zamanını herkese dağıtıyorsun, kendine bir saat bile ayırmıyorsun.',

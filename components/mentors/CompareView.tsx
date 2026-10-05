@@ -12,6 +12,7 @@ import { RateAnswer } from '@/components/shared/RateAnswer';
 import { announceBadges } from '@/components/shared/BadgeToaster';
 import { SynthesisCard, SynthesisPending } from '@/components/mentors/SynthesisCard';
 import type { Synthesis } from '@/lib/mentors/synthesis';
+import type { QuestionContext } from '@/lib/clarify';
 import type { MentorId, MentorResponseState, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -21,9 +22,11 @@ interface Props extends MentorStreamHandlers {
   onBack: () => void;
   /** Misafir denemesinde soru ekranında verilen onay. */
   consent?: boolean;
+  /** Netleştirme adımından gelen bağlam (lib/clarify.ts). */
+  context?: QuestionContext | null;
 }
 
-export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, onAuthRequired, onQuotaExceeded, consent }: Props) {
+export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, onAuthRequired, onQuotaExceeded, consent, context }: Props) {
   const [states, setStates] = useState<Record<string, MentorResponseState>>(() =>
     Object.fromEntries(mentorIds.map((id) => [id, { status: 'pending', content: '' }])),
   );
@@ -45,7 +48,7 @@ export function CompareView({ mentorIds, question, onSelect, onBack, onQuota, on
 
     void start({
       url: '/api/v1/mentors/respond',
-      body: { question, mentorIds, ...(consent ? { consent: true } : {}) },
+      body: { question, mentorIds, ...(consent ? { consent: true } : {}), ...(context ? { context } : {}) },
       onEvent: (ev) => {
         if (ev.type === 'quota') return handlers.current.onQuota(ev.remaining);
         if (ev.type === 'crisis') return setCrisis(ev.message);

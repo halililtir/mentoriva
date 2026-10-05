@@ -70,7 +70,7 @@ export const ACTIVE_MENTORS: MentorMetadata[] = [
     bestFor: 'Tekrar eden kalıpları, rüyaları ve kendini anlamak istediğinde.',
     tradition: 'Analitik psikoloji',
     lifespan: '1875–1961',
-    voice: 'Soruyu sana geri çevirir; altında yatanı sorgular.',
+    voice: 'Merakla dinler; olası anlamları seninle birlikte arar.',
   },
   {
     id: 'nietzsche', name: 'Friedrich Nietzsche', shortName: 'Nietzsche', title: 'Değer Sorgulaştırıcı',
@@ -81,7 +81,7 @@ export const ACTIVE_MENTORS: MentorMetadata[] = [
     bestFor: 'Cesaret, irade ve kendi yolunu çizmen gerektiğinde.',
     tradition: 'Varoluşçu felsefe',
     lifespan: '1844–1900',
-    voice: 'Sert ve kışkırtıcıdır; seni rahat bölgenden iter.',
+    voice: 'Keskin ve canlıdır; değerlerinin gerçekten senin olup olmadığını sorar.',
   },
   {
     id: 'mevlana', name: 'Mevlânâ Rûmî', shortName: 'Mevlânâ', title: 'Tasavvufî Şair',
@@ -116,6 +116,17 @@ export const ACTIVE_MENTORS: MentorMetadata[] = [
     tradition: 'Stoacı ahlak',
     lifespan: 'MÖ 4 – MS 65',
   },
+  {
+    id: 'sokrates', name: 'Sokrates', shortName: 'Sokrates', title: 'Sorgulayıcı',
+    shortBio: 'Atina sokaklarında insanlarla konuşarak iyi yaşamanın ne olduğunu soran filozof; bildiğini sandığını seninle birlikte sınar.',
+    traitTags: ['Diyalog', 'Öz-Bilgi', 'Erdem'],
+    accentColor: 'honey', closingStyle: 'question',
+    portraitUrl: '/mentors/sokrates.jpg', portraitPosition: 'center 20%', status: 'active',
+    bestFor: 'Bir kavramı, bir inancı ya da bir kararın gerekçesini netleştirmek istediğinde.',
+    voice: 'Sakin ve meraklıdır; gündelik örneklerle birlikte düşünür.',
+    tradition: 'Antik Yunan felsefesi',
+    lifespan: 'MÖ 470 – 399',
+  },
 ];
 
 export const COMING_SOON_MENTORS: MentorMetadata[] = [
@@ -140,13 +151,6 @@ export const COMING_SOON_MENTORS: MentorMetadata[] = [
     accentColor: 'sage', closingStyle: 'question',
     portraitUrl: '/mentors/platon.jpg', portraitPosition: 'center 20%', status: 'coming_soon',
   },
-  {
-    id: 'sokrates', name: 'Sokrates', shortName: 'Sokrates', title: 'Sorgulayıcı',
-    shortBio: 'Kendini bil. Her şeyi sorgula. Gerçek bilgelik, cehaletini bilmektir.',
-    traitTags: ['Diyalektik', 'Öz-Bilgi', 'Erdem'],
-    accentColor: 'honey', closingStyle: 'question',
-    portraitUrl: '/mentors/sokrates.jpg', portraitPosition: 'center 20%', status: 'coming_soon',
-  },
 ];
 
 export const ALL_MENTORS = [...ACTIVE_MENTORS, ...COMING_SOON_MENTORS];
@@ -157,7 +161,7 @@ export const ALL_MENTORS = [...ACTIVE_MENTORS, ...COMING_SOON_MENTORS];
  * Yeni bir mentoru önce buraya ekle; herkese açınca listeden çıkar.
  * Sunucu tarafı denetim: lib/mentors/access.ts.
  */
-export const EARLY_ACCESS_MENTORS: readonly MentorId[] = [];
+export const EARLY_ACCESS_MENTORS: readonly MentorId[] = ['sokrates'];
 
 export function getActiveMentor(id: MentorId): MentorMetadata {
   const found = ACTIVE_MENTORS.find((m) => m.id === id);

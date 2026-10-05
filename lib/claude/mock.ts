@@ -15,6 +15,7 @@ const SAMPLES: Record<MentorId, string> = {
   mevlana: 'Ey can, aradığın şey seni de arıyor. Kalbindeki bu sızı, aşkın kapıyı çalışıdır. Biraz sus, biraz dinle; cevap sözcüklerde değil, sükûnetin içinde saklı. Kapı açık.',
   seneca: 'Bana yazdığın şeyi okudum dostum ve kendimi gördüm. Hepimiz zamanın az olduğundan yakınırız; oysa onu farkında olmadan dağıtırız. Bu akşam günü baştan sona gözden geçir ve hangi saatin gerçekten senin olduğunu bul. Sağlıcakla kal.',
   marcus: 'Kontrol edebildiğin ile edemediğini ayır. Geriye kalan tek soru şudur: bugün, şu an, erdemle ne yapabilirsin? Gerisi zihninin kurduğu gürültüdür. Kalk ve görevini yap.',
+  sokrates: 'Bunu söylerken kullandığın kelimeye birlikte bakalım; bir ayakkabıcının iyi olduğunu nasıl anlarsak, bir hayatın iyi olduğunu da öyle anlamaya çalışabiliriz. Senin için bu kelime tam olarak ne demek?',
 };
 
 /** Doğrulanmış alıntı kataloğu olan mentorlar için örnek etiket — filtre zinciri yerelde de denensin. */

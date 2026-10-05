@@ -10,6 +10,7 @@ import { cn } from '@/lib/cn';
 import { ShareCardButton } from '@/components/share/ShareCardDialog';
 import { RateAnswer } from '@/components/shared/RateAnswer';
 import { announceBadges } from '@/components/shared/BadgeToaster';
+import type { QuestionContext } from '@/lib/clarify';
 import type { MentorId, StreamEvent } from '@/types';
 
 interface Props extends MentorStreamHandlers {
@@ -20,6 +21,8 @@ interface Props extends MentorStreamHandlers {
   onBack: () => void;
   /** Misafir denemesinde soru ekranında verilen onay (sunucu misafirden ister). */
   consent?: boolean;
+  /** Netleştirme adımından gelen bağlam (lib/clarify.ts). */
+  context?: QuestionContext | null;
 }
 
 export function SingleResponseView({
@@ -32,6 +35,7 @@ export function SingleResponseView({
   onAuthRequired,
   onQuotaExceeded,
   consent,
+  context,
 }: Props) {
   const mentor = getActiveMentor(mentorId);
   const accent = getAccent(mentor.accentColor);
@@ -51,7 +55,7 @@ export function SingleResponseView({
     let text = '';
     void start({
       url: '/api/v1/mentors/respond',
-      body: { question, mentorIds: [mentorId], ...(consent ? { consent: true } : {}) },
+      body: { question, mentorIds: [mentorId], ...(consent ? { consent: true } : {}), ...(context ? { context } : {}) },
       onEvent: (ev) => {
         if (ev.type === 'quota') handlers.current.onQuota(ev.remaining);
         else if (ev.type === 'delta') { text += ev.text; setContent(text); }

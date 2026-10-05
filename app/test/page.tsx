@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StoryCard } from '@/components/shared/StoryCard';
-import { ACTIVE_MENTORS, getAccent, isActiveMentor, type MentorMetadata } from '@/lib/mentors/metadata';
+import { ACTIVE_MENTORS, EARLY_ACCESS_MENTORS, getAccent, isActiveMentor, type MentorMetadata } from '@/lib/mentors/metadata';
 import { getRandomSlap, scoresToSeed } from '@/lib/mentors/slaps';
 import { SITE_HOST } from '@/lib/site';
 import { Header } from '@/components/shared/Header';
@@ -31,6 +31,9 @@ interface Question {
   subtitle?: string;
   choices: Choice[];
 }
+
+/** Testte yalnızca herkese açık mentorlar (erken erişimdekiler için henüz soru yok). */
+const TEST_MENTORS = ACTIVE_MENTORS.filter((m) => !EARLY_ACCESS_MENTORS.includes(m.id as MentorId));
 
 const QUESTIONS: Question[] = [
   {
@@ -143,13 +146,13 @@ function analyzeResults(scores: Record<string, number>, firstChoices: Record<str
   // Eşitlikte önce ana tercih (3 puanlık şık) sayısına, sonra skordan türeyen
   // sabit bir sıraya bakılır; böylece listede önde duran mentor kayırılmaz.
   const seed = scoresToSeed(scores);
-  const results: MentorResult[] = ACTIVE_MENTORS
+  const results: MentorResult[] = TEST_MENTORS
     .map((m, i) => ({
       mentor: m,
       score: scores[m.id] ?? 0,
       percentage: Math.round(((scores[m.id] ?? 0) / totalScore) * 100),
       firsts: firstChoices[m.id] ?? 0,
-      tie: (seed + i * 7) % ACTIVE_MENTORS.length,
+      tie: (seed + i * 7) % TEST_MENTORS.length,
     }))
     .sort((a, b) => b.score - a.score || b.firsts - a.firsts || a.tie - b.tie)
     .map(({ mentor, score, percentage }) => ({ mentor, score, percentage }));
@@ -271,7 +274,7 @@ export default function QuizPage() {
   const [orders, setOrders] = useState<number[][]>(() => QUESTIONS.map((q) => q.choices.map((_, i) => i)));
 
   const { scores, firstChoices } = useMemo(() => {
-    const s: Record<string, number> = Object.fromEntries(ACTIVE_MENTORS.map((m) => [m.id, 0]));
+    const s: Record<string, number> = Object.fromEntries(TEST_MENTORS.map((m) => [m.id, 0]));
     const f: Record<string, number> = {};
     answers.forEach((choiceIdx, qIdx) => {
       const q = QUESTIONS[qIdx];
@@ -355,7 +358,7 @@ export default function QuizPage() {
             </div>
 
             <div className="flex justify-center -space-x-3">
-              {ACTIVE_MENTORS.map((m) => (
+              {TEST_MENTORS.map((m) => (
                 <div
                   key={m.id}
                   className="w-14 h-14 rounded-full overflow-hidden border-2 relative"

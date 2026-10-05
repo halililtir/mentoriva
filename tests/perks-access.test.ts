@@ -4,10 +4,12 @@ import { saveUser, toPublicUser } from '@/lib/auth/users';
 import { giveBadge } from '@/lib/badges';
 import { perksFromBadges } from '@/lib/badges-public';
 import { canUseMentor, checkMentorSelection, maxMentorsFor } from '@/lib/mentors/access';
-import { getEarlyMentors, setEarlyMentors } from '@/lib/mentors/access-server';
+import { getEarlyMentors, resolveEarly, setEarlyMentors } from '@/lib/mentors/access-server';
 import { startUserSession } from '@/lib/auth/session';
 import { POST as respond } from '@/app/api/v1/mentors/respond/route';
 import { NextResponse } from 'next/server';
+import { MENTOR_IDS } from '@/types';
+import { EARLY_ACCESS_MENTORS } from '@/lib/mentors/metadata';
 
 const U = 'uye@ornek.com';
 
@@ -45,7 +47,7 @@ describe('ayrıcalıklar', () => {
 describe('mentor seçimi', () => {
   it('varsayılan en fazla 4; Tam meclis ile hepsi', () => {
     expect(maxMentorsFor([])).toBe(4);
-    expect(maxMentorsFor(['tam-meclis'])).toBe(5);
+    expect(maxMentorsFor(['tam-meclis'])).toBe(MENTOR_IDS.length);
     expect(checkMentorSelection(['jung', 'nietzsche', 'mevlana', 'marcus', 'seneca'], [], [])).toMatch(/en fazla 4/);
     expect(checkMentorSelection(['jung', 'nietzsche', 'mevlana', 'marcus', 'seneca'], ['tam-meclis'], [])).toBeNull();
   });
@@ -67,8 +69,17 @@ describe('mentor seçimi', () => {
   });
 
   it('erken erişim listesi hepsini kapatamaz', async () => {
-    expect(await setEarlyMentors(['jung', 'nietzsche', 'mevlana', 'marcus', 'seneca'])).toBeNull();
+    expect(await setEarlyMentors([...MENTOR_IDS])).toBeNull();
     expect(await setEarlyMentors(['seneca', 'yok'])).toEqual(['seneca']);
     expect(await getEarlyMentors()).toEqual(['seneca']);
+  });
+
+  it('önceden kaydedilmiş liste, sonradan eklenen erken erişim mentorunu açmaz', () => {
+    // Eski biçim: düz dizi (ör. admin herkesi açmıştı)
+    expect(resolveEarly([])).toEqual([...EARLY_ACCESS_MENTORS]);
+    // Yeni biçim: kaydederken bilinen mentorlar
+    expect(resolveEarly({ early: [], known: [...MENTOR_IDS] })).toEqual([]);
+    expect(resolveEarly({ early: ['seneca'], known: ['jung', 'seneca'] })).toEqual(['seneca', ...EARLY_ACCESS_MENTORS]);
+    expect(resolveEarly(null)).toEqual([...EARLY_ACCESS_MENTORS]);
   });
 });

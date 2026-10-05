@@ -10,7 +10,7 @@
 // -----------------------------------------------------------
 
 /** Aktif mentor ID'lerinin tek kaynağı. Yeni mentor eklemek için buraya eklenir. */
-export const MENTOR_IDS = ['jung', 'nietzsche', 'mevlana', 'marcus', 'seneca'] as const;
+export const MENTOR_IDS = ['jung', 'nietzsche', 'mevlana', 'marcus', 'seneca', 'sokrates'] as const;
 export type MentorId = (typeof MENTOR_IDS)[number];
 
 // -----------------------------------------------------------

@@ -7,6 +7,7 @@ import { INPUT_LIMITS } from '@/lib/features';
 import { cn } from '@/lib/cn';
 import type { MentorId } from '@/types';
 import { dative } from '@/lib/tr';
+import { CONTEXT_DETAIL_MAX, INTENTS, needsClarify, type IntentId, type QuestionContext } from '@/lib/clarify';
 import Link from 'next/link';
 import { hasGuestConsent, setGuestConsent } from '@/lib/guest-trial';
 import { MIN_AGE } from '@/lib/legal';
@@ -14,7 +15,8 @@ import { DEFAULT_DAILY_LIMIT } from '@/lib/auth/limits';
 
 interface Props {
   mentorIds: MentorId[];
-  onSubmit: (question: string) => void;
+  /** Netleştirme adımı doldurulduysa bağlamla birlikte. */
+  onSubmit: (question: string, context?: QuestionContext) => void;
   onBack: () => void;
   remaining?: number;
   /** Örnek sorulardan seçilen taslak soru. */
@@ -34,6 +36,10 @@ const EXAMPLES = [
 export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue = '', guest = false }: Props) {
   const [value, setValue] = useState(initialValue);
   const [consent, setConsent] = useState(false);
+  /** Kısa sorularda "Sor"dan sonra açılan netleştirme paneli. */
+  const [clarifying, setClarifying] = useState(false);
+  const [detail, setDetail] = useState('');
+  const [intent, setIntent] = useState<IntentId | null>(null);
   useEffect(() => { if (guest) setConsent(hasGuestConsent()); }, [guest]);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const mentors = mentorIds.map((id) => getActiveMentor(id));
@@ -49,12 +55,29 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
 
   useEffect(() => { taRef.current?.focus(); }, []);
 
+  // Netleştirme paneli telefonda ekranın altında kalmasın
+  const clarifyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (clarifying) clarifyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [clarifying]);
+
   const trimmed = value.trim();
   const tooShort = trimmed.length < INPUT_LIMITS.MIN_QUESTION_LENGTH;
   const tooLong = trimmed.length > INPUT_LIMITS.MAX_QUESTION_LENGTH;
   const canSubmit = !tooShort && !tooLong && (!guest || consent);
 
-  const submit = () => { if (canSubmit) onSubmit(trimmed); };
+  const submit = () => {
+    if (!canSubmit) return;
+    if (!clarifying && needsClarify(trimmed)) return setClarifying(true);
+    send(true);
+  };
+
+  const send = (withContext: boolean) => {
+    if (!canSubmit) return;
+    const d = detail.trim();
+    const ctx: QuestionContext | undefined = withContext && (d || intent) ? { ...(d ? { detail: d } : {}), ...(intent ? { intent } : {}) } : undefined;
+    onSubmit(trimmed, ctx);
+  };
 
   return (
     <div className="mx-auto w-full max-w-[720px] px-5 py-10 sm:py-16">
@@ -98,7 +121,7 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
           )}
         </h1>
         <p className="mt-3 max-w-md text-sm text-white/45">
-          Bugün neyi anlamak istiyorsun? En iyi cevaplar kısa ve net, tek cümlelik sorularla gelir.
+          Bugün neyi anlamak istiyorsun? Kendi kelimelerinle yaz; ne kadar somut olursa cevaplar o kadar sana yakın olur.
         </p>
       </div>
 
@@ -109,7 +132,7 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
             <textarea
               ref={taRef}
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => { setValue(e.target.value); if (clarifying) setClarifying(false); }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault();
@@ -135,6 +158,51 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
             </div>
           </div>
         </div>
+
+        {clarifying && (
+          <div ref={clarifyRef} className="mx-auto mt-4 max-w-[600px] scroll-mt-24 rounded-2xl border border-brand-400/30 bg-brand-500/[0.06] p-4 text-left animate-fade-in sm:p-5" role="group" aria-label="Sorunu netleştir">
+            <p className="text-[15px] font-medium text-white/90">Mentorların seni daha iyi anlasın</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-white/55">Sorun kısa; iki küçük ekleme cevapları sana daha yakın kılar. İkisi de isteğe bağlı.</p>
+
+            <label className="mt-4 block text-[12.5px] font-medium text-white/70" htmlFor="clarify-detail">Biraz daha anlatmak ister misin?</label>
+            <textarea
+              id="clarify-detail"
+              value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              rows={2}
+              maxLength={CONTEXT_DETAIL_MAX}
+              placeholder="Örn. ne zamandan beri, ne oldu, seni en çok ne zorluyor…"
+              className="mt-1.5 block w-full resize-none rounded-xl border border-white/10 bg-ink-0/50 px-3.5 py-2.5 text-[15px] leading-relaxed text-paper placeholder:text-white/30 focus:border-brand-400/50 focus:outline-none"
+            />
+
+            <p className="mt-4 text-[12.5px] font-medium text-white/70">Bu soruyla ne arıyorsun?</p>
+            <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Beklentin">
+              {INTENTS.map((it) => (
+                <button
+                  key={it.id}
+                  role="radio"
+                  aria-checked={intent === it.id}
+                  onClick={() => setIntent(intent === it.id ? null : it.id)}
+                  className={cn(
+                    'rounded-full border px-3.5 py-1.5 text-[13px] transition-colors',
+                    intent === it.id ? 'border-brand-400/60 bg-brand-500/15 text-white' : 'border-white/10 text-white/60 hover:text-white/90',
+                  )}
+                >
+                  {it.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button onClick={() => send(true)} disabled={!canSubmit} className="btn-primary !px-5 !py-2.5 text-sm">
+                {isMulti ? 'Hepsine sor' : 'Sor'}
+              </button>
+              <button onClick={() => send(false)} disabled={!canSubmit} className="text-[13px] text-white/55 hover:text-white/85">
+                Atla, böyle sor
+              </button>
+            </div>
+          </div>
+        )}
 
         {guest && (
           <div className="mx-auto mt-4 max-w-[560px] rounded-2xl border border-brand-400/25 bg-brand-500/[0.05] px-4 py-3 text-left">
