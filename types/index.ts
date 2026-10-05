@@ -25,6 +25,8 @@ export interface Message {
   /** Client-side'da mesaj kimliği ve zaman damgası. */
   id?: string;
   timestamp?: number;
+  /** "Başka bir bakış": bu assistant mesajını sohbetin asıl mentoru değil, bu konuk mentor yazdı. */
+  guest?: MentorId;
 }
 
 /** Tek bir mentorün cevap durumu (streaming sırasında kullanılır). */

@@ -14,6 +14,7 @@ import { announceBadges } from '@/components/shared/BadgeToaster';
 import { EmergencyLine } from '@/components/mentors/EmergencyLine';
 import { ChatExport } from '@/components/chat/ChatExport';
 import { ChatSave, toSavable } from '@/components/chat/ChatSave';
+import { PerspectivePicker } from '@/components/chat/PerspectivePicker';
 import type { ChatStreamEvent, MentorId, Message } from '@/types';
 import { dative } from '@/lib/tr';
 
@@ -50,6 +51,8 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
   const [streaming, setStreaming] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  /** Şu an akan cevap "Başka bir bakış" ise konuk mentor. */
+  const [guestStreaming, setGuestStreaming] = useState<MentorId | null>(null);
   const { start, isStreaming } = useSSEStream<ChatStreamEvent>();
   const endRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -93,10 +96,12 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
     setError(null);
     setNotice(null);
 
+    setGuestStreaming(null);
+
     let acc = '';
     await start({
       url: '/api/v1/mentors/chat',
-      body: { mentorId, messages: next.map(({ role, content }) => ({ role, content })) },
+      body: { mentorId, messages: toPayload(next) },
       onEvent: (ev) => {
         if (ev.type === 'quota') onQuota(ev.remaining);
         else if (ev.type === 'badges') announceBadges(ev.ids);
@@ -118,6 +123,41 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
       },
     });
   };
+
+  /** "Başka bir bakış ekle": konuk mentor sohbeti okuyup kendi bakışını ekler. */
+  const addPerspective = async (guestId: MentorId) => {
+    if (isStreaming || outOfQuota || messages[messages.length - 1]?.role !== 'assistant') return;
+    setStreaming('');
+    setError(null);
+    setNotice(null);
+    setGuestStreaming(guestId);
+
+    let acc = '';
+    await start({
+      url: '/api/v1/mentors/perspective',
+      body: { mentorId: guestId, hostMentorId: mentorId, messages: toPayload(messages) },
+      onEvent: (ev) => {
+        if (ev.type === 'quota') onQuota(ev.remaining);
+        else if (ev.type === 'delta') { acc += ev.text; setStreaming(acc); }
+        else if (ev.type === 'end') {
+          setMessages((p) => [...p, { role: 'assistant', content: acc, id: nextId('g'), guest: guestId }]);
+          setStreaming('');
+        } else if (ev.type === 'error') {
+          setError(ev.message);
+          setStreaming('');
+        }
+      },
+      onError: (e) => {
+        setStreaming('');
+        if (!routeStreamError(e, { onQuota, onAuthRequired, onQuotaExceeded })) setError(e.message);
+      },
+    });
+    setGuestStreaming(null);
+  };
+
+  const streamingMentor = guestStreaming ? getActiveMentor(guestStreaming) : mentor;
+  const streamingAccent = guestStreaming ? getAccent(streamingMentor.accentColor) : accent;
+  const canAddPerspective = !!user && !isStreaming && !outOfQuota && messages.length >= 2 && messages[messages.length - 1]?.role === 'assistant';
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-64px)] w-full max-w-3xl flex-col px-4 sm:px-5" style={{ '--accent': accent.hex } as React.CSSProperties}>
@@ -154,17 +194,20 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
       {/* Mesajlar */}
       <div className="flex-1 space-y-4 overflow-y-auto py-6" aria-live="polite">
         {messages.map((msg, i) => {
-          // Paylaşım kartı için: bu cevabı doğuran kullanıcı mesajı
-          const asked = msg.role === 'assistant' ? messages[i - 1]?.content : undefined;
+          // Paylaşım kartı için: bu cevabı doğuran (en yakın önceki) kullanıcı mesajı
+          const asked = msg.role === 'assistant' ? messages.slice(0, i).reverse().find((m) => m.role === 'user')?.content : undefined;
+          const author = msg.guest ?? mentorId;
+          const a = msg.guest ? getAccent(getActiveMentor(msg.guest).accentColor) : accent;
           return (
             <div key={msg.id}>
-              <Bubble role={msg.role} accentBg={accent.bg} accentBorder={accent.border}>
+              {msg.guest && <GuestLabel id={msg.guest} />}
+              <Bubble role={msg.role} accentBg={a.bg} accentBorder={a.border}>
                 {msg.content}
               </Bubble>
               {asked && (
                 <div className="mt-1.5 flex flex-wrap items-start gap-3 pl-1">
-                  <ShareCardButton data={{ source: 'answer', mentorId, question: asked, answer: msg.content }} compact className="!border-transparent opacity-70 hover:opacity-100" />
-                  <RateAnswer mentorId={mentorId} source="chat" />
+                  <ShareCardButton data={{ source: 'answer', mentorId: author, question: asked, answer: msg.content }} compact className="!border-transparent opacity-70 hover:opacity-100" />
+                  <RateAnswer mentorId={author} source="chat" />
                 </div>
               )}
             </div>
@@ -172,14 +215,21 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
         })}
 
         {isStreaming && streaming && (
-          <Bubble role="assistant" accentBg={accent.bg} accentBorder={accent.border} streaming>
-            {streaming}
-          </Bubble>
+          <div>
+            {guestStreaming && <GuestLabel id={guestStreaming} />}
+            <Bubble role="assistant" accentBg={streamingAccent.bg} accentBorder={streamingAccent.border} streaming>
+              {streaming}
+            </Bubble>
+          </div>
         )}
         {isStreaming && !streaming && (
           <div className="flex items-center gap-2 pl-1 text-xs text-white/40 animate-fade-in">
-            <TypingDots color={accent.hex} /> {mentor.shortName} düşünüyor
+            <TypingDots color={streamingAccent.hex} /> {streamingMentor.shortName} {guestStreaming ? 'sohbeti okuyor' : 'düşünüyor'}
           </div>
+        )}
+
+        {canAddPerspective && (
+          <PerspectivePicker hostId={mentorId} perks={user?.perks ?? []} onPick={(id) => void addPerspective(id)} />
         )}
 
         {notice && (
@@ -235,6 +285,25 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
       </div>
     </div>
   );
+}
+
+/** Sohbete sonradan eklenen bakışın sahibi (konuk mentor). */
+function GuestLabel({ id }: { id: MentorId }) {
+  const m = getActiveMentor(id);
+  const a = getAccent(m.accentColor);
+  return (
+    <div className="mb-1.5 flex items-center gap-2 pl-1 text-[11px] text-white/45">
+      <span className="relative h-5 w-5 overflow-hidden rounded-full border" style={{ borderColor: a.hex }}>
+        <Image src={m.portraitUrl} alt="" fill sizes="20px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
+      </span>
+      <span>Başka bir bakış · <span style={{ color: a.text }}>{m.name}</span></span>
+    </div>
+  );
+}
+
+/** Sunucuya giden sohbet: konuk mesajları işaretiyle birlikte. */
+function toPayload(messages: Message[]) {
+  return messages.map(({ role, content, guest }) => ({ role, content, ...(guest ? { guest } : {}) }));
 }
 
 function Bubble({

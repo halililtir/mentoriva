@@ -117,6 +117,10 @@ export const RATE_LIMITS = {
   /** Cevap değerlendirme (👍/👎) — IP başına. */
   RATE_IP: { max: 60, windowSec: HOUR },
 
+  /** "Meselemi yazayım, sen öner" — kota düşmez, bu yüzden ayrıca sınırlı. */
+  RECOMMEND_IP: { max: 20, windowSec: HOUR },
+  RECOMMEND_USER: { max: 12, windowSec: HOUR },
+
   /** İstemci hata kaydı — IP başına. */
   CLIENT_ERROR_IP: { max: 20, windowSec: HOUR },
 } as const;

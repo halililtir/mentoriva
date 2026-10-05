@@ -4,7 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import { track } from '@/lib/analytics';
+import { getActiveMentor } from '@/lib/mentors/metadata';
 import type { Message } from '@/types';
+
+/** Mesajın yazarı: kişi, sohbetin mentoru ya da sonradan bakış ekleyen konuk mentor. */
+const who = (mentor: string, m: Message) => (m.role === 'user' ? 'Sen' : m.guest ? `${getActiveMentor(m.guest).name} (başka bir bakış)` : mentor);
 
 /**
  * "Sohbeti saklama" ayrıcalığı (Derinleşen işareti): sohbeti metin olarak indir
@@ -22,7 +26,7 @@ function fileName(mentor: string) {
 function asText(mentor: string, messages: Message[]): string {
   const lines = [`Mentoriva — ${mentor} ile sohbet`, DATE.format(new Date()), ''];
   for (const m of messages) {
-    lines.push(m.role === 'user' ? 'Sen:' : `${mentor}:`, m.content.trim(), '');
+    lines.push(`${who(mentor, m)}:`, m.content.trim(), '');
   }
   lines.push('—', 'Mentor cevapları, düşünürlerin fikirlerinden ilham alan yapay zekâ yorumlarıdır; profesyonel destek yerine geçmez.');
   return lines.join('\n');
@@ -32,7 +36,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 function asPrintableHtml(mentor: string, messages: Message[]): string {
   const body = messages
-    .map((m) => `<div class="m ${m.role}"><p class="who">${m.role === 'user' ? 'Sen' : esc(mentor)}</p><p>${esc(m.content.trim()).replace(/\n/g, '<br>')}</p></div>`)
+    .map((m) => `<div class="m ${m.role}"><p class="who">${esc(who(mentor, m))}</p><p>${esc(m.content.trim()).replace(/\n/g, '<br>')}</p></div>`)
     .join('');
   return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>${esc(fileName(mentor))}</title>
 <style>

@@ -15,6 +15,8 @@ export const EVENTS = {
   question: 'Soru',
   guest_question: 'Deneme sorusu (misafir)',
   chat: 'Sohbet mesajı',
+  perspective: 'Başka bir bakış',
+  recommend: 'Mentor önerisi',
   signup: 'Yeni üye',
   journey: 'Yolculuk',
   share: 'Paylaşım kartı',

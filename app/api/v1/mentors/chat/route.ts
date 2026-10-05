@@ -26,6 +26,7 @@ import { getEarlyMentors } from '@/lib/mentors/access-server';
 import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHeaders } from '@/lib/sse';
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { recordAnswer } from '@/lib/share/answers';
+import { foldPerspectives, validateChatMessages } from '@/lib/mentors/perspective';
 import { MENTOR_IDS } from '@/types';
 import type { ChatStreamEvent, Message, MentorId } from '@/types';
 
@@ -49,35 +50,10 @@ function validateRequest(body: unknown):
     return { ok: false, error: 'Geçersiz mentorId' };
   }
 
-  if (!Array.isArray(b['messages']) || b['messages'].length === 0) {
-    return { ok: false, error: 'messages boş olamaz' };
-  }
-
-  // Yalnızca modele gidecek son pencere doğrulanır; çok eski mesajlar atılır.
-  const raw = b['messages'].slice(-INPUT_LIMITS.MAX_CHAT_REQUEST_MESSAGES);
-  const messages: Message[] = [];
-  for (const m of raw) {
-    if (
-      !m ||
-      typeof m !== 'object' ||
-      (m.role !== 'user' && m.role !== 'assistant') ||
-      typeof m.content !== 'string' ||
-      m.content.trim().length === 0
-    ) {
-      return { ok: false, error: 'Geçersiz mesaj formatı' };
-    }
-    if (m.content.length > INPUT_LIMITS.MAX_CHAT_MESSAGE_LENGTH) {
-      return { ok: false, error: `Mesaj en fazla ${INPUT_LIMITS.MAX_CHAT_MESSAGE_LENGTH} karakter olabilir` };
-    }
-    messages.push({ role: m.role, content: m.content });
-  }
-
-  // Son mesaj user olmalı (Claude bu şart)
-  if (messages[messages.length - 1]?.role !== 'user') {
-    return { ok: false, error: 'Son mesaj kullanıcıdan olmalı' };
-  }
-
-  return { ok: true, data: { mentorId: mentorId as MentorId, messages } };
+  // Yalnızca modele gidecek son pencere doğrulanır; son mesaj kullanıcıdan olmalı.
+  const checked = validateChatMessages(b['messages'], 'user');
+  if (!checked.ok) return checked;
+  return { ok: true, data: { mentorId: mentorId as MentorId, messages: checked.messages } };
 }
 
 // -----------------------------------------------------------
@@ -104,8 +80,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Son kullanıcı mesajı için moderation — kota düşülmeden önce
-  const userMessage = messages[messages.length - 1]!.content;
-  const moderation = moderateInput(userMessage);
+  const typed = messages[messages.length - 1]!.content;
+  const moderation = moderateInput(typed);
   if (!moderation.allowed) {
     await recordEvent('crisis');
     const event: ChatStreamEvent = { type: 'crisis', message: CRISIS_RESPONSE[moderation.reason] };
@@ -120,9 +96,13 @@ export async function POST(request: Request): Promise<Response> {
   const abortController = new AbortController();
   request.signal.addEventListener('abort', () => abortController.abort());
 
+  // "Başka bir bakış" mesajları asıl mentor için kullanıcı mesajlarına not olarak katlanır.
+  const folded = foldPerspectives(messages);
+  const userMessage = folded[folded.length - 1]!.content;
+
   // Sliding window (son user mesajı hariç, o zaten userMessage). Uzun sohbette
   // ilk soru ve ilk cevap korunur, aradakiler düşer.
-  const past = messages.slice(0, -1);
+  const past = folded.slice(0, -1);
   const limit = INPUT_LIMITS.MAX_CHAT_HISTORY_MESSAGES;
   const history = past.length <= limit ? past : [...past.slice(0, 2), ...past.slice(-(limit - 2))];
 
@@ -172,7 +152,7 @@ export async function POST(request: Request): Promise<Response> {
         await recordEvent('chat');
         const earned = await awardBadges(user.username, { type: 'chat', mentorId, userMessages: messages.filter((m) => m.role === 'user').length });
         if (earned.length) emit({ type: 'badges', ids: earned });
-        await recordAnswer(user.username, { mentorId, question: userMessage, text: answer });
+        await recordAnswer(user.username, { mentorId, question: typed, text: answer });
       } else {
         await releaseQuestion(user, reservation).catch(() => {});
         emit({ type: 'quota', remaining: reservation.remaining + 1 });

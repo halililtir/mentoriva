@@ -16,6 +16,7 @@ import { WelcomeCard } from '@/components/home/WelcomeCard';
 import { StepReminder } from '@/components/home/StepReminder';
 import { JourneyTeaser } from '@/components/home/JourneyTeaser';
 import { SelectionDock } from '@/components/home/SelectionDock';
+import { MentorFinder } from '@/components/home/MentorFinder';
 import { MentorGalleryCard } from '@/components/mentors/MentorGalleryCard';
 import { AskView } from '@/components/mentors/AskView';
 import { SingleResponseView } from '@/components/mentors/SingleResponseView';
@@ -275,6 +276,8 @@ export default function HomePage() {
           </div>
         </Reveal>
       )}
+
+      <MentorFinder onUse={handlePickWithMentors} />
 
       <Reveal className="mt-8">
         <FlowSteps current={0} className="max-w-md" />

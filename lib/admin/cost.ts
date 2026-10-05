@@ -26,6 +26,8 @@ export const COST_FEATURES = {
   daily: 'Günün sorusu',
   journey: 'Kendine Yolculuk',
   synthesis: 'Ayrışma özeti',
+  perspective: 'Başka bir bakış',
+  recommend: 'Mentor önerisi',
   other: 'Diğer',
 } as const;
 export type CostFeature = keyof typeof COST_FEATURES;

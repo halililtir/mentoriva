@@ -15,8 +15,9 @@ export const FREE_CHAT_SLOTS = 5;
  */
 export function toSavable(messages: Message[]): Array<Pick<Message, 'role' | 'content'>> {
   const out: Array<Pick<Message, 'role' | 'content'>> = [];
-  for (const { role, content } of messages) {
-    if (!content.trim()) continue;
+  // Konuk mentorun "başka bir bakış" mesajları kaydedilmez (kayıt sırayla değişen soru-cevap ister)
+  for (const { role, content, guest } of messages) {
+    if (!content.trim() || guest) continue;
     const last = out[out.length - 1];
     if (last && last.role === role) out[out.length - 1] = { role, content };
     else if (out.length > 0 || role === 'user') out.push({ role, content });
