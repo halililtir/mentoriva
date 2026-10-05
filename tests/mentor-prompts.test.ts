@@ -53,3 +53,26 @@ describe('mentor talimatları', () => {
     expect(new Set(LAB_QUESTIONS.map((q) => q.id)).size).toBe(LAB_QUESTIONS.length);
   });
 });
+
+describe('anlama ve dürüstlük katmanı', () => {
+  it('her mentorda kaçınılacak örnek ve ortak dürüstlük ilkeleri var', () => {
+    for (const id of MENTOR_IDS) {
+      const b = MENTOR_PROMPTS[id];
+      expect(b.avoid?.length ?? 0, id).toBeGreaterThanOrEqual(1);
+      expect(b.initial, id).toContain('# UNDERSTAND BEFORE YOU INTERPRET');
+      expect(b.initial, id).toContain('# AVOID');
+      expect(b.initial, id).toMatch(/Never invent a cause/);
+    }
+  });
+
+  it('eski "rahatsız edici olanı söyle" ve alt metinden izin tahmini kalktı', () => {
+    for (const id of MENTOR_IDS) {
+      expect(MENTOR_PROMPTS[id].initial, id).not.toMatch(/say the uncomfortable thing|give them permission for/);
+    }
+  });
+
+  it('Jung aileye yalnızca kişi getirirse değinir', () => {
+    expect(MENTOR_PROMPTS.jung.initial).toMatch(/ONLY if the person themselves brings up their family/);
+    expect(MENTOR_PROMPTS.jung.initial).toMatch(/Bring up parents, childhood, trauma or "complexes" unless the person did/);
+  });
+});

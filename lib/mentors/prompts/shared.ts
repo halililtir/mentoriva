@@ -61,9 +61,15 @@ Do NOT diagnose. Do NOT play therapist. Just redirect gently.`;
  * Sahte konuşma turu olarak verilmezler: sohbet modunda model onları
  * gerçek geçmiş sanıp "daha önce dediğin gibi" diye anmasın.
  */
-export function examplesBlock(examples: Array<{ user: string; assistant: string }>): string {
+export function examplesBlock(
+  examples: Array<{ user: string; assistant: string }>,
+  avoid: Array<{ user: string; assistant: string; why: string }> = [],
+): string {
   const body = examples
     .map((ex, i) => `<example ${i + 1}>\nKullanıcı: ${ex.user}\n\nSen:\n${ex.assistant}\n</example ${i + 1}>`)
+    .join('\n\n');
+  const bad = avoid
+    .map((ex, i) => `<avoid ${i + 1}>\nKullanıcı: ${ex.user}\n\nKötü cevap:\n${ex.assistant}\n\nNeden kötü: ${ex.why}\n</avoid ${i + 1}>`)
     .join('\n\n');
   return `
 
@@ -71,5 +77,8 @@ export function examplesBlock(examples: Array<{ user: string; assistant: string 
 These are not part of the current conversation and the person has never seen
 them. Do not refer to them, and do not reuse their wording, images or advice.
 
-${body}`;
+${body}${bad ? `
+
+# AVOID (mistakes to recognise, never imitate)
+${bad}` : ''}`;
 }

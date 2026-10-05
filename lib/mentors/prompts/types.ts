@@ -14,4 +14,11 @@ export interface MentorPromptBundle {
   chat: string;
   /** Few-shot örnekleri — Claude'un karakteri tutturması için. */
   examples: PromptExample[];
+  /** Kaçınılacak cevaplar: neden yanlış olduklarıyla (karikatürleşmeyi ve tahmin üretmeyi önler). */
+  avoid?: AvoidExample[];
+}
+
+export interface AvoidExample extends PromptExample {
+  /** Bu cevap neden kötü (modele gösterilir). */
+  why: string;
 }
