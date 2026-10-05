@@ -121,6 +121,10 @@ export const RATE_LIMITS = {
   RECOMMEND_IP: { max: 20, windowSec: HOUR },
   RECOMMEND_USER: { max: 12, windowSec: HOUR },
 
+  /** "İçimde ne var?" kelime önerisi — kota düşmez. */
+  FEELINGS_IP: { max: 30, windowSec: HOUR },
+  FEELINGS_USER: { max: 20, windowSec: HOUR },
+
   /** İstemci hata kaydı — IP başına. */
   CLIENT_ERROR_IP: { max: 20, windowSec: HOUR },
 } as const;

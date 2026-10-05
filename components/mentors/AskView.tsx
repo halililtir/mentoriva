@@ -123,6 +123,10 @@ export function AskView({ mentorIds, onSubmit, onBack, remaining, initialValue =
         <p className="mt-3 max-w-md text-sm text-white/45">
           Bugün neyi anlamak istiyorsun? Kendi kelimelerinle yaz; ne kadar somut olursa cevaplar o kadar sana yakın olur.
         </p>
+        <p className="mt-2 text-[12.5px] text-white/35">
+          Ne hissettiğini kelimeye dökmekte zorlanıyor musun?{' '}
+          <Link href="/icimde" className="text-brand-300/80 underline-offset-2 hover:underline">İçimde ne var?</Link>
+        </p>
       </div>
 
       {/* Soru kutusu */}

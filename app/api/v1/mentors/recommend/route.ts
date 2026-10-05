@@ -45,6 +45,9 @@ export async function POST(request: Request): Promise<Response> {
   if (text.length < RECOMMEND_TEXT_MIN) return jsonError(400, 'Biraz daha anlatır mısın? Bir iki cümle yeter.');
   if (text.length > RECOMMEND_TEXT_MAX) return jsonError(400, `En fazla ${RECOMMEND_TEXT_MAX} karakter yazabilirsin.`);
 
+  // Misafir kayıt formunu görmediği için yurt dışı aktarım onayı burada istenir
+  if (!user && body?.['consent'] !== true) return jsonError(403, 'Devam etmek için onay kutusunu işaretlemelisin.', 'CONSENT_REQUIRED');
+
   const moderation = moderateInput(text);
   if (!moderation.allowed) {
     await recordEvent('crisis');

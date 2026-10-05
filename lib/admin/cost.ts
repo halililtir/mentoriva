@@ -28,6 +28,8 @@ export const COST_FEATURES = {
   synthesis: 'Ayrışma özeti',
   perspective: 'Başka bir bakış',
   recommend: 'Mentor önerisi',
+  feelings: 'İçimde ne var?',
+  prepare: 'Söyleyeceğimi hazırla',
   other: 'Diğer',
 } as const;
 export type CostFeature = keyof typeof COST_FEATURES;

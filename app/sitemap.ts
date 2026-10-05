@@ -5,6 +5,8 @@ import { allQuotes } from '@/lib/quote-pages';
 const PAGES: Array<{ path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }> = [
   { path: '', priority: 1, changeFrequency: 'weekly' },
   { path: '/yolculuk', priority: 0.9, changeFrequency: 'monthly' },
+  { path: '/icimde', priority: 0.9, changeFrequency: 'monthly' },
+  { path: '/hazirla', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/test', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/alintilar', priority: 0.8, changeFrequency: 'weekly' },
   { path: '/hakkimizda', priority: 0.8, changeFrequency: 'monthly' },

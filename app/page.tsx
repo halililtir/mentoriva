@@ -14,7 +14,7 @@ import { FlowSteps } from '@/components/home/FlowSteps';
 import { DailyQuestion } from '@/components/home/DailyQuestion';
 import { WelcomeCard } from '@/components/home/WelcomeCard';
 import { StepReminder } from '@/components/home/StepReminder';
-import { JourneyTeaser } from '@/components/home/JourneyTeaser';
+import { StudiesTeaser } from '@/components/home/StudiesTeaser';
 import { SelectionDock } from '@/components/home/SelectionDock';
 import { MentorFinder } from '@/components/home/MentorFinder';
 import { MentorGalleryCard } from '@/components/mentors/MentorGalleryCard';
@@ -332,7 +332,7 @@ export default function HomePage() {
           {user ? (
             <>
               {mentorSection}
-              <div className="band"><JourneyTeaser /></div>
+              <div className="band"><StudiesTeaser /></div>
               <UseCases onPick={handlePickWithMentors} onOwn={scrollToGallery} />
               <div className="band"><HowItWorks id="nasil-calisir" /></div>
               <Faq />
@@ -341,7 +341,7 @@ export default function HomePage() {
             <>
               <TraditionsStrip />
               <div className="band"><WhyMentoriva /></div>
-              <JourneyTeaser />
+              <StudiesTeaser />
               <div className="band"><HowItWorks id="nasil-calisir" /></div>
               {mentorSection}
               <div className="band"><UseCases onPick={handlePickWithMentors} onOwn={scrollToGallery} /></div>

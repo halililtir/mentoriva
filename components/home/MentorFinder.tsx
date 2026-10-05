@@ -6,6 +6,8 @@ import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
 import { RECOMMEND_TEXT_MAX, RECOMMEND_TEXT_MIN, type MentorPick } from '@/lib/mentors/recommend-public';
 import { EmergencyLine } from '@/components/mentors/EmergencyLine';
 import { track } from '@/lib/analytics';
+import { useSession } from '@/lib/session';
+import { GuestConsent } from '@/components/shared/GuestConsent';
 import type { MentorId } from '@/types';
 
 interface Props {
@@ -28,20 +30,23 @@ export function MentorFinder({ onUse }: Props) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [state, setState] = useState<State>({ kind: 'idle' });
+  const isGuest = useSession().status === 'guest';
+  const [consent, setConsent] = useState(false);
 
   const ask = async () => {
     const t = text.trim();
-    if (t.length < RECOMMEND_TEXT_MIN || state.kind === 'loading') return;
+    if (t.length < RECOMMEND_TEXT_MIN || state.kind === 'loading' || (isGuest && !consent)) return;
     setState({ kind: 'loading' });
     try {
       const res = await fetch('/api/v1/mentors/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: t }),
+        body: JSON.stringify({ text: t, ...(isGuest ? { consent: true } : {}) }),
       });
-      const data = (await res.json().catch(() => null)) as { picks?: MentorPick[]; crisis?: string; error?: string } | null;
+      const data = (await res.json().catch(() => null)) as { picks?: MentorPick[]; crisis?: string; error?: string | { message?: string } } | null;
+      const errorText = typeof data?.error === 'string' ? data.error : data?.error?.message;
       if (data?.crisis) return setState({ kind: 'crisis', message: data.crisis });
-      if (!res.ok || !data?.picks?.length) return setState({ kind: 'error', message: data?.error ?? 'Şu an öneri hazırlanamadı. Mentorları aşağıdan kendin seçebilirsin.' });
+      if (!res.ok || !data?.picks?.length) return setState({ kind: 'error', message: errorText ?? 'Şu an öneri hazırlanamadı. Mentorları aşağıdan kendin seçebilirsin.' });
       track('mentor_recommend', { picks: data.picks.length });
       setState({ kind: 'done', picks: data.picks });
     } catch {
@@ -83,9 +88,10 @@ export function MentorFinder({ onUse }: Props) {
         className="input-field mt-4 min-h-[96px] w-full resize-y text-base"
         aria-label="Meselen"
       />
+      {isGuest && <GuestConsent checked={consent} onChange={setConsent} className="mt-3" />}
       <div className="mt-3 flex items-center justify-between gap-3">
         <span className="text-[11px] text-white/30">{text.length}/{RECOMMEND_TEXT_MAX}</span>
-        <button onClick={() => void ask()} disabled={text.trim().length < RECOMMEND_TEXT_MIN || state.kind === 'loading'} className="btn-primary !px-5 !py-2.5 text-sm">
+        <button onClick={() => void ask()} disabled={text.trim().length < RECOMMEND_TEXT_MIN || state.kind === 'loading' || (isGuest && !consent)} className="btn-primary !px-5 !py-2.5 text-sm">
           {state.kind === 'loading' ? 'Düşünülüyor…' : 'Mentor öner'}
         </button>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
 import { MAP_FIELDS, MENTOR_INVITES, SMALL_STEPS, type SmallStepId } from '@/lib/journey/content';
 import type { JourneyResult as Result } from '@/lib/journey/schema';
@@ -145,6 +146,11 @@ export function JourneyResultView({ result, startingPoint, onContinueWithMentor,
         </button>
       </section>
       <p className="-mt-6 text-center text-[11.5px] text-white/35">Yolculuktaki anlatımın mentora gönderilmez; yalnızca bu soru gider, istersen düzenleyebilirsin.</p>
+
+      <p className="-mt-4 text-center text-[12.5px] text-white/40">
+        Birine bir şey söylemen gerekiyorsa <Link href="/hazirla" className="text-brand-300/80 underline-offset-2 hover:underline">Söyleyeceğimi hazırla</Link>
+        {' · '}duygunu kelimeye dökmek için <Link href="/icimde" className="text-brand-300/80 underline-offset-2 hover:underline">İçimde ne var?</Link>
+      </p>
 
       {/* 4. Daha derine bak — pencereler, harita, ikinci mentor */}
       <details className="group rounded-3xl border border-white/[0.08] p-5 sm:p-6">

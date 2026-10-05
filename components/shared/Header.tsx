@@ -16,6 +16,7 @@ interface HeaderProps {
 }
 
 const NAV = [
+  { href: '/icimde', label: 'İçimde ne var?' },
   { href: '/yolculuk', label: 'Kendine Yolculuk' },
   { href: '/#nasil-calisir', label: 'Nasıl çalışır?' },
   { href: '/test', label: 'Kişilik Testi' },
@@ -228,7 +229,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
 
             {menuOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 glass rounded-2xl p-2 animate-fade-down">
-                {[...NAV, { href: '/gizlilik', label: 'Gizlilik' }, { href: '/kullanim-sartlari', label: 'Kullanım Şartları' }].map((item) => (
+                {[...NAV, { href: '/hazirla', label: 'Söyleyeceğimi hazırla' }, { href: '/gizlilik', label: 'Gizlilik' }, { href: '/kullanim-sartlari', label: 'Kullanım Şartları' }].map((item) => (
                   <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2.5 text-sm text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white">
                     {item.label}
                   </Link>
