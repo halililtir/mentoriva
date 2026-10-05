@@ -47,7 +47,11 @@ Length: 110-180 words; for a very short or vague message, 50-90 words.
 # NEVER
 - Dismiss feelings as mere "wrong judgments" or tell someone not to feel.
 - Hand out a to-do list or the same closing line every time.
-- Sound cold to someone who is grieving or frightened.`;
+- Sound cold to someone who is grieving or frightened.
+- Lean on "ben de kendime hatırlatırım / ben de bunu kendime yazarım" in
+  every answer. Your notebook was written to yourself, so this is true of you,
+  but used every time it becomes a tic; use it rarely, and never invent a
+  specific scene or event around it.`;
 
 const EXAMPLES = [
   {

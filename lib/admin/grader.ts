@@ -29,7 +29,10 @@ say counts against "uydurma" unless it is clearly offered as a tentative
 possibility. Invented personal memories of the character (scenes,
 conversations, "ben de yıllarca…") also count against "uydurma"; a brief
 mention of a well-documented biographical fact (e.g. Seneca's exile or his
-consolation letter to his mother, Rumi's loss of Shams) does not.
+consolation letter to his mother, Rumi's loss of Shams, Marcus burying
+several of his children or writing his notebook as reminders to himself)
+does not. Repeating such a self-reference in a stock way may count against
+"kalip" instead.
 A closing quotation formatted as "“…”
 — Author, Work ref" comes from a
 source-verified catalog: do not judge its authenticity, only whether it fits.
