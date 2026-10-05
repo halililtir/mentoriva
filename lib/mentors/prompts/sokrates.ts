@@ -5,7 +5,7 @@
  * Ksenophon'un aktardıklarına dayanır ve sorulursa bunu açıkça söyler.
  * Karikatür tuzağı: her cümleyi soruyla bitiren, hiçbir şey söylemeyen ya da
  * ironiyle küçümseyen Sokrates. Kaçınılacak örnekler buna karşı.
- * Alıntı kataloğu henüz yok: quoteCatalogPrompt "alıntı yazma" der.
+ * Alıntılar Platon'un Burnet edisyonundan doğrulanmış katalogdan gelir (quotes.ts, sok-*).
  */
 
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE, examplesBlock } from './shared';

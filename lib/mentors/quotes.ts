@@ -445,12 +445,93 @@ const MEVLANA: VerifiedQuote[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// 2026-10-05 genişletmesi. Her `original` kaynak metinde birebir aranıp bulundu
+// (vurgu/noktalama farkları dışında). Çeviriler Mentoriva'nındır.
+// Bilinçli olarak eklenmeyenler: Seneca Ep. 16.7 (Epikuros'un sözü),
+// Marcus 5.18 (yas içindekine acısını küçümseyen teselli gibi okunabilir),
+// Nietzsche "beni öldürmeyen…" (ölüm imgesi, klişe), "sevgiyle yapılan…"
+// (zararı aklamak için kullanılabilir), Sokrates Savunma 38a "sorgulanmamış
+// hayat yaşanmaya değmez" (hayatını anlamsız bulan birine yanlış okunabilir).
+// ---------------------------------------------------------------------------
+
+const LATIN_LIBRARY_2 = 'The Latin Library (thelatinlibrary.com), 2026-10-05';
+
+const SENECA_2: VerifiedQuote[] = [
+  { id: 'sen-13', text: 'Her şey başkasınındır, Lucilius; yalnızca zaman bizimdir.', original: 'Omnia, Lucili, aliena sunt, tempus tantum nostrum est', work: "Lucilius'a Mektuplar", ref: '1.3', themes: ['zaman', 'sahip olmak', 'öncelikler', 'tükenmişlik'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-14', text: 'Biz erteledikçe hayat geçip gider.', original: 'Dum differtur vita transcurrit.', work: "Lucilius'a Mektuplar", ref: '1.3', themes: ['erteleme', 'yarına bırakmak', 'zaman', 'pişmanlık'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-15', text: 'Hiçbir şey iyileşmeyi, ilaçları sık sık değiştirmek kadar engellemez.', original: 'nihil aeque sanitatem impedit quam remediorum crebra mutatio', work: "Lucilius'a Mektuplar", ref: '2.3', themes: ['sabır', 'sık fikir değiştirmek', 'kararsızlık', 'odaklanmak'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-16', text: 'Herkese güvenmek de kusurdur, kimseye güvenmemek de.', original: 'utrumque enim vitium est, et omnibus credere et nulli', work: "Lucilius'a Mektuplar", ref: '3.4', themes: ['güven', 'ilişkiler', 'şüphe', 'kırgınlık'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-17', text: 'Elinden geldiğince kendi içine çekil; seni daha iyi biri yapacak insanlarla bir arada ol.', original: 'Recede in te ipse quantum potes; cum his versare qui te meliorem facturi sunt', work: "Lucilius'a Mektuplar", ref: '7.8', themes: ['çevre', 'arkadaşlar', 'kalabalık', 'kötü etki'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-18', text: 'Kötülüğümüz dışarıda değil, içimizdedir.', original: 'non est extrinsecus malum nostrum: intra nos est', work: "Lucilius'a Mektuplar", ref: '50.4', themes: ['sorumluluk', 'başkalarını suçlamak', 'alışkanlık', 'kendini değiştirmek'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-19', text: 'Bir dostu yitirdiğinde gözlerin ne kuru kalsın ne sel olsun; gözyaşı dökülür, ama feryat edilmez.', original: 'Nec sicci sint oculi amisso amico nec fluant; lacrimandum est, non plorandum.', work: "Lucilius'a Mektuplar", ref: '63.1', themes: ['yas', 'kayıp', 'ağlamak', 'sevilen birini yitirmek'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-20', text: 'Hangi limana gideceğini bilmeyene hiçbir rüzgâr uygun değildir.', original: 'ignoranti quem portum petat nullus suus ventus est.', work: "Lucilius'a Mektuplar", ref: '71.3', themes: ['yön', 'karar', 'kariyer', 'amaçsızlık'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-21', text: 'İnsan, mutsuz olduğuna inandığı kadar mutsuzdur.', original: 'Tam miser est quisque quam credidit.', work: "Lucilius'a Mektuplar", ref: '78.14', themes: ['üzüntü', 'bakış açısı', 'yorum', 'şikâyet'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-22', text: 'Vakti gelmeden acı çeken, gerektiğinden fazla acı çeker.', original: 'Plus dolet quam necesse est qui ante dolet quam necesse est', work: "Lucilius'a Mektuplar", ref: '98.8', themes: ['kaygı', 'endişe', 'felaket senaryoları', 'beklemek'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-23', text: 'Parasını başkalarıyla paylaşmak isteyen kimse bulunmaz; ama herkes hayatını ne çok kişiye dağıtır!', original: 'nemo inuenitur qui pecuniam suam diuidere uelit, uitam unusquisque quam multis distribuit!', work: 'Hayatın Kısalığı Üzerine', ref: '3.1', themes: ['zaman', 'sınır koymak', 'hayır diyememek', 'herkese yetişmek'], verifiedFrom: LATIN_LIBRARY_2 },
+  { id: 'sen-24', text: 'Ben de bu imkândan yararlanırım ve her gün kendi davamı kendi önümde görürüm.', original: 'Vtor hac potestate et cotidie apud me causam dico', work: 'Öfke Üzerine', ref: '3.36.3', themes: ['öz değerlendirme', 'günü gözden geçirmek', 'hata', 'gelişim'], verifiedFrom: LATIN_LIBRARY_2 },
+];
+
+const MARCUS_SRC_2 = 'el.wikisource (Τὰ εἰς ἑαυτόν), 2026-10-05; standart bölüm numaraları';
+
+const MARCUS_2: VerifiedQuote[] = [
+  { id: 'mar-11', text: 'On bin yıl yaşayacakmış gibi yaşama. Kaçınılmaz olan başının üstünde duruyor; yaşadıkça, elinden geldikçe iyi bir insan ol.', original: 'Μὴ ὡς μύρια μέλλων ἔτη ζῆν. τὸ χρεὼν ἐπήρτηται˙ ἕως ζῇς, ἕως ἔξεστιν, ἀγαθὸς γενοῦ.', work: 'Kendime Düşünceler', ref: '4.17', themes: ['erteleme', 'şimdi', 'iyi bir insan olmak', 'zaman'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-12', text: 'Dalgaların durmadan çarptığı kayalık burun gibi ol; o yerinde durur, çevresindeki köpüklü su da onun etrafında yatışır.', original: 'Ὅμοιον εἶναι τῇ ἄκρᾳ, ᾗ διηνεκῶς τὰ κύματα προσρήσσεται˙ ἡ δὲ ἕστηκε καὶ περὶ αὐτὴν κοιμίζεται τὰ φλεγμήναντα τοῦ ὕδατος.', work: 'Kendime Düşünceler', ref: '4.49', themes: ['dayanıklılık', 'eleştiri', 'baskı', 'sakin kalmak'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-13', text: 'Sabah kalkmakta zorlandığında şunu aklında tut: bir insanın işini yapmak için uyanıyorum.', original: 'Ὄρθρου, ὅταν δυσόκνως ἐξεγείρῃ, πρόχειρον ἔστω ὅτι ἐπὶ ἀνθρώπου ἔργον ἐγείρομαι', work: 'Kendime Düşünceler', ref: '5.1', themes: ['erteleme', 'isteksizlik', 'iş', 'sabah'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-14', text: 'Sakın Sezarlaşma, o boyaya bulanma; çünkü bu olur.', original: 'Ὅρα μὴ ἀποκαισαρωθῇς, μὴ βαφῇς˙ γίνεται γάρ.', work: 'Kendime Düşünceler', ref: '6.30', themes: ['kibir', 'güç', 'başarı', 'yükselince değişmek'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-15', text: 'Gelecek seni sarsmasın; gerekirse ona da bugün elindekilere karşı kullandığın aynı akılla varacaksın.', original: 'Τὰ μέλλοντα μὴ ταρασσέτω˙ ἥξεις γὰρ ἐπ αὐτά, ἐὰν δεήσῃ, φέρων τὸν αὐτὸν λόγον ᾧ νῦν πρὸς τὰ παρόντα χρᾷ.', work: 'Kendime Düşünceler', ref: '7.8', themes: ['kaygı', 'gelecek', 'belirsizlik', 'sınav'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-16', text: 'Hata yapanları bile sevmek insana özgüdür.', original: 'Ἴδιον ἀνθρώπου φιλεῖν καὶ τοὺς πταίοντας.', work: 'Kendime Düşünceler', ref: '7.22', themes: ['affetmek', 'hata', 'ilişkiler', 'kırgınlık'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-17', text: 'Tutkulardan özgür bir zihin bir kaledir; insanın elinde bundan daha sağlam bir şey yoktur.', original: 'ἀκρόπολίς ἐστιν ἡ ἐλευθέρα παθῶν διάνοια˙ οὐδὲν γὰρ ὀχυρώτερον ἔχει ἄνθρωπος', work: 'Kendime Düşünceler', ref: '8.48', themes: ['iç huzur', 'içsel güç', 'kaygı', 'kontrol'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-18', text: 'İnsanlar birbirleri için var oldu; öyleyse ya öğret ya katlan.', original: 'Οἱ ἄνθρωποι γεγόνασιν ἀλλήλων ἕνεκεν˙ ἢ δίδασκε οὖν ἢ φέρε.', work: 'Kendime Düşünceler', ref: '8.59', themes: ['ilişkiler', 'zor insanlar', 'sabır', 'aile'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-19', text: 'Sahici olduğu sürece iyi niyet yenilmezdir.', original: 'τὸ εὐμενὲς ἀνίκητον, ἐὰν γνήσιον ᾖ', work: 'Kendime Düşünceler', ref: '11.18', themes: ['öfke', 'zor insanlar', 'nezaket', 'tartışma'], verifiedFrom: MARCUS_SRC_2 },
+  { id: 'mar-20', text: 'Uygun değilse yapma; doğru değilse söyleme.', original: 'Εἰ μὴ καθήκει, μὴ πράξῃς˙ εἰ μὴ ἀληθές ἐστι, μὴ εἴπῃς.', work: 'Kendime Düşünceler', ref: '12.17', themes: ['dürüstlük', 'karar', 'söz', 'vicdan'], verifiedFrom: MARCUS_SRC_2 },
+];
+
+const NIETZSCHE_SRC_2 = 'Project Gutenberg Almanca edisyonları (#7202-7205), 2026-10-05';
+
+const NIETZSCHE_2: VerifiedQuote[] = [
+  { id: 'nie-10', text: 'Canavarlarla savaşan, bu sırada kendisinin de canavara dönüşmemesine dikkat etsin. Ve uzun süre bir uçuruma bakarsan, uçurum da sana bakar.', original: 'Wer mit Ungeheuern kämpft, mag zusehn, dass er nicht dabei zum Ungeheuer wird. Und wenn du lange in einen Abgrund blickst, blickt der Abgrund auch in dich hinein.', work: 'İyinin ve Kötünün Ötesinde', ref: '146', themes: ['intikam', 'öfke', 'nefret', 'kavga'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-11', text: 'Beni sarsan, bana yalan söylemen değil; artık sana inanamamam.', original: 'Nicht dass du mich belogst, sondern dass ich dir nicht mehr glaube, hat mich erschüttert.', work: 'İyinin ve Kötünün Ötesinde', ref: '183', themes: ['ihanet', 'yalan', 'güven', 'aldatılmak'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-12', text: '"Bunu ben yaptım" der hafızam. "Bunu ben yapmış olamam" der gururum ve inatla direnir. Sonunda hafıza geri adım atar.', original: '"Das habe ich gethan" sagt mein Gedächtniss. Das kann ich nicht gethan haben - sagt mein Stolz und bleibt unerbittlich. Endlich - giebt das Gedächtniss nach.', work: 'İyinin ve Kötünün Ötesinde', ref: '68', themes: ['suçluluk', 'gurur', 'kendini kandırmak', 'hata'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-13', text: 'Kendini küçümseyen, bunu yaparken bile küçümseyen olarak kendine saygı duyar.', original: 'Wer sich selbst verachtet, achtet sich doch immer noch dabei als Verächter.', work: 'İyinin ve Kötünün Ötesinde', ref: '78', themes: ['kendini küçümsemek', 'özeleştiri', 'yetersizlik', 'utanç'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-14', text: 'En cesurumuzun bile aslında bildiği şeyi göze alacak cesareti nadiren vardır.', original: 'Auch der Muthigste von uns hat nur selten den Muth zu dem, was er eigentlich weiss', work: 'Putların Alacakaranlığı, Özdeyişler ve Oklar', ref: '2', themes: ['cesaret', 'bildiğini yapamamak', 'erteleme', 'karar'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-15', text: 'Dostum, yalnızlığına kaç!', original: 'Fliehe, mein Freund, in deine Einsamkeit!', work: 'Böyle Buyurdu Zerdüşt I, Pazar Yerinin Sinekleri Üzerine', ref: '', themes: ['yalnızlık', 'kalabalık', 'gürültü', 'kendine dönmek'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-16', text: 'Hep öğrenci kalan, öğretmenine kötü karşılık vermiş olur.', original: 'Man vergilt einem Lehrer schlecht, wenn man immer nur der Schüler bleibt.', work: 'Böyle Buyurdu Zerdüşt I, Bağışlayan Erdem Üzerine', ref: '3', themes: ['bağımsızlık', 'öğretmen', 'kendi yolu', 'taklit'], verifiedFrom: NIETZSCHE_SRC_2 },
+  { id: 'nie-17', text: 'Kardeşim, yalnızlığa mı gitmek istiyorsun? Kendine giden yolu mu aramak istiyorsun? Biraz daha bekle ve beni dinle.', original: 'Willst du, mein Bruder, in die Vereinsamung gehen? Willst du den Weg zu dir selber suchen? Zaudere noch ein Wenig und höre mich.', work: 'Böyle Buyurdu Zerdüşt I, Yaratanın Yolu Üzerine', ref: '', themes: ['kendi yolu', 'kendini aramak', 'yalnızlık', 'büyük karar'], verifiedFrom: NIETZSCHE_SRC_2 },
+];
+
+const PLATO_SRC = 'Platon, Burnet edisyonu (Oxford 1903), el.wikisource, 2026-10-05';
+
+const SOKRATES: VerifiedQuote[] = [
+  { id: 'sok-01', text: 'Anlaşılan, ondan şu küçük farkla daha bilgeyim: bilmediğim şeyi bildiğimi de sanmıyorum.', original: 'ἔοικα γοῦν τούτου γε σμικρῷ τινι αὐτῷ τούτῳ σοφώτερος εἶναι, ὅτι ἃ μὴ οἶδα οὐδὲ οἴομαι εἰδέναι', work: 'Platon, Savunma', ref: '21d', themes: ['bilmemek', 'kesinlik', 'alçakgönüllülük', 'öğrenmek'], verifiedFrom: PLATO_SRC },
+  { id: 'sok-02', text: 'Erdem paradan doğmaz; para da, insanlar için iyi olan diğer her şey de erdemden doğar.', original: 'οὐκ ἐκ χρημάτων ἀρετὴ γίγνεται, ἀλλ᾽ ἐξ ἀρετῆς χρήματα καὶ τὰ ἄλλα ἀγαθὰ τοῖς ἀνθρώποις ἅπαντα', work: 'Platon, Savunma', ref: '30b', themes: ['para', 'başarı', 'değerler', 'hırs'], verifiedFrom: PLATO_SRC },
+  { id: 'sok-03', text: 'En çok önem vermemiz gereken yaşamak değil, iyi yaşamaktır.', original: 'οὐ τὸ ζῆν περὶ πλείστου ποιητέον ἀλλὰ τὸ εὖ ζῆν', work: 'Platon, Kriton', ref: '48b', themes: ['değerler', 'öncelikler', 'anlam', 'iyi bir hayat'], verifiedFrom: PLATO_SRC },
+  { id: 'sok-04', text: 'Başına ne gelirse gelsin, ne haksızlığa haksızlıkla karşılık vermeli ne de hiçbir insana kötülük etmeli.', original: 'Οὔτε ἄρα ἀνταδικεῖν δεῖ οὔτε κακῶς ποιεῖν οὐδένα ἀνθρώπων, οὐδ᾽ ἂν ὁτιοῦν πάσχῃ ὑπ᾽ αὐτῶν', work: 'Platon, Kriton', ref: '49c', themes: ['intikam', 'haksızlık', 'öfke', 'ihanet'], verifiedFrom: PLATO_SRC },
+  { id: 'sok-05', text: 'Haksızlık etmekle haksızlığa uğramak arasında seçmek zorunda kalsaydım, haksızlığa uğramayı seçerdim.', original: "εἰ δ' ἀναγκαῖον εἴη ἀδικεῖν ἢ ἀδικεῖσθαι, ἑλοίμην ἂν μᾶλλον ἀδικεῖσθαι ἢ ἀδικεῖν", work: 'Platon, Gorgias', ref: '469c', themes: ['dürüstlük', 'vicdan', 'adalet', 'zor seçim'], verifiedFrom: PLATO_SRC },
+  { id: 'sok-06', text: 'Hayret etmek tam da bir filozofun duygusudur; felsefenin bundan başka bir başlangıcı yoktur.', original: 'μάλα γὰρ φιλοσόφου τοῦτο τὸ πάθος, τὸ θαυμάζειν· οὐ γὰρ ἄλλη ἀρχὴ φιλοσοφίας ἢ αὕτη', work: 'Platon, Theaitetos', ref: '155d', themes: ['merak', 'öğrenmek', 'şaşırmak', 'başlangıç'], verifiedFrom: PLATO_SRC },
+  { id: 'sok-07', text: 'Delfi\'deki yazının buyurduğu gibi kendimi henüz tanıyamadım; bunu bilmezken başka şeyleri araştırmak bana gülünç geliyor.', original: 'οὐ δύναμαί πω κατὰ τὸ Δελφικὸν γράμμα γνῶναι ἐμαυτόν· γελοῖον δή μοι φαίνεται τοῦτο ἔτι ἀγνοοῦντα τὰ ἀλλότρια σκοπεῖν', work: 'Platon, Phaidros', ref: '229e', themes: ['kendini tanımak', 'öncelikler', 'merak', 'dağınıklık'], verifiedFrom: PLATO_SRC },
+];
+
+const MEVLANA_SRC_2 = 'Ganjoor (ganjoor.net) Mesnevî I-III. defterler, 2026-10-05';
+
+const MEVLANA_2: VerifiedQuote[] = [
+  { id: 'mev-13', text: 'Herkesin avucunda bir mum olsaydı, sözlerindeki ayrılık ortadan kalkardı.', original: 'در کف هر کس اگر شمعی بدی / اختلاف از گفتشان بیرون شدی', work: 'Mesnevî, III. Cilt, Karanlıkta Fil hikâyesi', ref: '', themes: ['anlaşmazlık', 'farklı bakış açıları', 'tartışma', 'yanlış anlaşılmak'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-14', text: 'Peygamber yüksek sesle dedi ki: Tevekkül et, ama devenin dizini de bağla.', original: 'گفت پیغامبر به آواز بلند / با توکل زانوی اشتر ببند', work: 'Mesnevî, I. Cilt, Aslan ile Av Hayvanları hikâyesi', ref: '', themes: ['çaba', 'tevekkül', 'sorumluluk', 'işi oluruna bırakmak'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-15', text: 'Kardeşim, sen o düşüncenin ta kendisisin; gerisi kemikten, liften ibaret. Düşüncen gülse gül bahçesisin, dikense külhana atılacak odunsun.', original: 'ای برادر تو همان اندیشه‌ای / ما بقی تو استخوان و ریشه‌ای / گر گلست اندیشه تو گلشنی / ور بود خاری تو هیمه گلخنی', work: 'Mesnevî, II. Cilt', ref: '', themes: ['düşünceler', 'zihin', 'olumsuz düşünce', 'kendini tanımak'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-16', text: 'Bu dünya bir dağdır, yaptıklarımız bir sesleniş; seslenişlerin yankısı yine bize döner.', original: 'این جهان کوه است و فعل ما ندا / سوی ما آید نداها را صدا', work: 'Mesnevî, I. Cilt, Padişah ile Cariye hikâyesi', ref: '', themes: ['yaptıklarının sonucu', 'sorumluluk', 'ilişkiler', 'davranış'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-17', text: 'Bir renk peşindeki aşklar aşk değildir; sonunda utanca döner.', original: 'عشق‌هایی کز پی رنگی بود / عشق نبود عاقبت ننگی بود', work: 'Mesnevî, I. Cilt, Padişah ile Cariye hikâyesi', ref: '', themes: ['yüzeysel ilişki', 'dış görünüş', 'tutku', 'hayal kırıklığı'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-18', text: 'Öfke ve arzu insanı şaşı eder, ruhu doğruluktan saptırır. Çıkar araya girince erdem gizlenir; gönülden göze yüz perde iner.', original: 'خشم و شهوت مرد را احول کند / ز استقامت روح را مبدل کند / چون غرض آمد هنر پوشیده شد / صد حجاب از دل به سوی دیده شد', work: 'Mesnevî, I. Cilt', ref: '', themes: ['öfke', 'önyargı', 'yanlış yargı', 'çıkar'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-19', text: 'Nerede bir dert varsa deva oraya gider; nerede bir yoksulluk varsa nimet oraya akar.', original: 'هر کجا دردی دوا آنجا رود / هر کجا فقری نوا آنجا رود', work: 'Mesnevî, III. Cilt', ref: '', themes: ['acı', 'zor dönem', 'umut', 'çaresizlik'], verifiedFrom: MEVLANA_SRC_2 },
+  { id: 'mev-20', text: 'Su arama, susuzluk edin; ta ki su yukarıdan da aşağıdan da fışkırsın.', original: 'آب کم جو تشنگی آور به دست / تا بجوشد آب از بالا و پست', work: 'Mesnevî, III. Cilt', ref: '', themes: ['arayış', 'özlem', 'içten istemek', 'motivasyon'], verifiedFrom: MEVLANA_SRC_2 },
+];
+
 /** Mentor kimliği → doğrulanmış alıntılar. Listesi olmayan mentor alıntı eklemez. */
 export const VERIFIED_QUOTES: Record<string, { author: string; quotes: VerifiedQuote[] }> = {
-  seneca: { author: 'Seneca', quotes: SENECA },
-  marcus: { author: 'Marcus Aurelius', quotes: MARCUS },
-  nietzsche: { author: 'Nietzsche', quotes: NIETZSCHE },
-  mevlana: { author: 'Mevlânâ', quotes: MEVLANA },
+  seneca: { author: 'Seneca', quotes: [...SENECA, ...SENECA_2] },
+  marcus: { author: 'Marcus Aurelius', quotes: [...MARCUS, ...MARCUS_2] },
+  nietzsche: { author: 'Nietzsche', quotes: [...NIETZSCHE, ...NIETZSCHE_2] },
+  mevlana: { author: 'Mevlânâ', quotes: [...MEVLANA, ...MEVLANA_2] },
+  sokrates: { author: 'Sokrates', quotes: SOKRATES },
 };
 
 const BY_ID = new Map<string, { author: string; quote: VerifiedQuote }>(

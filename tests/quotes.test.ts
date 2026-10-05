@@ -43,7 +43,8 @@ describe('doğrulanmış alıntı kütüphanesi', () => {
     for (const q of all) {
       expect(q.original.length).toBeGreaterThan(5);
       expect(q.work).toBeTruthy();
-      expect(q.ref).toMatch(/^(\d+(\.\d+)*)?$/);
+      // Platon'un Stephanus numaraları harfle biter (21d, 469c)
+      expect(q.ref).toMatch(/^(\d+[a-e]?(\.\d+)*)?$/);
       expect(q.verifiedFrom).toBeTruthy();
     }
   });
