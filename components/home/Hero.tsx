@@ -62,7 +62,9 @@ export function Hero({ user, guestTrial = false, onStart, onHowItWorks }: Props)
           </span>
         </p>
 
-        <div className="mt-6 flex flex-col items-center justify-center gap-2.5 animate-fade-up sm:mt-8 sm:flex-row sm:gap-3 lg:justify-start" style={{ animationDelay: '320ms' }}>
+        {/* Butonlar animasyonsuz: iOS Safari, opaklık animasyonuyla beliren düğmeleri
+            ekrana dokunulana dek çizmeyebiliyor; ana çağrı her zaman ilk anda görünsün. */}
+        <div className="mt-6 flex flex-col items-center justify-center gap-2.5 sm:mt-8 sm:flex-row sm:gap-3 lg:justify-start">
           {user ? (
             <button onClick={onStart} className="btn-primary w-full !px-7 !py-3.5 sm:w-auto">
               Mentorunu seç
