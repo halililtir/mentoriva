@@ -125,6 +125,10 @@ export const RATE_LIMITS = {
   FEELINGS_IP: { max: 30, windowSec: HOUR },
   FEELINGS_USER: { max: 20, windowSec: HOUR },
 
+  /** Hafıza: sohbetten not önerisi ve verilerimi indir. */
+  NOTES_SUGGEST_USER: { max: 10, windowSec: HOUR },
+  EXPORT_USER: { max: 5, windowSec: HOUR },
+
   /** İstemci hata kaydı — IP başına. */
   CLIENT_ERROR_IP: { max: 20, windowSec: HOUR },
 } as const;

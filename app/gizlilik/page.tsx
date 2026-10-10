@@ -60,9 +60,10 @@ export default function GizlilikPage() {
             <p className="mt-1"><span className="text-white/70">Kayıt olmadan deneme:</span> aynı cihazdan günde bir deneme için tarayıcına rastgele bir deneme kimliği (çerez, 1 yıl) konur; kötüye kullanıma karşı IP adresinin geri döndürülemez özeti (düz IP değil) ve deneme kimliğinin özeti 48 saat tutulur. Deneme onayın yalnızca kendi tarayıcında. Deneme sorusu, cevap üretmek için yapay zekâ sağlayıcısına iletilir ve sana bağlanmadan anonim istatistiklere girer.</p>
             <p className="mt-1"><span className="text-white/70">Kendine Yolculuk:</span> anlatımın ve cevapların saklanmaz; yalnızca sen kaydedersen düşünce haritan ve seçtiğin küçük adım hesabında tutulur, istediğin an silebilirsin.</p>
             <p className="mt-1"><span className="text-white/70">İçimde ne var?:</span> yazdıkların saklanmaz; yalnızca sen &ldquo;Kartımı kaydet&rdquo; dersen farkındalık kartın hesabında tutulur (en fazla 30 kart), istediğin an silebilirsin. Seçtiğin küçük adım Kendine Yolculuk&apos;taki adımla aynı yerde tutulur.</p>
+            <p className="mt-1"><span className="text-white/70">Hafızam (onaylı notlar):</span> yalnızca senin yazdığın ya da önerilip senin onayladığın notlar (en fazla 20); hafızan açıksa soruların ve sohbet mesajlarınla birlikte mentor cevabını üretmek için yapay zekâ sağlayıcısına iletilir. Notlarını Yolculuğum sayfasında görür, düzeltir, siler ya da hafızayı kapatırsın. Sohbetlerinden kendiliğinden bir profil ya da çıkarım tutulmaz.</p>
             <p className="mt-1"><span className="text-white/70">Söyleyeceğimi hazırla:</span> yazdığın ve hazırlanan metinler saklanmaz.</p>
             <p className="mt-1"><span className="text-white/70">Anonim istatistikler:</span> günlük sayılar ve konu başlıkları 120 gün. Hizmeti geliştirmek için son 100 soru, <b className="text-white/70">kimin sorduğu bilgisi olmadan</b> yönetim panelinde görüntülenebilir.</p>
-            <p className="mt-2">Kaydettiğin sohbetler, yolculuk kayıtların ve farkındalık kartların yönetim panelinde gösterilmez.</p>
+            <p className="mt-2">Kaydettiğin sohbetler, yolculuk kayıtların, farkındalık kartların ve hafıza notların yönetim panelinde gösterilmez.</p>
           </div>
 
           <div>
@@ -99,7 +100,7 @@ export default function GizlilikPage() {
           <div>
             <h2 className="mb-2 font-display text-lg text-white/80">10. Hakların (KVKK m.11)</h2>
             <p>Verilerinin işlenip işlenmediğini öğrenme, işlenmişse bilgi isteme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde ya da yurt dışında aktarıldığı kişileri bilme, eksik ya da yanlış işlenmişse düzeltilmesini, silinmesini ya da yok edilmesini isteme ve bu işlemlerin aktarıldığı kişilere bildirilmesini isteme, münhasıran otomatik sistemlerle analiz edilmesi sonucu aleyhine bir sonuç çıkmasına itiraz etme ve kanuna aykırı işleme nedeniyle zarara uğrarsan zararının giderilmesini talep etme haklarına sahipsin.</p>
-            <p className="mt-2">Başvurunu kayıtlı e-posta adresinden <Mail /> adresine yazabilirsin; en geç 30 gün içinde ücretsiz olarak yanıtlanır. Hesabının ve bütün verilerinin silinmesini de aynı yolla isteyebilirsin.</p>
+            <p className="mt-2">Başvurunu kayıtlı e-posta adresinden <Mail /> adresine yazabilirsin; en geç 30 gün içinde ücretsiz olarak yanıtlanır. Hesabının ve bütün verilerinin silinmesini de aynı yolla isteyebilirsin. Ayrıca Yolculuğum sayfasından hesabında tutulan verileri tek dosya olarak indirebilir ve hesabını kendin kalıcı olarak silebilirsin.</p>
           </div>
 
           <div>

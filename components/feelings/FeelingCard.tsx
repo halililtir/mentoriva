@@ -10,7 +10,7 @@ import { DRAFT_KEY } from '@/lib/flow-keys';
 import { PREPARE_DRAFT_KEY } from '@/lib/prepare-public';
 import { CARD_LIMITS, FEELINGS } from '@/lib/feelings/content';
 import { SMALL_STEPS, SMALL_STEP_IDS, type SmallStepId } from '@/lib/journey/content';
-import { cardToQuestion, type CardDraft } from '@/lib/feelings/card';
+import { cardToNote, cardToQuestion, type CardDraft } from '@/lib/feelings/card';
 
 export type { CardDraft };
 
@@ -38,6 +38,15 @@ export function FeelingCardView({ initial, onGuestSave, onSaved, onRestart }: Pr
   const [stepDetail, setStepDetail] = useState('');
   const [save, setSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [stepSave, setStepSave] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  /** "Mentorlar hatırlasın": düzenlenebilir not taslağı (null = kapalı). */
+  const [memo, setMemo] = useState<string | null>(null);
+  const [memoState, setMemoState] = useState<'idle' | 'saved' | 'error'>('idle');
+
+  const saveMemo = async () => {
+    if (!memo?.trim()) return;
+    const res = await fetch('/api/v1/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: memo, source: 'card' }) }).catch(() => null);
+    setMemoState(res?.ok ? 'saved' : 'error');
+  };
 
   const set = <K extends keyof CardDraft>(k: K, v: CardDraft[K]) => { setCard((c) => ({ ...c, [k]: v })); if (save === 'saved') setSave('idle'); };
   const isMember = status === 'user';
@@ -154,7 +163,25 @@ export function FeelingCardView({ initial, onGuestSave, onSaved, onRestart }: Pr
           </button>
           {save === 'error' && <span className="text-sm text-red-300/90">Kaydedilemedi, tekrar dene.</span>}
           {!isMember && <span className="text-[12px] text-white/35">Kartın üye olduktan sonra burada seni bekler.</span>}
+          {isMember && memo === null && (
+            <button onClick={() => setMemo(cardToNote(card))} className="text-[13px] text-white/50 hover:text-white">
+              Mentorlar hatırlasın…
+            </button>
+          )}
         </div>
+        {isMember && memo !== null && (
+          <div className="mt-4 rounded-2xl border border-white/[0.08] p-3">
+            <p className="text-[12px] text-white/45">Sonraki sohbetlerde mentorların bilmesini istediğin cümle (düzenleyebilirsin):</p>
+            <textarea value={memo} onChange={(e) => setMemo(e.target.value.slice(0, 200))} rows={2} className="mt-1 w-full resize-none bg-transparent text-[14px] leading-relaxed text-white/85 focus:outline-none" aria-label="Hatırlanacak not" />
+            <div className="flex items-center gap-3">
+              <button onClick={() => void saveMemo()} disabled={!memo.trim() || memoState === 'saved'} className="btn-secondary !py-1.5 text-[13px]">
+                {memoState === 'saved' ? 'Hafızana eklendi ✓' : 'Hafızama ekle'}
+              </button>
+              <button onClick={() => { setMemo(null); setMemoState('idle'); }} className="text-[12px] text-white/40">Vazgeç</button>
+              {memoState === 'error' && <span className="text-[12px] text-red-300/90">Eklenemedi.</span>}
+            </div>
+          </div>
+        )}
       </div>
 
       <h3 className="mt-10 font-display text-xl">Şimdi ne yapmak istersin?</h3>

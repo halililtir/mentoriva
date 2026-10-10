@@ -32,6 +32,7 @@ import { GUEST_COOKIE, guestCookieHeader, guestDeviceId, releaseGuest, reserveGu
 import { readCookie } from '@/lib/auth/session';
 import { synthesize } from '@/lib/mentors/synthesis';
 import { messageForMentor, sanitizeContext } from '@/lib/clarify';
+import { memoryFor, withMemory } from '@/lib/memory/notes';
 import { GUEST_MAX_MENTORS } from '@/lib/auth/limits';
 import { todayKey } from '@/lib/time';
 import { recordAnswer } from '@/lib/share/answers';
@@ -97,10 +98,16 @@ export async function POST(request: Request): Promise<Response> {
   const { question, mentorIds } = validation.data;
   // Netleştirme adımından gelen isteğe bağlı bağlam (lib/clarify.ts); ekranda görünen soru değişmez
   const context = sanitizeContext((body as Record<string, unknown>)['context']);
-  const mentorMessage = messageForMentor(question, context);
+  const asked = messageForMentor(question, context);
 
   // Seçim sınırı ve erken erişim (arayüz de uygular; asıl denetim burada)
-  const [perks, early] = await Promise.all([user ? getPerks(user.username) : Promise.resolve([]), getEarlyMentors()]);
+  const [perks, early, memory] = await Promise.all([
+    user ? getPerks(user.username) : Promise.resolve([]),
+    getEarlyMentors(),
+    user ? memoryFor(user.username) : Promise.resolve(null),
+  ]);
+  // Üyenin onayladığı notlar (Yolculuğum → Hafızam), açıksa
+  const mentorMessage = withMemory(asked, memory);
   const selectionError = checkMentorSelection(mentorIds, perks, early);
   if (selectionError) return apiError(403, 'MENTOR_NOT_ALLOWED', selectionError);
   // Misafir kayıt formunu görmediği için 18+ ve yurt dışı aktarım onayı soru ekranında alınır

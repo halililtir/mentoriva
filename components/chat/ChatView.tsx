@@ -15,6 +15,7 @@ import { EmergencyLine } from '@/components/mentors/EmergencyLine';
 import { ChatExport } from '@/components/chat/ChatExport';
 import { ChatSave, toSavable } from '@/components/chat/ChatSave';
 import { PerspectivePicker } from '@/components/chat/PerspectivePicker';
+import { RememberButton } from '@/components/chat/RememberButton';
 import type { ChatStreamEvent, MentorId, Message } from '@/types';
 import { dative } from '@/lib/tr';
 
@@ -174,6 +175,7 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
           </p>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
+          {user && <RememberButton messages={messages} />}
           {user && (
             <ChatSave
               mentorId={mentorId}
@@ -186,7 +188,7 @@ export function ChatView({ mentorId, initialQuestion = '', initialResponse = '',
         </div>
         {user && (
           <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/50">
-            Kalan <span className="font-semibold text-brand-300">{user.remaining}</span>
+            <span className="hidden sm:inline">Kalan </span><span className="font-semibold text-brand-300">{user.remaining}</span>
           </span>
         )}
       </div>

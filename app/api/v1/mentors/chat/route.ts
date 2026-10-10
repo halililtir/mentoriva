@@ -27,6 +27,7 @@ import { apiError, authorizeMentorRequest, encodeSSE, singleEventResponse, sseHe
 import { recordQuestion, releaseQuestion, reserveQuestion } from '@/lib/auth/users';
 import { recordAnswer } from '@/lib/share/answers';
 import { foldPerspectives, validateChatMessages } from '@/lib/mentors/perspective';
+import { memoryFor, withMemory } from '@/lib/memory/notes';
 import { MENTOR_IDS } from '@/types';
 import type { ChatStreamEvent, Message, MentorId } from '@/types';
 
@@ -74,7 +75,7 @@ export async function POST(request: Request): Promise<Response> {
   const validation = validateRequest(body);
   if (!validation.ok) return apiError(400, 'INVALID_REQUEST', validation.error);
   const { mentorId, messages } = validation.data;
-  const [perks, early] = await Promise.all([getPerks(user.username), getEarlyMentors()]);
+  const [perks, early, memory] = await Promise.all([getPerks(user.username), getEarlyMentors(), memoryFor(user.username)]);
   if (!canUseMentor(mentorId, perks, early)) {
     return apiError(403, 'MENTOR_NOT_ALLOWED', 'Bu mentor şimdilik yalnızca erken erişimi olan üyelere açık.');
   }
@@ -98,7 +99,7 @@ export async function POST(request: Request): Promise<Response> {
 
   // "Başka bir bakış" mesajları asıl mentor için kullanıcı mesajlarına not olarak katlanır.
   const folded = foldPerspectives(messages);
-  const userMessage = folded[folded.length - 1]!.content;
+  const userMessage = withMemory(folded[folded.length - 1]!.content, memory);
 
   // Sliding window (son user mesajı hariç, o zaten userMessage). Uzun sohbette
   // ilk soru ve ilk cevap korunur, aradakiler düşer.
