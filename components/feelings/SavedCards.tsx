@@ -34,17 +34,19 @@ export function SavedCards({ className }: { className?: string }) {
           <li key={c.id} className="rounded-2xl border border-white/[0.08]">
             <button onClick={() => setOpen(open === c.id ? null : c.id)} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left" aria-expanded={open === c.id}>
               <span className="min-w-0">
-                <span className="block truncate text-[15px] text-white/85">{c.feelings.join(', ') || c.situation || 'Kart'}</span>
+                <span className="block truncate text-[15px] text-white/85">{c.title ?? (c.feelings.join(', ') || c.situation || 'Kart')}</span>
                 <span className="text-[12px] text-white/35">{DATE.format(new Date(c.createdAt))}</span>
               </span>
               <span className={cn('text-white/35 transition', open === c.id && 'rotate-90')}>›</span>
             </button>
             {open === c.id && (
               <div className="space-y-2 border-t border-white/[0.06] px-4 py-3 text-[13.5px] leading-relaxed text-white/65">
-                {c.situation && <p><span className="text-white/40">Yaşadığım durum:</span> {c.situation}</p>}
+                {c.situation && <p><span className="text-white/40">{c.kind === 'study' ? 'Başlangıç:' : 'Yaşadığım durum:'}</span> {c.situation}</p>}
+                {c.kind === 'study' && c.note && <p><span className="text-white/40">Senin için netleşen:</span> {c.note}</p>}
+                {c.reflection && <p><span className="text-white/40">Özet:</span> {c.reflection}</p>}
                 {c.feelings.length > 0 && <p><span className="text-white/40">Duygular:</span> {c.feelings.join(', ')}</p>}
                 {c.thought && <p><span className="text-white/40">Aklımdan geçen:</span> {c.thought}</p>}
-                {(c.matters.length > 0 || c.note) && <p><span className="text-white/40">Önemli olan:</span> {[...c.matters, c.note].filter(Boolean).join(', ')}</p>}
+                {c.kind !== 'study' && (c.matters.length > 0 || c.note) && <p><span className="text-white/40">Önemli olan:</span> {[...c.matters, c.note].filter(Boolean).join(', ')}</p>}
                 {c.step && <p><span className="text-white/40">Adım:</span> {c.step}</p>}
                 <button onClick={() => void remove(c.id)} className="pt-1 text-[12px] text-white/35 hover:text-red-300">Kartı sil</button>
               </div>

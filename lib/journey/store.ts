@@ -12,8 +12,11 @@ import { getKV } from '@/lib/kv';
 import { MAP_FIELDS, SMALL_STEPS, type MapKey, type SmallStepId } from './content';
 import type { MentorId } from '@/types';
 
+/** "ozel": rehberli çalışmada kişinin kendi cümlesiyle seçtiği adım. */
+export type StepId = SmallStepId | 'ozel';
+
 export interface SavedStep {
-  stepId: SmallStepId;
+  stepId: StepId;
   label: string;
   detail: string;
   topic: string;
@@ -44,8 +47,13 @@ export async function getStep(username: string): Promise<SavedStep | null> {
   return parse<SavedStep>(await getKV().get(stepKey(username)));
 }
 
-export async function saveStep(username: string, step: Omit<SavedStep, 'createdAt' | 'status' | 'label'>): Promise<SavedStep> {
-  const full: SavedStep = { ...step, label: SMALL_STEPS[step.stepId], createdAt: new Date().toISOString(), status: 'pending' };
+export async function saveStep(
+  username: string,
+  step: Omit<SavedStep, 'createdAt' | 'status' | 'label'> & { customLabel?: string },
+): Promise<SavedStep> {
+  const { customLabel, ...rest } = step;
+  const label = rest.stepId === 'ozel' ? (customLabel ?? '').slice(0, 160) : SMALL_STEPS[rest.stepId];
+  const full: SavedStep = { ...rest, label, createdAt: new Date().toISOString(), status: 'pending' };
   await getKV().set(stepKey(username), full);
   return full;
 }

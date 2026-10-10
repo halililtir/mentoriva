@@ -31,6 +31,7 @@ export const COST_FEATURES = {
   feelings: 'İçimde ne var?',
   prepare: 'Söyleyeceğimi hazırla',
   memory: 'Not önerisi',
+  study: 'Rehberli çalışmalar',
   other: 'Diğer',
 } as const;
 export type CostFeature = keyof typeof COST_FEATURES;

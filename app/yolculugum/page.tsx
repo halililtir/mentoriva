@@ -7,6 +7,7 @@ import { Header } from '@/components/shared/Header';
 import { Footer } from '@/components/shared/Footer';
 import { MemoryPanel } from '@/components/me/MemoryPanel';
 import { SavedCards } from '@/components/feelings/SavedCards';
+import { ReminderToggle } from '@/components/me/ReminderToggle';
 import { useSession } from '@/lib/session';
 import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
 import { MAP_FIELDS } from '@/lib/journey/content';
@@ -50,7 +51,7 @@ export default function YolculugumPage() {
             <Section title="Seçtiğim adım" id="adim">
               <StepSection />
             </Section>
-            <Section title="Farkındalık kartlarım" id="kartlar">
+            <Section title="Kartlarım" id="kartlar">
               <SavedCards />
               <EmptyHint kind="cards" />
             </Section>
@@ -114,7 +115,7 @@ function StepSection() {
   if (!step) {
     return (
       <p className="text-[13.5px] text-white/45">
-        Şu an seçtiğin bir adım yok. Bir kartın ya da <Link href="/yolculuk" className="text-brand-300/90 hover:underline">Kendine Yolculuk</Link> sonunda küçük bir adım seçebilirsin.
+        Şu an seçtiğin bir adım yok. Bir kartın, bir <Link href="/calismalar" className="text-brand-300/90 hover:underline">çalışmanın</Link> ya da Kendine Yolculuk sonunda küçük bir adım seçebilirsin.
       </p>
     );
   }
@@ -133,6 +134,7 @@ function StepSection() {
           <button onClick={() => void remove()} className="px-2 text-white/35 hover:text-red-300">Sil</button>
         </div>
       </div>
+      {step.status === 'pending' && <ReminderToggle className="mt-3 border-t border-white/[0.06] pt-3" />}
     </div>
   );
 }

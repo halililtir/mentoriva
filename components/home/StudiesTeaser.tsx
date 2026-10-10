@@ -4,6 +4,14 @@ import { SectionHeading } from '@/components/home/Sections';
 
 const STUDIES = [
   {
+    href: '/calismalar',
+    eyebrow: 'Rehberli',
+    title: 'Karar, sınır, değerler',
+    desc: 'Karar vermek, sınır koymak, neyin önemli olduğunu bulmak ya da tekrar eden bir durumu görmek için sana göre ilerleyen kısa çalışmalar.',
+    cta: 'Çalışmalara bak',
+    tint: 'bg-violet-400/10',
+  },
+  {
     href: '/icimde',
     eyebrow: 'Kısa keşif',
     title: 'İçimde ne var?',
@@ -36,7 +44,7 @@ export function StudiesTeaser() {
       <SectionHeading eyebrow="Çalışmalar" title="Bir cevaptan fazlası:" accent="kendini anlamak." id="studies-title">
         Soru sormadan önce ya da sonra; test değil, etiket yok. Yazdıkların yalnızca sen istersen kaydedilir.
       </SectionHeading>
-      <div className="mt-10 grid gap-4 md:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STUDIES.map((s, i) => (
           <Reveal key={s.href} delay={i * 80}>
             <Link href={s.href} className="glass group relative flex h-full flex-col overflow-hidden rounded-3xl p-6 transition hover:border-white/20 sm:p-7">

@@ -103,6 +103,7 @@ export async function deleteUser(username: string): Promise<void> {
     `journeys:${username}`,
     `cards:${username}`,
     `memory:${username}`,
+    `reminder:${username}`,
   );
   await deleteBadgeData(username);
   await deleteAllChats(username);

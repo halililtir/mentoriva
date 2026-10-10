@@ -3,6 +3,7 @@ import { Logo } from '@/components/shared/Logo';
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
 
 const LINKS = [
+  { href: '/calismalar', label: 'Çalışmalar' },
   { href: '/icimde', label: 'İçimde ne var?' },
   { href: '/yolculuk', label: 'Kendine Yolculuk' },
   { href: '/hazirla', label: 'Söyleyeceğimi hazırla' },

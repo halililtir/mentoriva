@@ -15,6 +15,7 @@ import { listCards } from '@/lib/studies/cards';
 import { getChat, listChats } from '@/lib/chats';
 import { getStep, listJourneys } from '@/lib/journey/store';
 import { getBadges } from '@/lib/badges';
+import { getReminder } from '@/lib/reminders';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,8 +26,8 @@ export async function GET(req: Request) {
   if (!(await hit('export', user.username, RATE_LIMITS.EXPORT_USER))) return jsonError(429, 'Biraz sonra tekrar dene.');
 
   const u = user.username;
-  const [memory, cards, chatList, journeys, step, badges] = await Promise.all([
-    getMemory(u), listCards(u), listChats(u), listJourneys(u), getStep(u), getBadges(u),
+  const [memory, cards, chatList, journeys, step, badges, reminder] = await Promise.all([
+    getMemory(u), listCards(u), listChats(u), listJourneys(u), getStep(u), getBadges(u), getReminder(u),
   ]);
   const chats = (await Promise.all(chatList.map((c) => getChat(u, c.id)))).filter(Boolean);
 
@@ -46,6 +47,7 @@ export async function GET(req: Request) {
     chats,
     journeys,
     step,
+    reminder,
     badges,
   };
 

@@ -15,7 +15,7 @@ import { randomBytes } from 'node:crypto';
 import { getKV } from '@/lib/kv';
 import { CARD_LIMITS } from '@/lib/feelings/content';
 
-export type CardKind = 'feelings';
+export type CardKind = 'feelings' | 'study';
 
 export interface StudyCard {
   id: string;
@@ -33,6 +33,10 @@ export interface StudyCard {
   note: string;
   /** Varsa seçtiği adım (metin olarak). */
   step: string;
+  /** Rehberli çalışmada çalışmanın adı. */
+  title?: string;
+  /** Rehberli çalışmada kişinin söylediklerinin aynası. */
+  reflection?: string;
 }
 
 export const MAX_CARDS = 30;
@@ -55,8 +59,10 @@ export function sanitizeCard(raw: unknown): Omit<StudyCard, 'id' | 'createdAt' |
     matters: list(o['matters']),
     note: text(o['note'], CARD_LIMITS.note),
     step: text(o['step'], 220),
+    ...(text(o['title'], 80) ? { title: text(o['title'], 80) } : {}),
+    ...(text(o['reflection'], 700) ? { reflection: text(o['reflection'], 700) } : {}),
   };
-  return card.situation || card.feelings.length || card.matters.length || card.thought ? card : null;
+  return card.situation || card.feelings.length || card.matters.length || card.thought || card.note ? card : null;
 }
 
 const parse = (r: unknown): StudyCard | null => {

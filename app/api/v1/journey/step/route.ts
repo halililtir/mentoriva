@@ -1,7 +1,7 @@
 /**
  * Seçilen küçük adım — yalnızca kullanıcı "kaydet" dediğinde saklanır.
  *   GET    → { step | null }
- *   POST   { stepId, detail, topic, mentorId } → kaydet
+ *   POST   { stepId, detail, topic, mentorId, label? } → kaydet ("ozel" adımda label zorunlu)
  *   PATCH  { status: 'done' | 'skipped' | 'pending' }
  *   DELETE → sil
  */
@@ -28,9 +28,11 @@ export async function POST(req: Request) {
   const body = await readJson(req);
   const stepId = str(body?.['stepId'], 20);
   const mentorId = str(body?.['mentorId'], 20);
-  if (!(SMALL_STEP_IDS as string[]).includes(stepId)) return jsonError(400, 'Geçersiz adım');
+  const customLabel = str(body?.['label'], 160);
+  if (stepId === 'ozel' ? customLabel.length < 3 : !(SMALL_STEP_IDS as string[]).includes(stepId)) return jsonError(400, 'Geçersiz adım');
   const step = await saveStep(user.username, {
-    stepId: stepId as SmallStepId,
+    stepId: stepId as SmallStepId | 'ozel',
+    customLabel,
     detail: str(body?.['detail'], 220),
     topic: str(body?.['topic'], 220),
     mentorId: ((MENTOR_IDS as readonly string[]).includes(mentorId) ? mentorId : 'marcus') as MentorId,

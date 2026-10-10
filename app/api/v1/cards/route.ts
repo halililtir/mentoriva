@@ -24,11 +24,12 @@ export async function POST(req: Request) {
   const user = await getSessionUser(req);
   if (!user) return jsonError(401, 'Kartını kaydetmek için giriş yapmalısın');
   const body = await readJson(req);
-  if (body?.['kind'] !== 'feelings') return jsonError(400, 'Geçersiz kart türü');
-  const fields = sanitizeCard(body['card']);
+  const kind = body?.['kind'];
+  if (kind !== 'feelings' && kind !== 'study') return jsonError(400, 'Geçersiz kart türü');
+  const fields = sanitizeCard(body?.['card']);
   if (!fields) return jsonError(400, 'Kart boş görünüyor');
-  const card = await saveCard(user.username, 'feelings', fields);
-  await recordEvent('feelings_card');
+  const card = await saveCard(user.username, kind, fields);
+  await recordEvent(kind === 'study' ? 'study_card' : 'feelings_card');
   return NextResponse.json({ card });
 }
 
