@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { ReminderToggle } from '@/components/me/ReminderToggle';
+import { StudyOutcome } from '@/components/studies/StudyResultView';
+import { PREPARE_DRAFT_KEY } from '@/lib/prepare-public';
 import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
@@ -12,7 +14,7 @@ import { DRAFT_KEY } from '@/lib/flow-keys';
 import { INPUT_LIMITS } from '@/lib/features';
 import {
   STUDY_ANSWER_MAX, STUDY_COST, STUDY_MAX_QUESTIONS, STUDY_MIN_ANSWERS, STUDY_TAKEAWAY_MAX,
-  turnsToQuestion, type GuidedStudy, type StudyFinish, type StudyTurn,
+  finishToText, turnsToQuestion, type GuidedStudy, type StudyFinish, type StudyTurn,
 } from '@/lib/studies/guided-content';
 
 type Phase = 'intro' | 'asking' | 'takeaway' | 'result' | 'crisis';
@@ -93,7 +95,9 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
       const { res, data } = await post('/api/v1/studies/finish', { token, turns, takeaway });
       if (handleCrisis(data)) return;
       if (!res.ok) return setError(String(data?.['error'] ?? 'Özet hazırlanamadı.'));
-      setResult({ summary: String(data?.['summary'] ?? ''), open: String(data?.['open'] ?? ''), steps: (data?.['steps'] as string[]) ?? [] });
+      const r = data?.['result'] as StudyFinish | undefined;
+      if (!r?.insights?.length) return setError('Sonuç hazırlanamadı.');
+      setResult(r);
       setPhase('result');
       track('study_done', { study: study.id });
     } finally {
@@ -110,9 +114,15 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
   const saveCard = async () => {
     const { res } = await post('/api/v1/cards', {
       kind: 'study',
-      card: { title: study.title, situation: turns[0]?.a ?? '', note: takeaway, reflection: result?.summary ?? '', step: stepState === 'saved' ? stepPick : '' },
+      card: { title: study.title, situation: turns[0]?.a ?? '', note: takeaway, reflection: result ? finishToText(result) : '', step: stepState === 'saved' ? stepPick : '' },
     });
     setCardState(res.ok ? 'saved' : 'error');
+  };
+
+  const toPrepare = (sentence: string, want: string) => {
+    try { sessionStorage.setItem(PREPARE_DRAFT_KEY, JSON.stringify({ text: sentence, matters: want })); } catch {}
+    track('study_to_prepare', { study: study.id });
+    router.push('/hazirla');
   };
 
   const saveStep = async (label: string) => {
@@ -158,7 +168,7 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
               <span key={i} className={cn('h-1 flex-1 rounded-full transition-colors duration-700', i <= answered ? 'bg-brand-400/80' : 'bg-white/[0.07]')} />
             ))}
           </div>
-          {reflect && <p className="mt-6 text-[14px] italic leading-relaxed text-white/50">{reflect}</p>}
+          {reflect && <p className="mt-6 border-l-2 border-brand-400/40 pl-4 text-[15px] leading-relaxed text-white/75">{reflect}</p>}
           <h2 className="mt-4 font-display text-2xl leading-snug sm:text-[1.75rem]">{question}</h2>
           <textarea
             ref={taRef}
@@ -188,7 +198,7 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
 
       {phase === 'takeaway' && (
         <section className="animate-fade-up">
-          {done && reflect && <p className="text-[14px] italic leading-relaxed text-white/50">{reflect}</p>}
+          {done && reflect && <p className="border-l-2 border-brand-400/40 pl-4 text-[15px] leading-relaxed text-white/75">{reflect}</p>}
           <h2 className="mt-3 font-display text-2xl sm:text-3xl">Senin için ne netleşti?</h2>
           <p className="mt-2 text-sm text-white/50">Bir iki cümle yeter. Hiçbir şey netleşmediyse onu da yazabilirsin; bu da bir sonuçtur.</p>
           <textarea
@@ -214,15 +224,22 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
               <p className="mt-2 font-display text-xl leading-snug text-white/95">{takeaway.trim()}</p>
             </div>
           )}
-          <div className="glass rounded-3xl p-5">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Anlattıklarının özeti</p>
-            <p className="mt-2 text-[15.5px] leading-relaxed text-white/80">{result.summary}</p>
-            {result.open && (
-              <p className="mt-4 text-[14.5px] leading-relaxed text-white/65">
-                <span className="text-white/40">Açık kalan: </span>{result.open}
-              </p>
-            )}
+          <div className="glass rounded-3xl p-5 sm:p-6">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Mentoriva&apos;nın gözünden</p>
+            <div className="mt-2 space-y-3">
+              {result.insights.map((t, i) => (
+                <p key={i} className="text-[15.5px] leading-relaxed text-white/85">{t}</p>
+              ))}
+            </div>
           </div>
+
+          <StudyOutcome result={result} onPrepare={toPrepare} />
+
+          {result.open && (
+            <p className="rounded-2xl border border-white/[0.08] px-4 py-3 text-[14.5px] leading-relaxed text-white/70">
+              <span className="text-white/40">Üzerine düşünebileceğin soru: </span>{result.open}
+            </p>
+          )}
 
           <div>
             <h3 className="font-display text-xl">Denemek istediğin bir adım var mı?</h3>

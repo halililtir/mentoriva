@@ -42,13 +42,15 @@ export function buildMentorRequest(params: {
   userMessage: string;
   chatHistory?: Message[];
   mode: 'initial' | 'chat';
+  /** Admin karşılaştırması için talimat geçersiz kılma. */
+  system?: string;
 }): {
   system: string;
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
 } {
   const { mentorId, userMessage, chatHistory = [], mode } = params;
   const bundle = MENTOR_PROMPTS[mentorId];
-  const systemPrompt = mode === 'chat' ? bundle.chat : bundle.initial;
+  const systemPrompt = params.system ?? (mode === 'chat' ? bundle.chat : bundle.initial);
 
   // Örnek cevaplar artık system prompt'un içinde (prompts/shared.ts → examplesBlock);
   // sahte konuşma turu olarak verilmez.

@@ -8,6 +8,7 @@ export const GRADE_CRITERIA = [
   { id: 'edebi', label: 'Dil netti', hint: 'Edebî/şiirsel dil anlamı açtı; varsayımı kesinmiş gibi göstermedi.' },
   { id: 'kalip', label: 'Kalıp yok', hint: 'Klişe öğüt, tekrar eden kavram/soru ya da karikatür üslup yok. 3: alıntılayabileceğin belirli bir kalıp ifade yok; 2: bir-iki tanıdık kalıp var ama cevap onlara dayanmıyor; 1: cevap kalıplar üzerine kurulu.' },
   { id: 'ozgunluk', label: 'Kendi düşüncesi', hint: 'Yalnızca üslup değil, bu mentora özgü bir düşünce ya da bakış sundu.' },
+  { id: 'ses', label: 'Sıcaklık ve ses', hint: 'Mentorun kendi canlı sesi var: sıcak, insanca, imgesi ve inancıyla konuşuyor; temkinli bir rapor gibi her cümleyi yumuşatmıyor. Okuyan sohbete devam etmek ister. 1: robot gibi ya da düz; 2: yer yer; 3: belirgin biçimde canlı.' },
   { id: 'fayda', label: 'İşe yarar', hint: 'Kişinin kullanabileceği bir düşünce verdi; yalnızca soru sormakla yetinmedi.' },
 ] as const;
 

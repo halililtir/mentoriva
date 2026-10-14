@@ -78,3 +78,17 @@ describe('söyleyeceğimi hazırla', () => {
     expect(parsePrepare({ versions: [] }, ['net'])).toBeNull();
   });
 });
+
+describe('İçimde ne var? sonu', () => {
+  it('karşılığı ayrıştırır; söz yalnızca doğrulanmış katalogdan gelir', async () => {
+    const { parseReflection } = await import('@/lib/feelings/reflect');
+    const r = parseReflection({ heard: 'Duydum.', meaning: 'Anlaşılır.', tryNow: ['a', 'b', 'c'], quoteId: 'mar-16', mentor: 'marcus' });
+    expect(r?.tryNow).toEqual(['a', 'b']);
+    expect(r?.quote?.mentorId).toBe('marcus');
+    expect(r?.quote?.source).toContain('Marcus Aurelius');
+    const fake = parseReflection({ heard: 'Duydum.', meaning: 'Anlaşılır.', quoteId: 'uydurma-1', mentor: 'kimse' });
+    expect(fake?.quote).toBeNull();
+    expect(fake?.mentorId).toBeNull();
+    expect(parseReflection({ heard: '', meaning: 'x' })).toBeNull();
+  });
+});

@@ -101,8 +101,8 @@ export function FeelingCardView({ initial, onGuestSave, onSaved, onRestart }: Pr
 
   return (
     <section className="animate-fade-up">
-      <h2 className="font-display text-2xl sm:text-3xl">Farkındalık kartın</h2>
-      <p className="mt-2 text-sm text-white/50">Her satırı değiştirebilirsin. Kart senin cümlelerinle anlamlı.</p>
+      <h2 className="font-display text-2xl">Kartın</h2>
+      <p className="mt-2 text-sm text-white/50">Anlattıkların bir kartta; istersen düzenle ve kaydet. Yalnızca sen kaydedersen saklanır.</p>
 
       <div className="glass relative mt-6 overflow-hidden rounded-3xl p-5 sm:p-7">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-500/10 blur-3xl" />

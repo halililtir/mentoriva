@@ -60,7 +60,7 @@ export function sanitizeCard(raw: unknown): Omit<StudyCard, 'id' | 'createdAt' |
     note: text(o['note'], CARD_LIMITS.note),
     step: text(o['step'], 220),
     ...(text(o['title'], 80) ? { title: text(o['title'], 80) } : {}),
-    ...(text(o['reflection'], 700) ? { reflection: text(o['reflection'], 700) } : {}),
+    ...(text(o['reflection'], 1500) ? { reflection: text(o['reflection'], 1500) } : {}),
   };
   return card.situation || card.feelings.length || card.matters.length || card.thought || card.note ? card : null;
 }

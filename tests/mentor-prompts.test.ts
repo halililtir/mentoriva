@@ -59,9 +59,12 @@ describe('anlama ve dürüstlük katmanı', () => {
     for (const id of MENTOR_IDS) {
       const b = MENTOR_PROMPTS[id];
       expect(b.avoid?.length ?? 0, id).toBeGreaterThanOrEqual(1);
-      expect(b.initial, id).toContain('# UNDERSTAND BEFORE YOU INTERPRET');
+      expect(b.initial, id).toContain('# HOW YOU MEET THE PERSON');
+      expect(b.initial, id).toContain('# THE ONE THING TO BE CAREFUL ABOUT');
       expect(b.initial, id).toContain('# AVOID');
-      expect(b.initial, id).toMatch(/Never invent a cause/);
+      expect(b.initial, id).toMatch(/Do not invent their history/);
+      // Sıcaklık geri geldi: her cümleyi yumuşatma zorunluluğu yok (2026-10-14)
+      expect(b.initial, id).not.toMatch(/Never state it as a finding about them/);
     }
   });
 

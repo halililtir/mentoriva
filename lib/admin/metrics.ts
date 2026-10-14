@@ -19,6 +19,7 @@ export const EVENTS = {
   recommend: 'Mentor önerisi',
   feelings: 'İçimde ne var? (kelime önerisi)',
   feelings_card: 'Farkındalık kartı kaydı',
+  feelings_reflect: 'İçimde ne var? sonuç karşılığı',
   prepare: 'Söyleyeceğimi hazırla',
   memory_note: 'Hafızaya not',
   account_deleted: 'Hesabını silen üye',

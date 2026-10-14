@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GUIDED_STUDIES, STUDY_MAX_QUESTIONS, turnsToQuestion } from '@/lib/studies/guided-content';
+import { GUIDED_STUDIES, STUDY_MAX_QUESTIONS, finishToText, turnsToQuestion } from '@/lib/studies/guided-content';
 import { parseFinish, parseNext } from '@/lib/studies/guided';
 import { sanitizeTurns, signStudy, verifyStudy } from '@/lib/studies/guided-server';
 import { addDays, getReminder, sendDueReminders, setReminder } from '@/lib/reminders';
@@ -21,10 +21,20 @@ describe('rehberli çalışmalar', () => {
     expect(parseNext({ question: '' })).toBeNull();
   });
 
-  it('bitiş çıktısını ayrıştırır, en fazla iki adım', () => {
-    const r = parseFinish({ summary: 'Özet', open: 'Soru?', steps: ['a', 'b', 'c', ''] });
+  it('bitiş çıktısını ayrıştırır: fark edişler, en fazla iki adım, çalışmaya özgü ürün', () => {
+    const r = parseFinish({ insights: ['Bir', 'İki'], open: 'Soru?', steps: ['a', 'b', 'c', ''], decision: { options: [{ name: 'Kalmak', gives: ['huzur'], costs: [], serves: 'aile' }, { name: '' }], leaning: 'Huzur ağır basıyor.' } }, 'decision');
     expect(r && !r.crisis && r.steps).toEqual(['a', 'b']);
-    expect(parseFinish({ summary: '' })).toBeNull();
+    expect(r && !r.crisis && r.decision?.options.map((o) => o.name)).toEqual(['Kalmak']);
+    expect(parseFinish({ insights: [] }, 'decision')).toBeNull();
+    const b = parseFinish({ insights: ['x'], boundary: { sentence: 'Bunu artık yapamayacağım.', want: 'zaman' } }, 'boundary');
+    expect(b && !b.crisis && b.boundary?.sentence).toBe('Bunu artık yapamayacağım.');
+    // Başka türün ürünü kabul edilmez
+    const c = parseFinish({ insights: ['x'], values: [{ name: 'y' }] }, 'cycle');
+    expect(c && !c.crisis && c.values).toBeUndefined();
+  });
+
+  it('karta yazılan metin ürünü içerir', () => {
+    expect(finishToText({ insights: ['Fark.'], open: '', steps: [], boundary: { line: '', want: '', sentence: 'Hayır diyorum.', ifSay: '', ifNot: '' } })).toContain('"Hayır diyorum."');
   });
 
   it('soru-cevapları sınırlar', () => {

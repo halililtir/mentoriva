@@ -8,6 +8,7 @@ import { Footer } from '@/components/shared/Footer';
 import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { FeelingExplorer } from '@/components/feelings/FeelingExplorer';
 import { FeelingCardView, type CardDraft } from '@/components/feelings/FeelingCard';
+import { FeelingReflection } from '@/components/feelings/FeelingReflection';
 import { SavedCards } from '@/components/feelings/SavedCards';
 import { useSession } from '@/lib/session';
 import { GuestConsent } from '@/components/shared/GuestConsent';
@@ -22,7 +23,7 @@ const STAGES: Array<{ step: Step; label: string }> = [
   { step: 'context', label: 'Ne oldu' },
   { step: 'words', label: 'Kelimeler' },
   { step: 'matters', label: 'Önemli olan' },
-  { step: 'card', label: 'Kartın' },
+  { step: 'card', label: 'Sonuç' },
 ];
 
 /** Misafir kayıt olup dönünce kartı kaybolmasın (yalnızca bu sekme). */
@@ -346,13 +347,14 @@ export default function IcimdePage() {
                 aria-label="Senin için önemli olan"
               />
               <div className="mt-8 flex justify-end">
-                <button onClick={() => setStep('card')} className="btn-primary">Kartımı göster</button>
+                <button onClick={() => setStep('card')} className="btn-primary">Sonucu göster</button>
               </div>
             </section>
           )}
 
+          {step === 'card' && <FeelingReflection card={draft} guest={isGuest} />}
           {step === 'card' && (
-            <FeelingCardView
+            <div className="mt-12"><FeelingCardView
               initial={draft}
               onGuestSave={(card) => {
                 try { sessionStorage.setItem(CARD_DRAFT_KEY, JSON.stringify(card)); } catch {}
@@ -360,7 +362,7 @@ export default function IcimdePage() {
               }}
               onSaved={() => { try { sessionStorage.removeItem(CARD_DRAFT_KEY); } catch {} }}
               onRestart={reset}
-            />
+            /></div>
           )}
 
           {step === 'crisis' && <CrisisNotice message={crisis} onBack={reset} />}

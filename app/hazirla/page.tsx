@@ -34,8 +34,9 @@ export default function HazirlaPage() {
       const raw = sessionStorage.getItem(PREPARE_DRAFT_KEY);
       if (!raw) return;
       sessionStorage.removeItem(PREPARE_DRAFT_KEY);
-      const d = JSON.parse(raw) as { matters?: string };
+      const d = JSON.parse(raw) as { matters?: string; text?: string };
       if (d.matters) setMatters(d.matters.slice(0, PREPARE_LIMITS.matters));
+      if (d.text) setText(d.text.slice(0, PREPARE_LIMITS.text));
     } catch {}
   }, []);
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ACTIVE_MENTORS, getAccent, getActiveMentor } from '@/lib/mentors/metadata';
 import { cn } from '@/lib/cn';
 import { Card, adminFetch, inputCls, smallBtn } from './shared';
+import { VoiceCompare } from './VoiceCompare';
 import type { LabQuestion } from '@/lib/admin/lab';
 import type { MentorId } from '@/types';
 import { GRADE_CRITERIA, type CriterionId, type Grade } from '@/lib/admin/grade-criteria';
@@ -116,6 +117,7 @@ export function MentorLab({ onError }: { onError: (e: unknown) => void }) {
 
   return (
     <div className="space-y-5">
+      <VoiceCompare questions={questions} onError={onError} />
       <Card title="Mentor laboratuvarı">
         <p className="mb-4 text-[13px] leading-relaxed text-white/60">
           Aynı soruyu seçtiğin mentorlara sorar, cevapları yan yana gösterir. Talimat değişikliklerini canlıda sınamak için.

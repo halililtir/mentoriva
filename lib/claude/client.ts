@@ -82,6 +82,8 @@ export interface StreamMentorResponseParams {
   abortSignal?: AbortSignal;
   /** Maliyet raporunda hangi özelliğe yazılsın (varsayılan: mode'a göre answer/chat). */
   feature?: CostFeature;
+  /** Yalnızca admin karşılaştırması: mentorun talimatı yerine bu metin kullanılır. */
+  systemOverride?: string;
 }
 
 export interface StreamChunk {
@@ -170,6 +172,7 @@ async function* rawMentorStream(
     userMessage,
     chatHistory: chatHistory ?? [],
     mode,
+    system: params.systemOverride,
   });
 
   const maxTokens =

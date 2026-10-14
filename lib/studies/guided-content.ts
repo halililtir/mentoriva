@@ -7,8 +7,12 @@
  * Hiçbir çalışma kişinin yerine karar vermez, doğru cevabı bilmez.
  */
 
+/** Her çalışmanın sonunda verdiği somut ürün. */
+export type StudyOutcome = 'decision' | 'boundary' | 'values' | 'cycle';
+
 export interface GuidedStudy {
   id: string;
+  outcome: StudyOutcome;
   title: string;
   /** Kartta ve listede tek cümle. */
   tagline: string;
@@ -25,6 +29,7 @@ export interface GuidedStudy {
 export const GUIDED_STUDIES: GuidedStudy[] = [
   {
     id: 'karar',
+    outcome: 'decision',
     title: 'Karar vermek',
     tagline: 'Seçenekler arasında sıkıştığında neyin senin için ağır bastığını görmek.',
     intro: 'Senin yerine karar vermeyeceğiz. Birkaç soruyla seçeneklerini, neyi kazanıp neyi bıraktığını ve asıl neyin önemli olduğunu kendi kelimelerinle ortaya koyacaksın.',
@@ -40,6 +45,7 @@ Never recommend an option or say which one is better.`,
   },
   {
     id: 'sinir',
+    outcome: 'boundary',
     title: 'Sınır koymak',
     tagline: 'Neyin sana fazla geldiğini ve ne istediğini netleştirmek.',
     intro: 'Bir ilişkide, işte ya da ailede sana fazla gelen bir şey varsa, neyin sınırı aştığını, yerine ne istediğini ve bunu nasıl söyleyebileceğini birlikte açalım.',
@@ -55,6 +61,7 @@ Do not assume the relationship should continue or end, do not diagnose the other
   },
   {
     id: 'degerler',
+    outcome: 'values',
     title: 'Neyin önemli olduğunu bulmak',
     tagline: 'Seni canlı hissettiren ve rahatsız eden anlardan kendi değerlerine bakmak.',
     intro: 'Hazır bir değerler listesi yok. Kendi anlarından yola çıkarak senin için neyin gerçekten önemli olduğunu ve bugünkü hayatınla arasındaki mesafeyi kendi kelimelerinle bulacaksın.',
@@ -70,6 +77,7 @@ Do not moralise, do not rank values, do not tell them what they should value.`,
   },
   {
     id: 'tekrar',
+    outcome: 'cycle',
     title: 'Tekrar eden bir durum',
     tagline: 'Hayatında dönüp duran bir durumu yakından görmek.',
     intro: 'Bazı durumlar tekrar tekrar karşımıza çıkar. Somut örneklerden yola çıkarak neyin tekrarlandığını, senin o anda ne yaptığını ve neyi farklı denemek istediğini birlikte bakalım. Kesin bir neden bulmaya çalışmıyoruz.',
@@ -101,13 +109,36 @@ export interface StudyTurn {
   a: string;
 }
 
+/**
+ * Çalışmanın sonucu (2026-10-14): yalnızca ayna değil, gerçek bir karşılık.
+ * `insights` Mentoriva'nın kişinin cevaplarında gördüğü bağlantılar; ortak
+ * alanların yanında çalışma türüne göre somut bir ürün (karar haritası, söylemeye
+ * hazır cümle, değerler, döngü) bulunur.
+ */
 export interface StudyFinish {
-  /** Kişinin söylediklerinin aynası; yeni yorum yok. */
-  summary: string;
+  /** Mentoriva'nın gözünden 2-3 fark ediş (kişinin söylediklerine dayanır). */
+  insights: string[];
   /** Hâlâ açık kalan tek soru. */
   open: string;
   /** Söylenenlerden çıkan en fazla iki küçük adım fikri. */
   steps: string[];
+  decision?: { options: Array<{ name: string; gives: string[]; costs: string[]; serves: string }>; leaning: string };
+  boundary?: { line: string; want: string; sentence: string; ifSay: string; ifNot: string };
+  values?: Array<{ name: string; present: string; missing: string }>;
+  cycle?: { trigger: string; response: string; result: string; experiment: string };
+}
+
+/** Sonucu karta yazılacak düz metne çevirir. */
+export function finishToText(f: StudyFinish): string {
+  const parts: string[] = [...f.insights];
+  if (f.decision) {
+    for (const o of f.decision.options) parts.push(`${o.name}: kazandırdığı ${o.gives.join(', ') || '-'}; bedeli ${o.costs.join(', ') || '-'}${o.serves ? `; hizmet ettiği: ${o.serves}` : ''}.`);
+    if (f.decision.leaning) parts.push(f.decision.leaning);
+  }
+  if (f.boundary) parts.push(`Söyleyebileceğin: "${f.boundary.sentence}"`);
+  if (f.values) parts.push(`Değerlerin: ${f.values.map((v) => v.name).join(', ')}.`);
+  if (f.cycle) parts.push(`Döngü: ${f.cycle.trigger} → ${f.cycle.response} → ${f.cycle.result}. Deneme: ${f.cycle.experiment}`);
+  return parts.join(' ').slice(0, 1500);
 }
 
 /** Çalışmayı yarıda bırakıp mentora geçerken taslak soru. */

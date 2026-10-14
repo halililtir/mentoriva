@@ -1,6 +1,6 @@
 /**
  * POST /api/v1/studies/finish { token, turns, takeaway }
- *   → { summary, open, steps } | { crisis: true, message }
+ *   → { result: StudyFinish } | { crisis: true, message }
  * Her çalışma bir kez bitirilir (`study-done:<id>`). Hak düşmez.
  */
 
@@ -47,7 +47,8 @@ export async function POST(req: Request) {
     if (result.crisis) return NextResponse.json({ crisis: true, message: CRISIS_RESPONSE.crisis });
     await getKV().set(doneKey, '1', { ex: 3 * 60 * 60 });
     await recordEvent('study_done');
-    return NextResponse.json({ summary: result.summary, open: result.open, steps: result.steps });
+    const { crisis: _c, ...finish } = result;
+    return NextResponse.json({ result: finish });
   } catch {
     return jsonError(502, 'Özeti şu an hazırlayamadık. Biraz sonra tekrar dene.');
   }
