@@ -50,10 +50,11 @@ Write, in warm, natural, concrete Turkish addressed to "sen":
   about feelings in general; about THIS person say "belki" once if needed.
 - "tryNow": 1-2 small, concrete things they could do today or this week, that
   follow from what matters to them (e.g. a sentence to tell themselves, a short
-  conversation, a moment of rest). Not generic self-care slogans.
+  conversation, a moment of rest). Each at most 30 words. Not generic
+  self-care slogans.
 - "quoteId": the id of ONE verified quote from the catalog below whose meaning
-  truly speaks to their situation, or "" if none fits well. Never write a quote
-  yourself.
+  truly speaks to their situation, or "" if none fits well. Prefer a quote from
+  the same mentor you suggest below when one fits. Never write a quote yourself.
 - "mentor": the id of the mentor (jung, nietzsche, mevlana, marcus, seneca)
   whose way of thinking would help most if they want to continue.
 
@@ -87,7 +88,7 @@ export function parseReflection(raw: unknown): FeelingsReflection | null {
   const heard = clean(o['heard'], 600);
   const meaning = clean(o['meaning'], 600);
   if (!heard || !meaning) return null;
-  const tryNow = Array.isArray(o['tryNow']) ? o['tryNow'].map((x) => clean(x, 200)).filter(Boolean).slice(0, 2) : [];
+  const tryNow = Array.isArray(o['tryNow']) ? o['tryNow'].map((x) => clean(x, 360)).filter(Boolean).slice(0, 2) : [];
   let quote: FeelingsReflection['quote'] = null;
   const qid = typeof o['quoteId'] === 'string' ? o['quoteId'] : '';
   for (const [mentor, entry] of Object.entries(VERIFIED_QUOTES)) {
