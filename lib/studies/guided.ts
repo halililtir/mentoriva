@@ -108,7 +108,7 @@ Give them a result worth having:
 - ${OUTCOME_RULES[outcome]}
 - "open": one OPEN question still open for them (at most 25 words). Never a
   choice between options ("X mi, yoksa Y mi?" or a list); ask what, how or
-  where, e.g. "Yenilik bittiğinde seni bir işte ne tutabilir?".
+  where, in your own words for their situation.
 - "steps": up to two small, concrete, optional steps that follow from what
   they said. Never a step that makes the decision for them.
 
