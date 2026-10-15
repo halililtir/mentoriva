@@ -1,7 +1,8 @@
 /**
  * GET /api/v1/me/export — kullanıcının hesabında tutulan her şeyi tek JSON
  * dosyası olarak indirir: profil, onaylı notlar, farkındalık kartları,
- * kayıtlı sohbetler, yolculuk haritaları, küçük adım ve işaretler.
+ * kayıtlı sohbetler, yolculuk haritaları, küçük adım, işaretler ve Aramızda
+ * konuşmalarında kişinin kendi gönderdiği mesajlar (karşı tarafınkiler değil).
  * Şifre özeti, yönetici notu ve davet edenin e-postası dahil edilmez.
  */
 
@@ -16,6 +17,7 @@ import { getChat, listChats } from '@/lib/chats';
 import { getStep, listJourneys } from '@/lib/journey/store';
 import { getBadges } from '@/lib/badges';
 import { getReminder } from '@/lib/reminders';
+import { listMessages, listRooms, memberIndex } from '@/lib/bridge/store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,6 +32,12 @@ export async function GET(req: Request) {
     getMemory(u), listCards(u), listChats(u), listJourneys(u), getStep(u), getBadges(u), getReminder(u),
   ]);
   const chats = (await Promise.all(chatList.map((c) => getChat(u, c.id)))).filter(Boolean);
+  const rooms = await listRooms(u);
+  const bridge = await Promise.all(rooms.map(async (r) => {
+    const me = memberIndex(r, u);
+    const mine = (await listMessages(r.id)).filter((m) => m.from === me);
+    return { topic: r.topic, createdAt: r.createdAt, myMessages: mine.map((m) => ({ text: m.text, at: m.at })) };
+  }));
 
   const data = {
     exportedAt: new Date().toISOString(),
@@ -49,6 +57,7 @@ export async function GET(req: Request) {
     step,
     reminder,
     badges,
+    bridge,
   };
 
   const date = new Date().toISOString().slice(0, 10);

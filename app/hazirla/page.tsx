@@ -192,6 +192,8 @@ export default function HazirlaPage() {
 
             <p className="mt-12 text-center text-[12px] text-white/30">
               Ne hissettiğini önce kendine anlatmak istersen: <Link href="/icimde" className="underline underline-offset-2 hover:text-white/60">İçimde ne var?</Link>
+              <br />
+              Bu konuşmayı o kişiyle birlikte, karşılıklı yürütmek istersen: <Link href="/aramizda" className="underline underline-offset-2 hover:text-white/60">Aramızda</Link>
             </p>
           </>
         )}

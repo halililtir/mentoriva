@@ -15,6 +15,7 @@ const OTHERS = [
   { href: '/icimde', title: 'İçimde ne var?', desc: 'Duygunun adını bilmeden başla; yaşadığını kendi kelimelerinle anlat.', meta: 'Hak kullanmaz' },
   { href: '/yolculuk', title: 'Kendine Yolculuk', desc: 'Neredesin, ne istiyorsun? Üç soru, bir fark ediş ve küçük bir adım.', meta: `${JOURNEY_COST} hak` },
   { href: '/hazirla', title: 'Söyleyeceğimi hazırla', desc: 'Söylemek istediğini anlamını kaybetmeden daha sakin ya da net ifade et.', meta: '1 hak' },
+  { href: '/aramizda', title: 'Aramızda', desc: 'Biriyle zor bir konuyu konuşmak için ortak alan: söylemek istediğini Mentoriva ile hazırla, yalnızca onayladığın hâl gitsin.', meta: 'Mesaj başına 1 hak' },
 ];
 
 /** Bütün çalışmalar tek yerde: rehberli çalışmalar + diğer araçlar. */

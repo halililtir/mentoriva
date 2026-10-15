@@ -133,6 +133,12 @@ export const RATE_LIMITS = {
   STUDY_START_USER: { max: 8, windowSec: HOUR },
   STUDY_STEP_USER: { max: 60, windowSec: HOUR },
 
+  /** Aramızda: oda açma, yumuşatma taslağı (hak düşer), anlamaya yardım. */
+  BRIDGE_CREATE_USER: { max: 5, windowSec: HOUR },
+  BRIDGE_DRAFT_USER: { max: 40, windowSec: HOUR },
+  BRIDGE_HELP_USER: { max: 15, windowSec: HOUR },
+  BRIDGE_READ_USER: { max: 900, windowSec: HOUR },
+
   /** İstemci hata kaydı — IP başına. */
   CLIENT_ERROR_IP: { max: 20, windowSec: HOUR },
 } as const;

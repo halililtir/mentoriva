@@ -32,6 +32,7 @@ export const COST_FEATURES = {
   prepare: 'Söyleyeceğimi hazırla',
   memory: 'Not önerisi',
   study: 'Rehberli çalışmalar',
+  bridge: 'Aramızda',
   other: 'Diğer',
 } as const;
 export type CostFeature = keyof typeof COST_FEATURES;
