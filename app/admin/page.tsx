@@ -192,6 +192,35 @@ function AdminLogin({ onIn }: { onIn: () => void }) {
   const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [mailMsg, setMailMsg] = useState('');
+
+  // E-postadaki giriş bağlantısıyla gelindiyse: izni tüket, oturumu aç
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('giris');
+    if (!token) return;
+    url.searchParams.delete('giris');
+    window.history.replaceState(null, '', url.pathname);
+    setBusy(true);
+    fetch('/api/admin/magic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) })
+      .then(async (r) => {
+        if (r.ok) return onIn();
+        const d = await r.json().catch(() => ({}));
+        setErr(d.error ?? 'Bağlantı geçersiz');
+      })
+      .catch(() => setErr('Bağlantı hatası'))
+      .finally(() => setBusy(false));
+  }, [onIn]);
+
+  const sendLink = async () => {
+    setErr('');
+    setMailMsg('');
+    const r = await fetch('/api/admin/magic', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ send: true }) }).catch(() => null);
+    const d = r ? await r.json().catch(() => ({})) : {};
+    if (r?.ok) setMailMsg(d.message ?? 'Gönderildi.');
+    else setErr(d.error ?? 'Gönderilemedi');
+  };
+
   const login = async () => {
     if (!pw.trim()) return;
     setBusy(true); setErr('');
@@ -213,6 +242,10 @@ function AdminLogin({ onIn }: { onIn: () => void }) {
         {err && <p className="text-sm text-red-400">{err}</p>}
         <button type="submit" disabled={busy || !pw.trim()} className="btn-primary w-full">{busy ? 'Kontrol ediliyor…' : 'Giriş'}</button>
         <p className="text-[11px] text-white/45">Oturum 12 saat açık kalır.</p>
+        <button type="button" onClick={() => void sendLink()} className="text-[12px] text-brand-300 hover:underline">
+          Anahtarı unuttum: e-postama giriş bağlantısı gönder
+        </button>
+        {mailMsg && <p className="text-[12px] text-white/60">{mailMsg}</p>}
       </form>
     </div>
   );
