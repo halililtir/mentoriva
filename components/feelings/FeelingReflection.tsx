@@ -8,6 +8,7 @@ import { getAccent, getActiveMentor } from '@/lib/mentors/metadata';
 import { DRAFT_KEY, PRESELECT_KEY } from '@/lib/flow-keys';
 import { cardToQuestion, type CardDraft } from '@/lib/feelings/card';
 import { track } from '@/lib/analytics';
+import { genitive } from '@/lib/tr';
 import type { MentorId } from '@/types';
 
 interface Reflection {
@@ -110,6 +111,12 @@ export function FeelingReflection({ card, guest }: { card: CardDraft; guest: boo
         <p className="relative text-[11px] uppercase tracking-[0.16em] text-brand-300">Sana söylemek istediklerim</p>
         <p className="relative mt-3 font-display text-[1.35rem] leading-snug text-white/95">{data.heard}</p>
         <p className="relative mt-4 text-[15.5px] leading-relaxed text-white/75">{data.meaning}</p>
+        {data.quote && (
+          <p className="relative mt-4 text-[15.5px] leading-relaxed text-white/75">
+            {genitive(getActiveMentor(data.quote.mentorId).shortName)} şu sözü buraya çok yakışıyor: <span className="italic text-white/90">&ldquo;{data.quote.text}&rdquo;</span>
+            <span className="ml-1 text-[12.5px] text-white/40">({data.quote.source.split(', ').slice(1).join(', ')})</span>
+          </p>
+        )}
       </div>
 
       {data.reframe && (
@@ -131,13 +138,6 @@ export function FeelingReflection({ card, guest }: { card: CardDraft; guest: boo
             ))}
           </ul>
         </div>
-      )}
-
-      {data.quote && (
-        <figure className="rounded-3xl border p-5" style={{ borderColor: getAccent(getActiveMentor(data.quote.mentorId).accentColor).border }}>
-          <blockquote className="font-display text-lg leading-snug text-white/90">&ldquo;{data.quote.text}&rdquo;</blockquote>
-          <figcaption className="mt-2 text-[12.5px] text-white/45">— {data.quote.source}</figcaption>
-        </figure>
       )}
 
       {mentor && data.mentorId && (

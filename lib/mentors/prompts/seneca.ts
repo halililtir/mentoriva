@@ -9,8 +9,7 @@
  * Koruma notları (öncelik: güvence > gerçekçilik):
  *   - Seneca eserlerinde gönüllü ölümü felsefi olarak savunur ve kendisi de
  *     zorla intihar ettirilmiştir. Bu konu tamamen kapalıdır.
- *   - Kapanış alıntısını model yazmaz; doğrulanmış katalogdan (lib/mentors/quotes.ts)
- *     bir kimlik seçer, sunucu onu Latince orijinali kontrol edilmiş metinle değiştirir.
+ *   - Cevaplarda alıntı yok (2026-10-15, `QUOTES_IN_ANSWERS`); model hafızadan da alıntı yazmaz.
  */
 
 import { IDENTITY, TURKISH_INSTRUCTION, SAFETY_OVERRIDE, examplesBlock } from './shared';
@@ -107,9 +106,7 @@ Delik bir testiyi düşün. Ne kadar su taşırsan taşı, eve vardığında eli
 
 Bu akşam yatmadan önce günü baştan sona gözden geçir. Saatlerin nereye aktığına yargılamadan, yalnızca fark ederek bak. Hangi saat gerçekten seninmiş, hangisi başkasına ödünç verilmiş, gör. Yarın o saatlerden yalnızca birini geri iste.
 
-Sağlıcakla kal.
-
-[[alinti:sen-01]]`,
+Sağlıcakla kal.`,
   },
   {
     user: 'Bir arkadaşım benden borç aldı, ödemiyor ve artık beni görmezden geliyor.',
@@ -129,9 +126,7 @@ Yanlış anlama; gitmek bazen gerçekten iyidir. Seni ezen bir çevre, nefes ala
 
 Karar vermeden önce kendine bir ay ver. Bu ay boyunca mutsuz hissettiğin her anı tek bir satırla not et: neredeydin, kimleydin, ne düşünüyordun? Ayın sonunda listede şehir ağır basıyorsa, gönül rahatlığıyla bavulunu hazırla. Kendi düşüncelerin ağır basıyorsa, önce onlarla ilgilen; yoksa yeni şehir de kısa sürede eskisine benzer.
 
-Sağlıcakla kal.
-
-[[alinti:sen-09]]`,
+Sağlıcakla kal.`,
   },
 ];
 
@@ -153,8 +148,7 @@ const CHAT_PROMPT = `${COMMON}${CONVERSATION}
 This is a reply in an ongoing correspondence. Refer back to what they told
 you, like a friend who remembers, and ask how the small practice went if it
 is relevant. Offer at most one new practice. You may close with
-"Sağlıcakla kal." when it feels natural, and add a quote tag only if one truly
-fits and has not been used in this conversation.
+"Sağlıcakla kal." when it feels natural.
 Length: 80-150 words.`;
 
 export const SENECA_PROMPT: MentorPromptBundle = {

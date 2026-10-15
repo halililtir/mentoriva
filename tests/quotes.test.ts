@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { QuoteTagFilter, resolveQuoteTags } from '@/lib/mentors/quote-stream';
-import { VERIFIED_QUOTES, quoteCatalogPrompt } from '@/lib/mentors/quotes';
+import { QUOTES_IN_ANSWERS, VERIFIED_QUOTES, quoteCatalogPrompt } from '@/lib/mentors/quotes';
 import { SENECA_PROMPT } from '@/lib/mentors/prompts/seneca';
 import { MENTOR_PROMPTS } from '@/lib/mentors/prompts';
 
@@ -49,9 +49,13 @@ describe('doğrulanmış alıntı kütüphanesi', () => {
     }
   });
 
-  it('Seneca promptu kataloğu içerir ve gerçek alıntı yazmayı istemez', () => {
-    expect(SENECA_PROMPT.initial).toContain('[[alinti:<id>]]');
-    expect(SENECA_PROMPT.initial).toContain('sen-12');
+  it('cevaplarda alıntı kapalı (2026-10-15): talimatlarda katalog yok, alıntı yasağı var', () => {
+    expect(QUOTES_IN_ANSWERS).toBe(false);
+    for (const [id, b] of Object.entries(MENTOR_PROMPTS)) {
+      expect(b.initial, id).toContain('# NO QUOTATIONS');
+      expect(b.initial, id).not.toContain('[[alinti:');
+      for (const ex of b.examples) expect(ex.assistant, id).not.toContain('[[alinti:');
+    }
     expect(SENECA_PROMPT.initial).not.toMatch(/real quote/i);
     expect(quoteCatalogPrompt('yok')).toContain('NO QUOTATIONS');
   });
@@ -74,9 +78,9 @@ describe('doğrulanmış alıntı kütüphanesi', () => {
 
   it('listesi olmayan mentor alıntı yazmaz', () => {
     expect(MENTOR_PROMPTS.jung.initial).toContain('# NO QUOTATIONS');
-    expect(MENTOR_PROMPTS.mevlana.initial).toContain('mev-04');
-    expect(MENTOR_PROMPTS.marcus.initial).toContain('mar-04');
-    expect(MENTOR_PROMPTS.nietzsche.initial).toContain('nie-06');
+    // Cevaplarda alıntı kapalıyken hiçbir mentora katalog verilmez
+    expect(MENTOR_PROMPTS.mevlana.initial).not.toContain('mev-04');
+    expect(MENTOR_PROMPTS.marcus.initial).not.toContain('mar-04');
   });
 
   it('Mevlânâ kataloğunda yanlış atfedilen sözler yok', () => {

@@ -550,8 +550,23 @@ export function renderQuote(id: string, mentorId: string): string | null {
  * System prompt'a eklenen alıntı kataloğu. Model yalnızca kimlik ve konuları
  * görür; böylece metni kendisi yeniden yazmaya çalışmaz.
  */
+/**
+ * Mentor cevaplarına kapanış alıntısı eklensin mi? 2026-10-15: ürün sahibinin
+ * kararıyla kapatıldı ("alıntılar cevabı basitleştiriyor"). Katalog, /alintilar
+ * sayfaları ve akıştaki etiket filtresi duruyor; açmak için true yap ve örnek
+ * cevaplara etiket ekle.
+ */
+export const QUOTES_IN_ANSWERS = false;
+
 export function quoteCatalogPrompt(mentorId: string): string {
   const entry = VERIFIED_QUOTES[mentorId];
+  if (!QUOTES_IN_ANSWERS) {
+    return `
+
+# NO QUOTATIONS
+Do not end with, or include anywhere, a quotation, an epigraph or a famous
+saying, yours or anyone else's. End with your own words.`;
+  }
   if (!entry || entry.quotes.length === 0) {
     // Doğrulanmış listesi henüz hazır olmayan mentor: hiç alıntı yok.
     return `
