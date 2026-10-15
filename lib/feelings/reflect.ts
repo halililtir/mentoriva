@@ -26,6 +26,8 @@ export interface FeelingsInput {
 export interface FeelingsReflection {
   heard: string;
   meaning: string;
+  /** Kişinin yazmadığı yeni bir bakış. */
+  reframe: string;
   tryNow: string[];
   /** Seçilen doğrulanmış söz (varsa). */
   quote: { mentorId: MentorId; text: string; source: string } | null;
@@ -58,6 +60,19 @@ Write, in warm, natural, concrete Turkish addressed to "sen":
 - "mentor": the id of the mentor (jung, nietzsche, mevlana, marcus, seneca)
   whose way of thinking would help most if they want to continue.
 
+# WHAT YOU ADD (most important)
+Mirroring is not enough; the person already knows what they wrote. Restate
+their words in at most one sentence. Everything else must ADD something they
+did not write: a new angle or reframe, a distinction they have not made, a
+connection between things they said that they did not link, how this kind of
+situation usually unfolds for people, an idea from a thinker (Stoics, Mevlânâ,
+Jung, Nietzsche, Socrates; named and paraphrased, never quoted), an option
+they have not considered, or a concrete tool they can use. Be generous and
+bold with ideas; be careful only about facts concerning the person.
+
+Additionally write "reframe": 1-2 sentences offering one new way of seeing
+their situation that they did not write themselves.
+
 Rules: Do not invent their history, causes or other people's motives; no
 diagnosis or labels; no childhood or parents unless they mentioned them. Do not
 tell them to see a professional unless they describe a crisis. No markdown, no
@@ -66,7 +81,7 @@ emojis.
 Catalog (id (mentor): themes — text):
 ${catalog}
 
-Return ONLY JSON: {"heard": "...", "meaning": "...", "tryNow": ["..."], "quoteId": "...", "mentor": "..."}`;
+Return ONLY JSON: {"heard": "...", "meaning": "...", "reframe": "...", "tryNow": ["..."], "quoteId": "...", "mentor": "..."}`;
 
 function userMessage(i: FeelingsInput): string {
   return [
@@ -100,7 +115,7 @@ export function parseReflection(raw: unknown): FeelingsReflection | null {
   }
   const m = o['mentor'];
   const mentorId = typeof m === 'string' && MENTOR_IDS.includes(m as MentorId) ? (m as MentorId) : quote?.mentorId ?? null;
-  return { heard, meaning, tryNow, quote, mentorId };
+  return { heard, meaning, reframe: clean(o['reframe'], 500), tryNow, quote, mentorId };
 }
 
 function mock(): string {

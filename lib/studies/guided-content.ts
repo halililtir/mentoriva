@@ -115,28 +115,37 @@ export interface StudyTurn {
  * alanların yanında çalışma türüne göre somut bir ürün (karar haritası, söylemeye
  * hazır cümle, değerler, döngü) bulunur.
  */
+/** Çalışma sonunda "iki farklı bakış" verebilecek (herkese açık) mentorlar. */
+export const PERSPECTIVE_MENTORS = ['jung', 'nietzsche', 'mevlana', 'marcus', 'seneca'] as const;
+export type PerspectiveMentor = (typeof PERSPECTIVE_MENTORS)[number];
+
 export interface StudyFinish {
-  /** Mentoriva'nın gözünden 2-3 fark ediş (kişinin söylediklerine dayanır). */
+  /** Mentoriva'nın gözünden 2-3 fark ediş: kişinin yazmadığı bir şey katar. */
   insights: string[];
+  /** İki farklı mentorun bu meseleye bakışı (üçüncü şahıs, alıntısız). */
+  perspectives?: Array<{ mentor: PerspectiveMentor; text: string }>;
   /** Hâlâ açık kalan tek soru. */
   open: string;
   /** Söylenenlerden çıkan en fazla iki küçük adım fikri. */
   steps: string[];
-  decision?: { options: Array<{ name: string; gives: string[]; costs: string[]; serves: string }>; leaning: string };
-  boundary?: { line: string; want: string; sentence: string; ifSay: string; ifNot: string };
+  decision?: { options: Array<{ name: string; gives: string[]; costs: string[]; serves: string }>; leaning: string; consider?: string };
+  boundary?: { line: string; want: string; sentence: string; ifSay: string; ifNot: string; protects?: string };
   values?: Array<{ name: string; present: string; missing: string }>;
-  cycle?: { trigger: string; response: string; result: string; experiment: string };
+  valuesTension?: string;
+  valuesAsk?: string;
+  cycle?: { trigger: string; response: string; result: string; experiment: string; gives?: string };
 }
 
 /** Sonucu karta yazılacak düz metne çevirir. */
 export function finishToText(f: StudyFinish): string {
-  const parts: string[] = [...f.insights];
+  const parts: string[] = [...f.insights, ...(f.perspectives ?? []).map((p) => p.text)];
   if (f.decision) {
     for (const o of f.decision.options) parts.push(`${o.name}: kazandırdığı ${o.gives.join(', ') || '-'}; bedeli ${o.costs.join(', ') || '-'}${o.serves ? `; hizmet ettiği: ${o.serves}` : ''}.`);
     if (f.decision.leaning) parts.push(f.decision.leaning);
+    if (f.decision.consider) parts.push(f.decision.consider);
   }
   if (f.boundary) parts.push(`Söyleyebileceğin: "${f.boundary.sentence}"`);
-  if (f.values) parts.push(`Değerlerin: ${f.values.map((v) => v.name).join(', ')}.`);
+  if (f.values) parts.push(`Değerlerin: ${f.values.map((v) => v.name).join(', ')}.`, f.valuesTension ?? '');
   if (f.cycle) parts.push(`Döngü: ${f.cycle.trigger} → ${f.cycle.response} → ${f.cycle.result}. Deneme: ${f.cycle.experiment}`);
   return parts.join(' ').slice(0, 1500);
 }

@@ -13,6 +13,7 @@ import type { MentorId } from '@/types';
 interface Reflection {
   heard: string;
   meaning: string;
+  reframe?: string;
   tryNow: string[];
   quote: { mentorId: MentorId; text: string; source: string } | null;
   mentorId: MentorId | null;
@@ -110,6 +111,13 @@ export function FeelingReflection({ card, guest }: { card: CardDraft; guest: boo
         <p className="relative mt-3 font-display text-[1.35rem] leading-snug text-white/95">{data.heard}</p>
         <p className="relative mt-4 text-[15.5px] leading-relaxed text-white/75">{data.meaning}</p>
       </div>
+
+      {data.reframe && (
+        <div className="rounded-3xl border border-brand-400/25 bg-brand-500/[0.05] p-5">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-brand-300">Başka bir açıdan</p>
+          <p className="mt-2 text-[15.5px] leading-relaxed text-white/85">{data.reframe}</p>
+        </div>
+      )}
 
       {data.tryNow.length > 0 && (
         <div className="rounded-3xl border border-white/[0.08] p-5">

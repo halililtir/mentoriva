@@ -11,7 +11,7 @@
 
 import { completeText } from '@/lib/claude/client';
 import { extractJson } from '@/lib/journey/schema';
-import { STUDY_ANSWER_MAX, type GuidedStudy, type StudyFinish, type StudyOutcome, type StudyTurn } from './guided-content';
+import { PERSPECTIVE_MENTORS, STUDY_ANSWER_MAX, type GuidedStudy, type PerspectiveMentor, type StudyFinish, type StudyOutcome, type StudyTurn } from './guided-content';
 
 const COMMON = `You guide a short thinking study on Mentoriva, a Turkish app. You are a warm,
 perceptive companion who helps the person see their own situation clearly, and
@@ -27,7 +27,17 @@ Rules (always):
 - You do not make the decision for them, and you do not tell them who to be.
 - Warm, natural, concrete Turkish addressed to "sen". No markdown, no emojis.
 - If the person indicates a risk of harming themselves or others, or being in
-  danger, return {"crisis": true} and nothing else.`;
+  danger, return {"crisis": true} and nothing else.
+
+# WHAT YOU ADD (most important)
+Mirroring is not enough; the person already knows what they wrote. Restate
+their words in at most one sentence. Everything else must ADD something they
+did not write: a new angle or reframe, a distinction they have not made, a
+connection between things they said that they did not link, how this kind of
+situation usually unfolds for people, an idea from a thinker (Stoics, Mevlânâ,
+Jung, Nietzsche, Socrates; named and paraphrased, never quoted), an option
+they have not considered, or a concrete tool they can use. Be generous and
+bold with ideas; be careful only about facts concerning the person.`;
 
 function transcript(turns: StudyTurn[]): string {
   return turns.map((t, i) => `<turn n="${i + 1}">\nQ: ${t.q}\nA: ${t.a.slice(0, STUDY_ANSWER_MAX)}\n</turn>`).join('\n');
@@ -52,38 +62,55 @@ const OUTCOME_RULES: Record<StudyOutcome, string> = {
   "serves": "which thing they said matters to them this option serves"}],
   "leaning": "one honest sentence on what seems to weigh most in what they
   wrote, e.g. 'Anlattıklarına bakınca huzur ve ailene yakınlık daha ağır
-  basıyor gibi; yeni iş ise merakını besliyor.' Empty only if truly balanced."}
+  basıyor gibi; yeni iş ise merakını besliyor.' Empty only if truly balanced.",
+  "consider": "something they have not considered: a third path, a way to
+  combine the options, or a small test they could run before deciding (1-2
+  sentences)"}
   2-3 options, 1-3 short items each. Do not recommend; show the scale clearly.`,
   boundary: `"boundary": {"line": "what crosses their line, concretely, in their words",
   "want": "what they want instead", "sentence": "a ready-to-say sentence in
   first person, kind and clear, that keeps their point (1-2 sentences)",
   "ifSay": "what saying it might bring, from what they said",
-  "ifNot": "what not saying it keeps costing them, from what they said"}.
+  "ifNot": "what not saying it keeps costing them, from what they said",
+  "protects": "what this boundary may protect for them (a value or need),
+  offered as a possibility, one sentence"}.
   Do not assume the relationship should continue or end.`,
   values: `"values": 2-3 items [{"name": "a value in THEIR words (e.g. 'birine
   gerçekten faydalı olmak')", "present": "where it already lives in their life",
   "missing": "where it is missing or squeezed"}]. Names come from their
-  moments, not from a standard list.`,
+  moments, not from a standard list.
+  Also "valuesTension": one or two sentences on a tension between these values
+  (or between a value and how they live) that they may not have noticed, and
+  "valuesAsk": what living the most important one more fully would ask of
+  them this week (one concrete sentence).`,
   cycle: `"cycle": {"trigger": "what tends to start it", "response": "what they
   usually do or tell themselves", "result": "what it leads to",
   "experiment": "one small, concrete thing to try differently next time,
-  drawn from what they said they want"}. No psychological causes.`,
+  drawn from what they said they want", "gives": "what this cycle may give
+  them in the short term, which is often why it keeps returning (offered as
+  a possibility, one sentence)"}. No psychological causes.`,
 };
 
 function finishRules(outcome: StudyOutcome): string {
   return `The study is over. The person may have written in their own words what became
 clear to them ("takeaway"); honour it and never contradict it.
 Give them a result worth having:
-- "insights": 2-3 short paragraphs (each 1-3 sentences) of what you, as an
-  attentive companion, see in their answers: connections between answers,
-  what weighs most, a tension, a strength they showed. Specific to them,
-  warm and direct. Not a summary of the questions.
+- "insights": 2-3 short paragraphs (each 1-3 sentences). Each must add
+  something new (see WHAT YOU ADD): a link between answers they did not make,
+  what seems to weigh most and why that matters, a tension, a strength they
+  showed without noticing, or a perspective from outside their own words.
+  Never a summary of what they wrote.
+- "perspectives": two short takes from two DIFFERENT thinkers among jung,
+  nietzsche, mevlana, marcus, seneca, chosen because they would see this
+  matter in clearly different ways: [{"mentor": "id", "text": "2-3 sentences,
+  in the third person ('Seneca buna şöyle bakardı: …'), applying that
+  thinker's documented ideas to THIS situation"}]. No quotations.
 - ${OUTCOME_RULES[outcome]}
 - "open": one question still open for them (at most 25 words).
 - "steps": up to two small, concrete, optional steps that follow from what
   they said. Never a step that makes the decision for them.
 
-Return ONLY JSON with keys: "insights", "${outcome}", "open", "steps".`;
+Return ONLY JSON with keys: "insights", "perspectives", "${outcome}",${outcome === 'values' ? ' "valuesTension", "valuesAsk",' : ''} "open", "steps".`;
 }
 
 const clean = (v: unknown, max: number): string =>
@@ -111,6 +138,13 @@ export function parseFinish(raw: unknown, outcome: StudyOutcome): ({ crisis: tru
   const insights = list(o['insights'], 3, 500);
   if (!insights.length) return null;
   const f: StudyFinish = { insights, open: clean(o['open'], 240), steps: list(o['steps'], 2, 160) };
+  const perspectives = (Array.isArray(o['perspectives']) ? o['perspectives'] : [])
+    .map((x) => obj(x))
+    .map((x) => ({ mentor: clean(x['mentor'], 20) as PerspectiveMentor, text: clean(x['text'], 500) }))
+    .filter((x) => PERSPECTIVE_MENTORS.includes(x.mentor) && x.text)
+    .filter((x, i, arr) => arr.findIndex((y) => y.mentor === x.mentor) === i)
+    .slice(0, 2);
+  if (perspectives.length) f.perspectives = perspectives;
 
   if (outcome === 'decision') {
     const d = obj(o['decision']);
@@ -119,22 +153,26 @@ export function parseFinish(raw: unknown, outcome: StudyOutcome): ({ crisis: tru
       .map((x) => ({ name: clean(x['name'], 80), gives: list(x['gives'], 3, 120), costs: list(x['costs'], 3, 120), serves: clean(x['serves'], 160) }))
       .filter((x) => x.name)
       .slice(0, 3);
-    if (options.length) f.decision = { options, leaning: clean(d['leaning'], 300) };
+    if (options.length) f.decision = { options, leaning: clean(d['leaning'], 300), consider: clean(d['consider'], 400) };
   } else if (outcome === 'boundary') {
     const b = obj(o['boundary']);
     const sentence = clean(b['sentence'], 400);
-    if (sentence) f.boundary = { line: clean(b['line'], 240), want: clean(b['want'], 240), sentence, ifSay: clean(b['ifSay'], 240), ifNot: clean(b['ifNot'], 240) };
+    if (sentence) f.boundary = { line: clean(b['line'], 240), want: clean(b['want'], 240), sentence, ifSay: clean(b['ifSay'], 240), ifNot: clean(b['ifNot'], 240), protects: clean(b['protects'], 300) };
   } else if (outcome === 'values') {
     const v = (Array.isArray(o['values']) ? o['values'] : [])
       .map((x) => obj(x))
       .map((x) => ({ name: clean(x['name'], 80), present: clean(x['present'], 200), missing: clean(x['missing'], 200) }))
       .filter((x) => x.name)
       .slice(0, 3);
-    if (v.length) f.values = v;
+    if (v.length) {
+      f.values = v;
+      f.valuesTension = clean(o['valuesTension'], 400);
+      f.valuesAsk = clean(o['valuesAsk'], 300);
+    }
   } else {
     const c = obj(o['cycle']);
     if (clean(c['trigger'], 10)) {
-      f.cycle = { trigger: clean(c['trigger'], 200), response: clean(c['response'], 200), result: clean(c['result'], 200), experiment: clean(c['experiment'], 240) };
+      f.cycle = { trigger: clean(c['trigger'], 200), response: clean(c['response'], 200), result: clean(c['result'], 200), experiment: clean(c['experiment'], 240), gives: clean(c['gives'], 300) };
     }
   }
   return { crisis: false, ...f };

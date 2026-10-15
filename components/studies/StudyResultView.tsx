@@ -1,6 +1,35 @@
 'use client';
 
+import Image from 'next/image';
+import { getAccent, getActiveMentor } from '@/lib/mentors/metadata';
 import type { StudyFinish } from '@/lib/studies/guided-content';
+
+/** İki farklı mentorun bu meseleye bakışı. */
+export function StudyPerspectives({ result }: { result: StudyFinish }) {
+  if (!result.perspectives?.length) return null;
+  return (
+    <div>
+      <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">İki farklı bakış</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {result.perspectives.map((p) => {
+          const m = getActiveMentor(p.mentor);
+          const a = getAccent(m.accentColor);
+          return (
+            <div key={p.mentor} className="rounded-2xl border p-4" style={{ borderColor: a.border, background: a.bg }}>
+              <div className="flex items-center gap-2">
+                <span className="relative h-7 w-7 overflow-hidden rounded-full border" style={{ borderColor: a.hex }}>
+                  <Image src={m.portraitUrl} alt="" fill sizes="28px" className="object-cover" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
+                </span>
+                <span className="font-display text-[15px]" style={{ color: a.text }}>{m.shortName}</span>
+              </div>
+              <p className="mt-2 text-[14px] leading-relaxed text-white/80">{p.text}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /** Çalışmanın somut ürünü: karar haritası, söylemeye hazır cümle, değerler ya da döngü. */
 export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPrepare: (sentence: string, want: string) => void }) {
@@ -24,6 +53,7 @@ export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPre
           ))}
         </div>
         {d.leaning && <p className="mt-4 rounded-2xl bg-white/[0.03] px-4 py-3 text-[15px] leading-relaxed text-white/85">{d.leaning}</p>}
+        {d.consider && <Highlight label="Belki düşünmediğin bir yol" text={d.consider} />}
         <p className="mt-2 text-[12px] text-white/35">Karar senin; bu tablo yalnızca anlattıklarını yan yana koyuyor.</p>
       </div>
     );
@@ -49,6 +79,7 @@ export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPre
           {b.ifSay && <Box label="Söylersen" text={b.ifSay} />}
           {b.ifNot && <Box label="Söylemezsen" text={b.ifNot} />}
         </div>
+        {b.protects && <Highlight label="Bu sınır neyi koruyor olabilir" text={b.protects} />}
       </div>
     );
   }
@@ -66,6 +97,8 @@ export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPre
             </div>
           ))}
         </div>
+        {result.valuesTension && <Highlight label="Fark etmemiş olabileceğin bir gerilim" text={result.valuesTension} />}
+        {result.valuesAsk && <Highlight label="Bu hafta senden isteyebileceği" text={result.valuesAsk} />}
       </div>
     );
   }
@@ -82,6 +115,7 @@ export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPre
           <span className="self-center text-white/30" aria-hidden="true">→</span>
           <Box label="Ne oluyor" text={c.result} />
         </div>
+        {c.gives && <Highlight label="Bu döngü sana ne kazandırıyor olabilir" text={c.gives} />}
         {c.experiment && (
           <div className="mt-3 rounded-2xl border border-brand-400/30 bg-brand-500/[0.06] p-4">
             <p className="text-[11px] uppercase tracking-[0.14em] text-brand-300">Bir dahaki sefere dene</p>
@@ -92,6 +126,15 @@ export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPre
     );
   }
   return null;
+}
+
+function Highlight({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="mt-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+      <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">{label}</p>
+      <p className="mt-1.5 text-[14.5px] leading-relaxed text-white/85">{text}</p>
+    </div>
+  );
 }
 
 function Box({ label, text }: { label: string; text: string }) {

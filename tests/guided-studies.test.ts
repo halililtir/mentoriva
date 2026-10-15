@@ -92,3 +92,16 @@ describe('adım ve hatırlatma', () => {
     expect(addDays('2026-03-01', -1)).toBe('2026-02-28');
   });
 });
+
+describe('çalışma sonucu katkı alanları', () => {
+  it('iki farklı bakışı ayrıştırır: yalnızca izinli ve tekrarsız mentorlar', () => {
+    const r = parseFinish({
+      insights: ['x'],
+      perspectives: [{ mentor: 'seneca', text: 'Seneca buna…' }, { mentor: 'seneca', text: 'tekrar' }, { mentor: 'sokrates', text: 'erken erişim' }, { mentor: 'jung', text: 'Jung buna…' }],
+      values: [{ name: 'Faydalı olmak' }],
+      valuesTension: 'Gerilim.',
+    }, 'values');
+    expect(r && !r.crisis && r.perspectives?.map((p) => p.mentor)).toEqual(['seneca', 'jung']);
+    expect(r && !r.crisis && r.valuesTension).toBe('Gerilim.');
+  });
+});

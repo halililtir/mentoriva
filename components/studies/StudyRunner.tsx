@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CrisisNotice } from '@/components/mentors/CrisisNotice';
 import { ReminderToggle } from '@/components/me/ReminderToggle';
-import { StudyOutcome } from '@/components/studies/StudyResultView';
+import { StudyOutcome, StudyPerspectives } from '@/components/studies/StudyResultView';
 import { PREPARE_DRAFT_KEY } from '@/lib/prepare-public';
 import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
@@ -232,6 +232,8 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
               ))}
             </div>
           </div>
+
+          <StudyPerspectives result={result} />
 
           <StudyOutcome result={result} onPrepare={toPrepare} />
 
