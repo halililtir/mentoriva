@@ -31,7 +31,10 @@ conversations, "ben de yıllarca…") also count against "uydurma"; a brief
 mention of a well-documented biographical fact (e.g. Seneca's exile or his
 consolation letter to his mother, Rumi's loss of Shams, Marcus burying
 several of his children or writing his notebook as reminders to himself)
-does not. Repeating such a self-reference in a stock way may count against
+does not. General references to the figure's documented profession or
+writings are also not fabrication (e.g. Jung "hekimlik yıllarımda çok gördüm",
+Marcus recalling what he wrote about his mother in Meditations Book 1,
+Seneca's letters to Lucilius); only invented specific scenes, cases or events count. Repeating such a self-reference in a stock way may count against
 "kalip" instead.
 For "kalip", give 3 unless you can quote a specific stock phrase from the
 answer; if you give 1 or 2, quote that phrase in the note.
