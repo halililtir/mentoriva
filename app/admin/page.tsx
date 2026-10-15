@@ -189,6 +189,7 @@ function Skeleton() {
 
 function AdminLogin({ onIn }: { onIn: () => void }) {
   const [pw, setPw] = useState('');
+  const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const login = async () => {
@@ -205,7 +206,10 @@ function AdminLogin({ onIn }: { onIn: () => void }) {
       <form onSubmit={(e) => { e.preventDefault(); void login(); }} className="w-full max-w-sm space-y-5 rounded-3xl border border-white/[0.08] bg-ink-50/80 p-8 text-center">
         <Logo />
         <h1 className="font-display text-2xl">Admin paneli</h1>
-        <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Admin anahtarı" autoComplete="current-password" className={cn(inputCls, 'text-center')} autoFocus />
+        <div className="relative">
+          <input type={showPw ? 'text' : 'password'} value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Admin anahtarı" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={cn(inputCls, 'pr-16 text-center')} autoFocus />
+          <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-white/45 hover:text-white">{showPw ? 'Gizle' : 'Göster'}</button>
+        </div>
         {err && <p className="text-sm text-red-400">{err}</p>}
         <button type="submit" disabled={busy || !pw.trim()} className="btn-primary w-full">{busy ? 'Kontrol ediliyor…' : 'Giriş'}</button>
         <p className="text-[11px] text-white/45">Oturum 12 saat açık kalır.</p>
