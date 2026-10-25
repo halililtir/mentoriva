@@ -18,7 +18,7 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   const user = await getSessionUser(req);
   if (!user) return jsonError(401, 'Katılmak için giriş yapmalısın.');
-  if (!(await hit('bridge-create', user.username, RATE_LIMITS.BRIDGE_CREATE_USER))) return jsonError(429, 'Biraz sonra tekrar dene.');
+  if (!(await hit('bridge-join', user.username, RATE_LIMITS.BRIDGE_JOIN_USER))) return jsonError(429, 'Biraz sonra tekrar dene.');
   const body = await readJson(req);
   const id = body?.['id'];
   const token = typeof body?.['token'] === 'string' ? body['token'] : '';

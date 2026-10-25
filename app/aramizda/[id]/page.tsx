@@ -59,12 +59,12 @@ export default function RoomPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   useEffect(() => {
-    if (status !== 'user') return;
+    if (status !== 'user' || gone) return;
     void load();
     try { const u = sessionStorage.getItem(`mentoriva_invite_${params.id}`); if (u) setInviteUrl(u); } catch {}
     const t = setInterval(() => { if (document.visibilityState === 'visible') void load(); }, POLL_MS);
     return () => clearInterval(t);
-  }, [status, load, params.id]);
+  }, [status, load, params.id, gone]);
 
   useEffect(() => {
     if (messages.length !== lastCount.current) {
@@ -85,6 +85,8 @@ export default function RoomPage({ params }: { params: { id: string } }) {
       if (d?.safety) { setDraft(null); return setSafety(true); }
       if (!res.ok || !d?.token) return setError(d?.error ?? 'Hazırlanamadı.');
       setDraft({ text: d.text, kept: d.kept, token: d.token });
+    } catch {
+      setError('Bağlantı kurulamadı. Hak düşmüşse sunucu hata verdiğinde iade edilir; biraz sonra tekrar dene.');
     } finally {
       setBusy(null);
     }
@@ -102,6 +104,8 @@ export default function RoomPage({ params }: { params: { id: string } }) {
       setDraft(null);
       setRaw('');
       track('bridge_send');
+    } catch {
+      setError('Bağlantı kurulamadı; mesaj gitmemiş olabilir. Sayfayı yenileyip ortak alana bak.');
     } finally {
       setBusy(null);
     }

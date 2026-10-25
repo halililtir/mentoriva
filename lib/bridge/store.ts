@@ -8,12 +8,15 @@
  *   bridge:<id>        → { id, topic, members, invite, createdAt, updatedAt } (JSON)
  *   bridge-msgs:<id>   → onaylı mesajlar (liste, en yeni başta; atomik ekleme)
  *   bridges:<email>    → kişinin odaları (hash: id → '1')
+ *   bridge-closed:<id> → kapatılan odanın işareti (eşzamanlı bir yazımın odayı
+ *                        geri getirmemesi için; 30 gün)
+ *   bridge-join:<id>   → katılım kilidi (aynı davetle iki kişi katılamasın)
  *
  * Admin panelinde gösterilmez. `deleteUser` → `deleteUserRooms`.
  */
 
 import { randomBytes } from 'node:crypto';
-import { getKV } from '@/lib/kv';
+import { getKV, getMany } from '@/lib/kv';
 import { digest } from '@/lib/auth/tokens';
 
 export const ROOM_TTL = 30 * 24 * 3600;
@@ -50,6 +53,8 @@ export interface RoomMessage {
 const roomKey = (id: string) => `bridge:${id}`;
 const msgKey = (id: string) => `bridge-msgs:${id}`;
 const indexKey = (u: string) => `bridges:${u}`;
+const closedKey = (id: string) => `bridge-closed:${id}`;
+const joinKey = (id: string) => `bridge-join:${id}`;
 export const isRoomId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{16}$/.test(v);
 
 const parse = <T>(raw: unknown): T | null => {
@@ -57,11 +62,25 @@ const parse = <T>(raw: unknown): T | null => {
   try { return (typeof raw === 'string' ? JSON.parse(raw) : raw) as T; } catch { return null; }
 };
 
-async function saveRoom(room: Room): Promise<void> {
+/**
+ * Kapatılan oda eşzamanlı bir yazımla geri gelmesin: closeRoom önce işareti
+ * koyar sonra siler; yazımdan SONRA işarete bakılır. İşaret görülmezse silme
+ * bu yazımdan sonra olmuştur, görülürse yazılan burada geri alınır.
+ */
+async function undoIfClosed(id: string): Promise<boolean> {
+  const kv = getKV();
+  if (!(await kv.get(closedKey(id)))) return false;
+  await kv.del(roomKey(id), msgKey(id));
+  return true;
+}
+
+/** Odayı yazar; oda bu sırada kapatıldıysa false. */
+async function saveRoom(room: Room): Promise<boolean> {
   const kv = getKV();
   room.updatedAt = new Date().toISOString();
   await kv.set(roomKey(room.id), JSON.stringify(room), { ex: ROOM_TTL });
   await kv.expire(msgKey(room.id), ROOM_TTL).catch(() => 0);
+  return !(await undoIfClosed(room.id));
 }
 
 export async function getRoom(id: string): Promise<Room | null> {
@@ -76,13 +95,17 @@ export function memberIndex(room: Room, username: string): 0 | 1 | -1 {
 /** Kişinin hâlâ var olan odaları (süresi dolanlar dizinden temizlenir). */
 export async function listRooms(username: string): Promise<Room[]> {
   const kv = getKV();
-  const ids = Object.keys((await kv.hgetall<Record<string, unknown>>(indexKey(username))) ?? {});
+  const ids = Object.keys((await kv.hgetall<Record<string, unknown>>(indexKey(username))) ?? {}).filter(isRoomId);
+  if (!ids.length) return [];
+  const raws = await getMany<unknown>(ids.map(roomKey));
   const rooms: Room[] = [];
-  for (const id of ids) {
-    const r = await getRoom(id);
+  const stale: string[] = [];
+  ids.forEach((id, i) => {
+    const r = parse<Room>(raws[i]);
     if (r && memberIndex(r, username) !== -1) rooms.push(r);
-    else await kv.hdel(indexKey(username), id);
-  }
+    else stale.push(id);
+  });
+  if (stale.length) await kv.hdel(indexKey(username), ...stale);
   return rooms.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
@@ -106,11 +129,10 @@ export async function createRoom(username: string, name: string, topic: string):
 
 /** Yeni davet bağlantısı (eskisi geçersiz olur). Yalnızca odayı açan, ikinci kişi yokken. */
 export async function renewInvite(room: Room): Promise<string | null> {
-  if (room.members.length >= 2) return null;
+  if (room.members.length >= 2 || (await getKV().get(joinKey(room.id)))) return null;
   const token = randomBytes(24).toString('base64url');
   room.invite = { hash: digest(token), exp: Date.now() + INVITE_TTL_MS };
-  await saveRoom(room);
-  return token;
+  return (await saveRoom(room)) ? token : null;
 }
 
 export type JoinResult = Room | 'invalid' | 'full' | 'self' | 'limit';
@@ -121,20 +143,24 @@ export async function joinRoom(id: string, token: string, username: string, name
   if (memberIndex(room, username) === 0) return 'self';
   if (room.members.length >= 2) return 'full';
   if ((await listRooms(username)).length >= MAX_OPEN_ROOMS) return 'limit';
+  // Atomik kilit: aynı davetle aynı anda iki kişi katılırsa yalnızca ilki girer.
+  const kv = getKV();
+  if ((await kv.incr(joinKey(room.id))) !== 1) return 'full';
+  await kv.expire(joinKey(room.id), ROOM_TTL).catch(() => 0);
   room.members.push({ username, name, joinedAt: new Date().toISOString() });
   room.invite = null;
-  await saveRoom(room);
-  await getKV().hset(indexKey(username), { [room.id]: '1' });
+  if (!(await saveRoom(room))) return 'invalid';
+  await kv.hset(indexKey(username), { [room.id]: '1' });
   return room;
 }
 
-export async function addMessage(room: Room, from: 0 | 1, text: string): Promise<RoomMessage> {
+/** Mesajı ekler; oda bu sırada kapatıldıysa null (hiçbir şey kalmaz). */
+export async function addMessage(room: Room, from: 0 | 1, text: string): Promise<RoomMessage | null> {
   const msg: RoomMessage = { id: randomBytes(6).toString('hex'), from, text: text.slice(0, MESSAGE_MAX), at: new Date().toISOString() };
   const kv = getKV();
   await kv.lpush(msgKey(room.id), JSON.stringify(msg));
   await kv.ltrim(msgKey(room.id), 0, MAX_MESSAGES - 1);
-  await saveRoom(room);
-  return msg;
+  return (await saveRoom(room)) ? msg : null;
 }
 
 /** Eskiden yeniye mesajlar. */
@@ -146,8 +172,9 @@ export async function listMessages(roomId: string): Promise<RoomMessage[]> {
 /** Odayı iki taraf için de siler. */
 export async function closeRoom(room: Room): Promise<void> {
   const kv = getKV();
-  await kv.del(roomKey(room.id), msgKey(room.id));
-  for (const m of room.members) await kv.hdel(indexKey(m.username), room.id);
+  await kv.set(closedKey(room.id), '1', { ex: ROOM_TTL });
+  await kv.del(roomKey(room.id), msgKey(room.id), joinKey(room.id));
+  await Promise.all(room.members.map((m) => kv.hdel(indexKey(m.username), room.id)));
 }
 
 /** Hesap silinirken: kişinin bulunduğu bütün odalar kapanır. */

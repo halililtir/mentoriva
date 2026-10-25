@@ -72,3 +72,24 @@ describe('parseSoften', () => {
     expect(parseSoften('metin')).toBeNull();
   });
 });
+
+describe('Aramızda eşzamanlılık', () => {
+  it('kapatmadan sonra gelen gönderim odayı geri getirmez', async () => {
+    const { a, room, inviteToken } = await open();
+    const joined = await joinRoom(room.id, inviteToken, u(), 'Mehmet');
+    if (typeof joined === 'string') throw new Error(joined);
+    const stale = structuredClone(joined);
+    await closeRoom(joined);
+    expect(await addMessage(stale, 1, 'geç kalan')).toBeNull();
+    expect(await getRoom(room.id)).toBeNull();
+    expect(await listMessages(room.id)).toEqual([]);
+    expect(await listRooms(a)).toEqual([]);
+  });
+
+  it('aynı davetle aynı anda yalnızca bir kişi katılır', async () => {
+    const { room, inviteToken } = await open();
+    const results = await Promise.all([joinRoom(room.id, inviteToken, u(), 'B'), joinRoom(room.id, inviteToken, u(), 'C')]);
+    expect(results.filter((r) => typeof r === 'object')).toHaveLength(1);
+    expect((await getRoom(room.id))?.members).toHaveLength(2);
+  });
+});

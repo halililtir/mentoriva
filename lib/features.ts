@@ -135,6 +135,7 @@ export const RATE_LIMITS = {
 
   /** Aramızda: oda açma, yumuşatma taslağı (hak düşer), anlamaya yardım. */
   BRIDGE_CREATE_USER: { max: 5, windowSec: HOUR },
+  BRIDGE_JOIN_USER: { max: 10, windowSec: HOUR },
   BRIDGE_DRAFT_USER: { max: 40, windowSec: HOUR },
   BRIDGE_HELP_USER: { max: 15, windowSec: HOUR },
   BRIDGE_READ_USER: { max: 900, windowSec: HOUR },

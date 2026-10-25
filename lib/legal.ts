@@ -4,7 +4,7 @@
  * güncellenir; kullanıcı kaydında hangi sürümü onayladığı saklanır.
  */
 
-export const LEGAL_VERSION = '2026-10';
+export const LEGAL_VERSION = '2026-10-15';
 export const LEGAL_UPDATED = 'Ekim 2026';
 
 /** Mentoriva'yı kullanmak için alt yaş sınırı. */
