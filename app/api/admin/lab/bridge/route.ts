@@ -28,7 +28,8 @@ export async function POST(req: Request) {
   });
   try {
     return NextResponse.json({ result: await softenForRoom({ topic, messages, viewer: 0, raw, instruction }) });
-  } catch {
-    return jsonError(502, 'Üretilemedi');
+  } catch (e) {
+    // Yalnızca admin görür; sınama sırasında nedeni anlamak için.
+    return NextResponse.json({ error: 'Üretilemedi', detail: String(e instanceof Error ? e.message : e).slice(0, 400) }, { status: 502 });
   }
 }

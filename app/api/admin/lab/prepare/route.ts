@@ -18,7 +18,8 @@ export async function POST(req: Request) {
   if (typeof input === 'string') return jsonError(400, input);
   try {
     return NextResponse.json({ result: await prepareMessage(input) });
-  } catch {
-    return jsonError(502, 'Üretilemedi');
+  } catch (e) {
+    // Yalnızca admin görür; sınama sırasında nedeni anlamak için.
+    return NextResponse.json({ error: 'Üretilemedi', detail: String(e instanceof Error ? e.message : e).slice(0, 400) }, { status: 502 });
   }
 }
