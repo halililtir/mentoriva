@@ -16,12 +16,10 @@ interface HeaderProps {
 }
 
 const NAV = [
-  { href: '/icimde', label: 'İçimde ne var?' },
-  { href: '/calismalar', label: 'Çalışmalar' },
-  { href: '/#nasil-calisir', label: 'Nasıl çalışır?' },
-  { href: '/test', label: 'Kişilik Testi' },
+  { href: '/calismalar/karar', label: 'Karar veriyorum' },
+  { href: '/hazirla', label: 'Bir konuşmam var' },
+  { href: '/icimde', label: 'Kendimi anlamak' },
   { href: '/hakkimizda', label: 'Hakkımızda' },
-  { href: '/geri-bildirim', label: 'Geri Bildirim' },
 ];
 
 export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) {
@@ -145,7 +143,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
 
           {/* Kullanıcı */}
           {status === 'loading' ? (
-            <span className="ml-2 h-9 w-24 rounded-full skeleton" aria-hidden="true" />
+            <span className="ml-2 h-9 w-24" aria-hidden="true" />
           ) : user ? (
             <div className="relative ml-2">
               <button
@@ -247,7 +245,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
 
             {menuOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 glass rounded-2xl p-2 animate-fade-down">
-                {[...NAV, { href: '/hazirla', label: 'Söyleyeceğimi hazırla' }, { href: '/gizlilik', label: 'Gizlilik' }, { href: '/kullanim-sartlari', label: 'Kullanım Şartları' }].map((item) => (
+                {[...NAV, { href: '/calismalar', label: 'Tüm çalışmalar' }, { href: '/aramizda', label: 'Aramızda' }, { href: '/test', label: 'Kişilik Testi' }, { href: '/geri-bildirim', label: 'Geri Bildirim' }, { href: '/gizlilik', label: 'Gizlilik' }, { href: '/kullanim-sartlari', label: 'Kullanım Şartları' }].map((item) => (
                   <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2.5 text-sm text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white">
                     {item.label}
                   </Link>

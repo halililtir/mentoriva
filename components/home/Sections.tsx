@@ -1,12 +1,11 @@
 /**
- * Ana sayfanın tanıtım bölümleri: düşünce gelenekleri, "neden", "nasıl çalışır",
- * "bilmen gerekenler". Etkileşimli olanlar (kullanım alanları, SSS, kapanış)
+ * Ana sayfanın tanıtım bölümleri: "neden" ve "bilmen gerekenler". Etkileşimli olanlar (kullanım alanları, SSS, kapanış)
  * ayrı dosyalarda.
  */
 
 import Image from 'next/image';
 import { Reveal } from '@/components/ui/Reveal';
-import { ACTIVE_MENTORS, COMING_SOON_MENTORS, getAccent } from '@/lib/mentors/metadata';
+import { ACTIVE_MENTORS, getAccent } from '@/lib/mentors/metadata';
 import { COMPARE_DEMO, COMPARE_ROWS } from '@/lib/home-content';
 
 // -----------------------------------------------------------
@@ -40,67 +39,6 @@ export function SectionHeading({
       </h2>
       {children && <p className="mt-4 text-[15px] leading-relaxed text-white/50">{children}</p>}
     </Reveal>
-  );
-}
-
-// -----------------------------------------------------------
-// Düşünce gelenekleri şeridi
-// -----------------------------------------------------------
-
-/**
- * Hero'nun hemen altında: hangi düşünce geleneklerinin temsil edildiğini
- * dönemleri ve cevap tarzlarıyla gösterir. Sayı yığını yerine içerik.
- */
-export function TraditionsStrip() {
-  return (
-    <section className="mx-auto max-w-content px-5" aria-labelledby="traditions-title">
-      <Reveal>
-        <div className="glass overflow-hidden rounded-2xl">
-          <div className="flex flex-col gap-1 border-b border-white/[0.06] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 id="traditions-title" className="font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-white/45">
-              Yüzyılları aşan düşünce gelenekleri
-            </h2>
-            <p className="text-[11px] text-white/30">
-              Yakında: {COMING_SOON_MENTORS.map((m) => m.shortName).join(' · ')}
-            </p>
-          </div>
-
-          <ul className="m-rail grid sm:grid-cols-2 lg:grid-cols-5">
-            {ACTIVE_MENTORS.map((m, i) => {
-              const a = getAccent(m.accentColor);
-              return (
-                <li
-                  key={m.id}
-                  className={`group relative px-6 py-6 transition-colors duration-500 hover:bg-white/[0.02] ${
-                    i > 0 ? 'border-t border-white/[0.06] sm:border-t-0' : ''
-                  } ${i % 2 === 1 ? 'sm:border-l sm:border-white/[0.06]' : ''} ${i >= 2 ? 'sm:border-t sm:border-white/[0.06] lg:border-t-0' : ''} ${
-                    i === 2 ? 'lg:border-l lg:border-white/[0.06]' : ''
-                  }`}
-                >
-                  <span
-                    className="absolute inset-x-6 top-0 h-px origin-left scale-x-0 transition-transform duration-700 ease-out-expo group-hover:scale-x-100"
-                    style={{ background: a.hex }}
-                    aria-hidden="true"
-                  />
-                  <div className="flex items-center gap-3">
-                    <span className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border" style={{ borderColor: a.border }}>
-                      <Image src={m.portraitUrl} alt="" fill sizes="40px" className="object-cover grayscale-[30%] transition duration-500 group-hover:grayscale-0" style={{ objectPosition: m.portraitPosition ?? 'center' }} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium" style={{ color: a.text }}>{m.tradition}</p>
-                      <p className="truncate text-xs text-white/45">
-                        {m.shortName} <span className="tabular-nums text-white/25">· {m.lifespan}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-[13px] leading-relaxed text-white/55">{m.voice}</p>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </Reveal>
-    </section>
   );
 }
 
@@ -201,71 +139,6 @@ export function WhyMentoriva() {
           </figure>
         </Reveal>
       </div>
-    </section>
-  );
-}
-
-// -----------------------------------------------------------
-// Nasıl çalışır?
-// -----------------------------------------------------------
-
-const STEPS = [
-  {
-    title: 'Ücretsiz üye ol',
-    body: 'Adını, e-postanı ve bir şifre yaz; e-postana gelen 6 haneli kodla hesabını doğrula. Bir dakika sürer.',
-    note: 'Kredi kartı istenmez',
-    icon: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6" />,
-  },
-  {
-    title: 'Mentorlarını seç',
-    body: 'Derinleşmek istiyorsan tek bir mentor, farklı bakışları görmek istiyorsan birkaç mentor seç.',
-    note: 'Kararsızsan birkaç mentor seç',
-    icon: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
-  },
-  {
-    title: 'Sorunu yaz',
-    body: 'Seni meşgul eden tek bir soru yaz. Kısa ve net sorular en derin cevapları getirir. Örnek sorulardan da başlayabilirsin.',
-    note: '1 soru = 1 hak, mentor sayısından bağımsız',
-    icon: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
-  },
-  {
-    title: 'Karşılaştır, sohbete devam et',
-    body: 'Cevaplar aynı anda akar. Seni en çok düşündüren mentoru seç ve onunla konuşmaya devam et.',
-    note: 'Sohbette her mesaj 1 hak',
-    icon: <path d="M8 12h8M12 8v8M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0" />,
-  },
-];
-
-export function HowItWorks({ id }: { id?: string }) {
-  return (
-    <section id={id} className="mx-auto max-w-content scroll-mt-24 px-5 py-12 sm:py-28" aria-labelledby="how-title">
-      <SectionHeading eyebrow="Nasıl çalışır?" title="Dört adımda" accent="ilk cevaplarına" id="how-title">
-        Kurulum yok, öğrenmen gereken bir şey yok. İlk sorundan ilk cevabına bir dakikadan kısa sürer.
-      </SectionHeading>
-
-      <ol className="m-rail-md relative mt-8 grid gap-5 sm:mt-14 md:grid-cols-2 lg:grid-cols-4">
-        <div className="pointer-events-none absolute left-[12%] right-[12%] top-[2.25rem] hidden h-px bg-gradient-to-r from-transparent via-brand-500/30 to-transparent lg:block" />
-        {STEPS.map((s, i) => (
-          <Reveal as="li" key={s.title} delay={i * 110} className="group relative">
-            <div className="glass flex h-full flex-col rounded-2xl p-6 transition-all duration-500 ease-out-expo group-hover:-translate-y-1 group-hover:border-brand-500/25">
-              <div className="flex items-center gap-3">
-                <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-brand-500/30 bg-ink-0 font-display text-lg text-brand-300 shadow-[0_0_30px_-8px_rgba(0,188,212,0.6)] transition-transform duration-500 ease-spring group-hover:scale-110">
-                  {i + 1}
-                </span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="text-white/30" aria-hidden="true">
-                  {s.icon}
-                </svg>
-              </div>
-              <h3 className="mt-5 font-display text-xl text-white/90">{s.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-white/50">{s.body}</p>
-              <p className="mt-4 inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] text-white/55">
-                <span className="h-1 w-1 rounded-full bg-brand-400" />
-                {s.note}
-              </p>
-            </div>
-          </Reveal>
-        ))}
-      </ol>
     </section>
   );
 }

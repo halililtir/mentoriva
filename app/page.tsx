@@ -6,7 +6,8 @@ import { Header } from '@/components/shared/Header';
 import { Footer } from '@/components/shared/Footer';
 import { ToastProvider, showToast } from '@/components/shared/Toast';
 import { Hero } from '@/components/home/Hero';
-import { GoodToKnow, HowItWorks, SectionHeading, TraditionsStrip, WhyMentoriva } from '@/components/home/Sections';
+import { GoodToKnow, SectionHeading, WhyMentoriva } from '@/components/home/Sections';
+import { Doors } from '@/components/home/Doors';
 import { UseCases } from '@/components/home/UseCases';
 import { Faq } from '@/components/home/Faq';
 import { FinalCta } from '@/components/home/FinalCta';
@@ -14,7 +15,6 @@ import { FlowSteps } from '@/components/home/FlowSteps';
 import { DailyQuestion } from '@/components/home/DailyQuestion';
 import { WelcomeCard } from '@/components/home/WelcomeCard';
 import { StepReminder } from '@/components/home/StepReminder';
-import { StudiesTeaser } from '@/components/home/StudiesTeaser';
 import { SelectionDock } from '@/components/home/SelectionDock';
 import { MentorFinder } from '@/components/home/MentorFinder';
 import { MentorGalleryCard } from '@/components/mentors/MentorGalleryCard';
@@ -133,10 +133,6 @@ export default function HomePage() {
 
   const scrollToGallery = useCallback(() => {
     galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
-
-  const scrollToHow = useCallback(() => {
-    document.getElementById('nasil-calisir')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
   const requireAccount = useCallback((message = 'Soru sormak için ücretsiz hesabını oluştur ya da giriş yap') => {
@@ -323,28 +319,24 @@ export default function HomePage() {
           üyeye ise doğrudan mentor seçimi ve örnek sorular gösterilir. */}
       {view === 'gallery' && (
         <div className="flex-1">
-          <Hero user={user} guestTrial={session.status !== 'user' && !guestUsed} onStart={scrollToGallery} onHowItWorks={scrollToHow} />
+          <Hero user={user} onAsk={handlePickQuestion} onStart={scrollToGallery} />
           {user && user.questionsUsed === 0 && <WelcomeCard name={user.name} onPick={handlePickQuestion} />}
           {user && <StepReminder />}
-          {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
-          <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
+          <Doors />
 
+          {/* .band: gündüz temasında bölümleri açık mavi şeritlerle ayırır */}
           {user ? (
             <>
               {mentorSection}
-              <div className="band"><StudiesTeaser /></div>
+              <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
               <UseCases onPick={handlePickWithMentors} onOwn={scrollToGallery} />
-              <div className="band"><HowItWorks id="nasil-calisir" /></div>
-              <Faq />
+              <div className="band"><Faq /></div>
             </>
           ) : (
             <>
-              <TraditionsStrip />
               <div className="band"><WhyMentoriva /></div>
-              <StudiesTeaser />
-              <div className="band"><HowItWorks id="nasil-calisir" /></div>
               {mentorSection}
-              <div className="band"><UseCases onPick={handlePickWithMentors} onOwn={scrollToGallery} /></div>
+              <div className="band"><DailyQuestion onAskYourself={handlePickQuestion} /></div>
               <GoodToKnow />
               <div className="band"><Faq /></div>
             </>

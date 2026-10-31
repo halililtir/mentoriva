@@ -5,7 +5,7 @@ CLAUDE.md'den taşındı (2026-10-25). Kısa özet ve genel kurallar CLAUDE.md'd
 ## İstek akışı
 
 1. `app/page.tsx` istemci tarafı durum makinesi: `gallery → ask → single-response | compare → chat` (+ kota bitince `limit`). Karşılaştırma görünümü sohbete geçince sökülmez (`hidden`), geri dönünce yeniden istek atılmaz.
-   - `gallery` görünümü bir tanıtım sayfasıdır ve oturuma göre sıralanır. **Misafir** için sıra şöyledir: Hero (canlı örnek `DemoPreview`), rakamlar, "neden", "nasıl çalışır", mentorlar, örnek sorular, "ne değildir", SSS, kapanış. **Üye** için sıra: Hero, mentorlar, örnek sorular, nasıl çalışır, SSS, kapanış.
+   - `gallery` görünümü bir tanıtım sayfasıdır ve oturuma göre sıralanır. **Misafir** için sıra şöyledir: Hero (soru kutusu, portreler, canlı örnek `DemoPreview`), üç kapı (`Doors`), "neden", mentorlar (Yakında dahil), günün sorusu, "ne değildir", SSS, kapanış. **Üye** için sıra: Hero, üç kapı, mentorlar, günün sorusu, örnek sorular, SSS, kapanış. Sayfa kişinin durumunu sorar (karar, konuşma, kendini anlama), araç saymaz; yeni bölüm eklerken bu sadeliği koru.
    - Bölümler `components/home/*` altındadır. Tanıtım metinleri (örnek cevaplar, konu başlıkları, SSS) `lib/home-content.ts` içindedir; metin değişikliği için bileşenlere dokunma.
    - "Bu soruyu sor" ile seçilen soru `sessionStorage.mentoriva_draft` içinde taslak olarak tutulur. Misafir kayıt olup döndüğünde taslak korunur ve `AskView` o soruyla dolu açılır.
    - `FlowSteps` (Mentor seç → Soru yaz → Cevapları gör → Sohbet et) kullanıcıya akışta nerede olduğunu gösterir.
