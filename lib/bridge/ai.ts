@@ -79,6 +79,10 @@ when it is one. If the original is already calm and clear, change little.
 sent to the other person. Show you took in what this costs them, using a
 concrete thing they wrote. No advice, no analysis of the other person, no
 "anlıyorum" cliché, and do not repeat the message.
+In "heard" and "kept" you speak TO the writer, so "sen" is the writer and the
+other person is "o" or "karşındaki kişi". The writer's text says "sen" to the
+other person: flip it. "senin ailene" becomes "onun ailesine", "unuttun" becomes
+"unuttu". Never copy their "sen" as it is.
 
 "kept": one short Turkish sentence to the writer ("sen"): what you kept and,
 if you left something out (a threat, an insult), that you left it out.
