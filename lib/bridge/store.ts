@@ -11,6 +11,11 @@
  *   bridge-closed:<id> → kapatılan odanın işareti (eşzamanlı bir yazımın odayı
  *                        geri getirmemesi için; 30 gün)
  *   bridge-join:<id>   → katılım kilidi (aynı davetle iki kişi katılamasın)
+ *   bridge-seen:<id>:<sıra> → kişinin gördüğü son karşı mesajın zamanı
+ *   bridge-mail:<id>:<sıra> → e-posta bildirim aralığı (6 saat)
+ *   bridge-mute:<id>:<sıra> → bildirimi kapatan üye (oda JSON'unda değil: eşzamanlı
+ *                             bir gönderim bayrağı ezmesin, oda ömrü uzamasın)
+ *   bridge-here:<id>:<sıra> → kişi şu an sayfada (20 saniye)
  *
  * Admin panelinde gösterilmez. `deleteUser` → `deleteUserRooms`.
  */
@@ -38,6 +43,8 @@ export interface Room {
   members: RoomMember[];
   /** Bekleyen davet (yalnızca özeti tutulur). */
   invite: { hash: string; exp: number } | null;
+  /** Son mesaj (okunmamış işareti için; metin taşımaz). */
+  lastMsg?: { from: 0 | 1; at: string };
   createdAt: string;
   updatedAt: string;
 }
@@ -55,6 +62,10 @@ const msgKey = (id: string) => `bridge-msgs:${id}`;
 const indexKey = (u: string) => `bridges:${u}`;
 const closedKey = (id: string) => `bridge-closed:${id}`;
 const joinKey = (id: string) => `bridge-join:${id}`;
+const seenKey = (id: string, i: number) => `bridge-seen:${id}:${i}`;
+const muteKey = (id: string, i: number) => `bridge-mute:${id}:${i}`;
+const hereKey = (id: string, i: number) => `bridge-here:${id}:${i}`;
+export const bridgeMailKey = (id: string, i: number) => `bridge-mail:${id}:${i}`;
 export const isRoomId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{16}$/.test(v);
 
 const parse = <T>(raw: unknown): T | null => {
@@ -160,6 +171,7 @@ export async function addMessage(room: Room, from: 0 | 1, text: string): Promise
   const kv = getKV();
   await kv.lpush(msgKey(room.id), JSON.stringify(msg));
   await kv.ltrim(msgKey(room.id), 0, MAX_MESSAGES - 1);
+  room.lastMsg = { from, at: msg.at };
   return (await saveRoom(room)) ? msg : null;
 }
 
@@ -169,11 +181,43 @@ export async function listMessages(roomId: string): Promise<RoomMessage[]> {
   return raw.map((r) => parse<RoomMessage>(r)).filter((m): m is RoomMessage => !!m).reverse();
 }
 
+/** Kişi odayı açtığında: karşı tarafın son mesajı görüldü. */
+export async function markSeen(room: Room, me: 0 | 1): Promise<void> {
+  const last = room.lastMsg;
+  if (!last || last.from === me) return;
+  const kv = getKV();
+  if ((await kv.get(seenKey(room.id, me))) !== last.at) await kv.set(seenKey(room.id, me), last.at, { ex: ROOM_TTL });
+}
+
+/** Odalardan hangilerinde kişinin görmediği yeni mesaj var. */
+export async function unreadRooms(rooms: Room[], username: string): Promise<Set<string>> {
+  const pending = rooms.flatMap((r) => {
+    const me = memberIndex(r, username);
+    return r.lastMsg && me !== -1 && r.lastMsg.from !== me ? [{ r, me }] : [];
+  });
+  if (!pending.length) return new Set();
+  const seen = await getMany<string>(pending.map(({ r, me }) => seenKey(r.id, me)));
+  return new Set(pending.filter(({ r }, i) => seen[i] !== r.lastMsg?.at).map(({ r }) => r.id));
+}
+
+export const isMuted = async (id: string, member: 0 | 1) => !!(await getKV().get(muteKey(id, member)));
+
+export async function setMuted(id: string, member: 0 | 1, muted: boolean): Promise<void> {
+  const kv = getKV();
+  if (muted) await kv.set(muteKey(id, member), '1', { ex: 365 * 24 * 3600 });
+  else await kv.del(muteKey(id, member));
+}
+
+/** Sayfa açıkken her yoklamada: yeni mesajda e-posta gönderilmesin. */
+export const markHere = (id: string, member: 0 | 1) => getKV().set(hereKey(id, member), '1', { ex: 20 });
+export const isHere = async (id: string, member: 0 | 1) => !!(await getKV().get(hereKey(id, member)));
+
 /** Odayı iki taraf için de siler. */
 export async function closeRoom(room: Room): Promise<void> {
   const kv = getKV();
   await kv.set(closedKey(room.id), '1', { ex: ROOM_TTL });
-  await kv.del(roomKey(room.id), msgKey(room.id), joinKey(room.id));
+  const perMember = [0, 1].flatMap((i) => [seenKey(room.id, i), bridgeMailKey(room.id, i), muteKey(room.id, i), hereKey(room.id, i)]);
+  await kv.del(roomKey(room.id), msgKey(room.id), joinKey(room.id), ...perMember);
   await Promise.all(room.members.map((m) => kv.hdel(indexKey(m.username), room.id)));
 }
 

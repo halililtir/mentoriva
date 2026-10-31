@@ -9,7 +9,7 @@ import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 
-interface RoomView { id: string; topic: string; me: 0 | 1; myName: string; other: string | null; waiting: boolean }
+interface RoomView { id: string; topic: string; me: 0 | 1; myName: string; other: string | null; waiting: boolean; muted?: boolean }
 interface Msg { id: string; mine: boolean; text: string; at: string }
 interface Draft { text: string; kept: string; token: string }
 
@@ -133,6 +133,13 @@ export default function RoomPage({ params }: { params: { id: string } }) {
     try { await navigator.clipboard.writeText(inviteUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
   };
 
+  const toggleMute = async () => {
+    const muted = !room?.muted;
+    const res = await fetch(`/api/v1/bridge/${params.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mute: muted }) }).catch(() => null);
+    if (res?.ok) setRoom((r) => (r ? { ...r, muted } : r));
+    else setError('Bildirim ayarı değiştirilemedi; biraz sonra tekrar dene.');
+  };
+
   const close = async () => {
     if (!confirm('Konuşma iki taraf için de kapanacak ve içindeki bütün mesajlar silinecek. Emin misin?')) return;
     await fetch(`/api/v1/bridge/${params.id}`, { method: 'DELETE' });
@@ -169,6 +176,12 @@ export default function RoomPage({ params }: { params: { id: string } }) {
         </div>
         <button onClick={() => void close()} className="text-[12.5px] text-white/40 hover:text-red-300">Konuşmayı kapat ve sil</button>
       </div>
+
+      {!room.waiting && (
+        <button onClick={() => void toggleMute()} className="mt-3 text-[12.5px] text-white/40 hover:text-white/70">
+          {room.muted ? 'Yeni mesajlarda e-posta gelsin' : 'Yeni mesajlarda e-posta gelmesin'}
+        </button>
+      )}
 
       {room.waiting && room.me === 0 && (
         <div className="mt-6 rounded-3xl border border-brand-400/30 bg-brand-500/[0.06] p-5">

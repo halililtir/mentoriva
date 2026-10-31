@@ -1,6 +1,6 @@
 /**
  * Aramızda — odalar.
- *   GET                         → { rooms: [{ id, topic, other, waiting, updatedAt }] }
+ *   GET                         → { rooms: [{ id, topic, other, waiting, updatedAt, unread }] }
  *   POST { topic, consent }     → { id, inviteUrl }   (en fazla MAX_OPEN_ROOMS açık oda)
  */
 
@@ -12,7 +12,7 @@ import { CRISIS_RESPONSE, RATE_LIMITS } from '@/lib/features';
 import { moderateInput } from '@/lib/safety/moderation';
 import { recordEvent } from '@/lib/admin/metrics';
 import { SITE_URL } from '@/lib/site';
-import { MAX_OPEN_ROOMS, TOPIC_MAX, createRoom, listRooms, memberIndex } from '@/lib/bridge/store';
+import { MAX_OPEN_ROOMS, TOPIC_MAX, createRoom, listRooms, memberIndex, unreadRooms } from '@/lib/bridge/store';
 import { displayName } from '@/lib/bridge/guard';
 
 export const runtime = 'nodejs';
@@ -22,11 +22,12 @@ export async function GET(req: Request) {
   const user = await getSessionUser(req);
   if (!user) return jsonError(401, 'Giriş yapmalısın');
   const rooms = await listRooms(user.username);
+  const unread = await unreadRooms(rooms, user.username);
   return NextResponse.json({
     rooms: rooms.map((r) => {
       const me = memberIndex(r, user.username);
       const other = r.members[me === 0 ? 1 : 0];
-      return { id: r.id, topic: r.topic, other: other?.name ?? null, waiting: r.members.length < 2, updatedAt: r.updatedAt };
+      return { id: r.id, topic: r.topic, other: other?.name ?? null, waiting: r.members.length < 2, updatedAt: r.updatedAt, unread: unread.has(r.id) };
     }),
     max: MAX_OPEN_ROOMS,
   }, { headers: { 'Cache-Control': 'no-store' } });

@@ -22,7 +22,7 @@ describe('işaretler', () => {
   it('ilk soru ve tüm mentorlar; aynı işaret iki kez verilmez', async () => {
     expect(await awardBadges(U, { type: 'answered', mentorIds: ['jung', 'marcus'] })).toEqual(['ilk-adim']);
     expect(await awardBadges(U, { type: 'answered', mentorIds: ['jung'] })).toEqual([]);
-    expect(await awardBadges(U, { type: 'answered', mentorIds: ['nietzsche', 'mevlana', 'seneca'] })).toEqual(['cok-sesli']);
+    expect(await awardBadges(U, { type: 'answered', mentorIds: ['nietzsche', 'mevlana', 'seneca', 'sokrates'] })).toEqual(['cok-sesli']);
     expect((await getBadges(U)).map((b) => b.id)).toEqual(['ilk-adim', 'cok-sesli']);
   });
 

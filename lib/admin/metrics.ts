@@ -36,6 +36,7 @@ export const EVENTS = {
   bridge_message: 'Aramızda: mesaj iletildi',
   bridge_safety: 'Aramızda: güvenlik notu',
   bridge_close: 'Aramızda: oda kapatıldı',
+  bridge_mail: 'Aramızda: bildirim e-postası',
   signup: 'Yeni üye',
   journey: 'Yolculuk',
   share: 'Paylaşım kartı',

@@ -10,7 +10,7 @@ import { BridgeRules } from '@/components/bridge/BridgeRules';
 import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
 
-interface RoomRow { id: string; topic: string; other: string | null; waiting: boolean; updatedAt: string }
+interface RoomRow { id: string; topic: string; other: string | null; waiting: boolean; updatedAt: string; unread?: boolean }
 
 const DATE = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long' });
 
@@ -110,7 +110,7 @@ export default function AramizdaPage() {
                                 {r.waiting ? 'Davet bekliyor' : `${r.other} ile`} · {DATE.format(new Date(r.updatedAt))}
                               </span>
                             </span>
-                            <span className="text-white/35">›</span>
+                            {r.unread ? <span className="rounded-full bg-brand-500/20 px-2.5 py-0.5 text-[11.5px] text-brand-300">Yeni mesaj</span> : <span className="text-white/35">›</span>}
                           </Link>
                         </li>
                       ))}

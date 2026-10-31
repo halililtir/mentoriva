@@ -67,22 +67,27 @@ export default function KullanimSartlariPage() {
           </div>
 
           <div>
-            <h2 className="mb-2 font-display text-lg text-white/80">10. İçerik ve fikrî haklar</h2>
+            <h2 className="mb-2 font-display text-lg text-white/80">10. Aramızda (iki kişilik konuşma)</h2>
+            <p>Aramızda, iki üyenin kendi isteğiyle girdiği bir konuşma alanıdır; terapi, arabuluculuk ya da hukuki danışmanlık değildir. Mentoriva taraf tutmaz ve önerdiği metinler yalnızca öneridir. Gönderdiğin mesajın sorumluluğu sana aittir; onaylamadan hiçbir mesaj iletilmez. Davet bağlantısını taciz, tehdit, baskı ya da kişiyi rızası dışında konuşmaya zorlamak için kullanamazsın. Taraflardan biri konuşmayı kapattığında konuşma iki taraf için de silinir. Bu kurallara aykırı kullanımda hesabın kapatılabilir.</p>
+          </div>
+
+          <div>
+            <h2 className="mb-2 font-display text-lg text-white/80">11. İçerik ve fikrî haklar</h2>
             <p>Mentoriva&apos;nın tasarımı, logosu, yazılımı, mentor karakterleri ve çevirileri Mentoriva&apos;ya aittir. Sana üretilen cevapları kişisel amaçla kullanabilir ve paylaşım kartlarıyla paylaşabilirsin; toplu biçimde kopyalamak, ticari amaçla çoğaltmak ya da satmak yasaktır. Yazdıklarının sorumluluğu sana aittir.</p>
           </div>
 
           <div>
-            <h2 className="mb-2 font-display text-lg text-white/80">11. Sorumluluğun sınırı</h2>
+            <h2 className="mb-2 font-display text-lg text-white/80">12. Sorumluluğun sınırı</h2>
             <p>Mentoriva, yürürlükteki mevzuatın izin verdiği ölçüde; yapay zekâ cevaplarına dayanılarak alınan kararlardan, hizmetteki kesinti ya da veri kayıplarından doğan dolaylı zararlardan sorumlu tutulamaz. Bu sınırlama, kast ve ağır kusur hâllerini ve tüketici olarak sahip olduğun yasal hakları kapsamaz.</p>
           </div>
 
           <div>
-            <h2 className="mb-2 font-display text-lg text-white/80">12. Değişiklik, fesih ve uygulanacak hukuk</h2>
+            <h2 className="mb-2 font-display text-lg text-white/80">13. Değişiklik, fesih ve uygulanacak hukuk</h2>
             <p>Bu şartlar güncellenebilir; esaslı değişikliklerde sana haber verilir ve kullanmaya devam etmen yeni şartları kabul ettiğin anlamına gelir. Hesabını istediğin zaman silebilirsin. Bu şartlara Türkiye Cumhuriyeti hukuku uygulanır; tüketici olarak ikametgâhındaki tüketici hakem heyetleri ve tüketici mahkemelerine başvurma hakkın saklıdır.</p>
           </div>
 
           <div>
-            <h2 className="mb-2 font-display text-lg text-white/80">13. İletişim</h2>
+            <h2 className="mb-2 font-display text-lg text-white/80">14. İletişim</h2>
             <p>Sorular ve hesap silme talepleri için: <a href={`mailto:${CONTACT_EMAIL}`} className="text-brand-400 hover:text-brand-300">{CONTACT_EMAIL}</a>. Kişisel verilerin nasıl işlendiği <Link href="/gizlilik" className="text-brand-400 hover:text-brand-300">Gizlilik ve Aydınlatma Metni</Link>&apos;nde anlatılır.</p>
           </div>
         </section>

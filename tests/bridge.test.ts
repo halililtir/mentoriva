@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MAX_OPEN_ROOMS, addMessage, closeRoom, createRoom, deleteUserRooms, getRoom, isRoomId, joinRoom, listMessages, listRooms, memberIndex, renewInvite,
+  MAX_OPEN_ROOMS, addMessage, closeRoom, createRoom, deleteUserRooms, getRoom, isRoomId, joinRoom, isHere, isMuted, listMessages, listRooms, markHere, markSeen, memberIndex, renewInvite, setMuted, unreadRooms,
 } from '@/lib/bridge/store';
 import { parseSoften } from '@/lib/bridge/ai';
 
@@ -91,5 +91,36 @@ describe('Aramızda eşzamanlılık', () => {
     const results = await Promise.all([joinRoom(room.id, inviteToken, u(), 'B'), joinRoom(room.id, inviteToken, u(), 'C')]);
     expect(results.filter((r) => typeof r === 'object')).toHaveLength(1);
     expect((await getRoom(room.id))?.members).toHaveLength(2);
+  });
+});
+
+describe('Aramızda okunmamış ve bildirim', () => {
+  it('karşı tarafın mesajı görülene kadar yeni sayılır', async () => {
+    const { a, room, inviteToken } = await open();
+    const b = u();
+    const joined = await joinRoom(room.id, inviteToken, b, 'Mehmet');
+    if (typeof joined === 'string') throw new Error(joined);
+    await addMessage(joined, 0, 'merhaba');
+    expect((await unreadRooms(await listRooms(b), b)).has(room.id)).toBe(true);
+    expect((await unreadRooms(await listRooms(a), a)).has(room.id)).toBe(false);
+    await markSeen((await getRoom(room.id))!, 1);
+    expect((await unreadRooms(await listRooms(b), b)).has(room.id)).toBe(false);
+  });
+
+  it('bildirim kapatılabilir, kişiye özeldir ve oda kapanınca silinir', async () => {
+    const { room, inviteToken } = await open();
+    const joined = await joinRoom(room.id, inviteToken, u(), 'Mehmet');
+    if (typeof joined === 'string') throw new Error(joined);
+    await setMuted(room.id, 1, true);
+    expect(await isMuted(room.id, 1)).toBe(true);
+    expect(await isMuted(room.id, 0)).toBe(false);
+    await setMuted(room.id, 1, false);
+    expect(await isMuted(room.id, 1)).toBe(false);
+    await setMuted(room.id, 0, true);
+    await markHere(room.id, 1);
+    expect(await isHere(room.id, 1)).toBe(true);
+    await closeRoom(joined);
+    expect(await isMuted(room.id, 0)).toBe(false);
+    expect(await isHere(room.id, 1)).toBe(false);
   });
 });

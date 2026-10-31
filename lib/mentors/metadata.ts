@@ -161,7 +161,7 @@ export const ALL_MENTORS = [...ACTIVE_MENTORS, ...COMING_SOON_MENTORS];
  * Yeni bir mentoru önce buraya ekle; herkese açınca listeden çıkar.
  * Sunucu tarafı denetim: lib/mentors/access.ts.
  */
-export const EARLY_ACCESS_MENTORS: readonly MentorId[] = ['sokrates'];
+export const EARLY_ACCESS_MENTORS: readonly MentorId[] = [];
 
 export function getActiveMentor(id: MentorId): MentorMetadata {
   const found = ACTIVE_MENTORS.find((m) => m.id === id);

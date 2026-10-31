@@ -10,6 +10,7 @@ import { SITE_HOST } from '@/lib/site';
 import { Header } from '@/components/shared/Header';
 import { Footer } from '@/components/shared/Footer';
 import { cn } from '@/lib/cn';
+import { dative } from '@/lib/tr';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/session';
 import { track } from '@/lib/analytics';
@@ -32,7 +33,7 @@ interface Question {
   choices: Choice[];
 }
 
-/** Testte yalnızca herkese açık mentorlar (erken erişimdekiler için henüz soru yok). */
+/** Testte yalnızca herkese açık mentorlar; erken erişime alınan yeni mentorun henüz sorusu olmayabilir. */
 const TEST_MENTORS = ACTIVE_MENTORS.filter((m) => !EARLY_ACCESS_MENTORS.includes(m.id as MentorId));
 
 const QUESTIONS: Question[] = [
@@ -44,7 +45,8 @@ const QUESTIONS: Question[] = [
       { text: 'Bu kaosu bir sınav olarak görür, irademle ezip geçmeye odaklanırım.', scores: { nietzsche: 3, marcus: 1 } },
       { text: 'Direnmeyi bırakır, bu fırtınanın beni götüreceği yere güvenirim.', scores: { mevlana: 3 } },
       { text: 'Duygularımı bir kenara koyar, sadece kontrol edebildiğim şeylere bakarım.', scores: { marcus: 3, nietzsche: 1 } },
-      { text: 'Önce sakinleşir, gerçekten olanla kafamda büyüttüğümü birbirinden ayırırım.', scores: { seneca: 3, marcus: 1 } },
+      { text: 'Önce sakinleşir, gerçekten olanla kafamda büyüttüğümü birbirinden ayırırım.', scores: { seneca: 3, marcus: 1, sokrates: 1 } },
+      { text: 'Önce neyi bildiğimi, neyi yalnızca sandığımı ayırır, sorarak işin aslını ararım.', scores: { sokrates: 3, seneca: 1 } },
     ],
   },
   {
@@ -55,6 +57,7 @@ const QUESTIONS: Question[] = [
       { text: '"Ben"liğin eridiği, her şeyde sevgiyi bulma hâli.', scores: { mevlana: 3, jung: 1 } },
       { text: 'Dış dünyaya bağımlı olmayan, sarsılmaz bir iç dinginlik.', scores: { marcus: 3, seneca: 1 } },
       { text: 'Az şeyle yetinebilmek ve zamanımı sevdiklerime ayırabilmek.', scores: { seneca: 3, mevlana: 1 } },
+      { text: 'Neyin gerçekten iyi olduğunu anlamak ve ona göre yaşamak.', scores: { sokrates: 3, marcus: 1 } },
     ],
   },
   {
@@ -64,7 +67,8 @@ const QUESTIONS: Question[] = [
       { text: '"Hata diye bir şey yok, sadece beni daha güçlü kılan bir yıkım var."', scores: { nietzsche: 3 } },
       { text: '"Kusur, olgunlaşmanın kapısıdır. Ham olan, pişmeden anlaşılmaz."', scores: { mevlana: 3, jung: 1 } },
       { text: '"Oldu, geri dönüş yok. Şimdi ne düzeltebilirim? İleriye bak."', scores: { marcus: 3, nietzsche: 1 } },
-      { text: '"Bu akşam günü dürüstçe gözden geçireyim; yarın daha iyisini yaparım."', scores: { seneca: 3, marcus: 1 } },
+      { text: '"Bu akşam günü dürüstçe gözden geçireyim; yarın daha iyisini yaparım."', scores: { seneca: 3, marcus: 1, sokrates: 1 } },
+      { text: '"Doğru sandığım neydi, nerede yanıldım? Bunu anlamadan geçmeyeyim."', scores: { sokrates: 3 } },
     ],
   },
   {
@@ -75,6 +79,7 @@ const QUESTIONS: Question[] = [
       { text: 'Görünüşe değil manaya bakarım; uyum sağlar ama kalbimde kendi yolumu yürürüm.', scores: { mevlana: 3, seneca: 1 } },
       { text: 'Sosyal görevlerimi yerine getiririm ama zihnimi kimsenin kölesi yapmam.', scores: { marcus: 3 } },
       { text: 'Kalabalığa karışırım ama zamanımı ve dostlarımı dikkatle seçerim.', scores: { seneca: 3 } },
+      { text: 'Herkes böyle diyor diye doğru olmaz; her birini kendim sorgularım.', scores: { sokrates: 3, nietzsche: 1 } },
     ],
   },
   {
@@ -85,6 +90,7 @@ const QUESTIONS: Question[] = [
       { text: 'Teslimiyet ve her şeyin sonunda bir anlama çıkacağı inancı.', scores: { mevlana: 3 } },
       { text: 'Ölümün doğallığı ve elimdeki tek şey olan "şimdiki an".', scores: { marcus: 3, seneca: 1 } },
       { text: 'Korktuğum şeylerin çoğunun hiç yaşanmayacağını kendime hatırlatmak.', scores: { seneca: 3 } },
+      { text: 'Korktuğum şeyin gerçekten kötü olduğunu bilmiyorum; önce bunu sorarım.', scores: { sokrates: 3 } },
     ],
   },
   {
@@ -95,6 +101,7 @@ const QUESTIONS: Question[] = [
       { text: '"Affetmek benim yükümü bırakmam. Sevgi, öfkeden daha güçlü bir ateştir."', scores: { mevlana: 3 } },
       { text: '"Başkasının davranışı benim kontrolümde değil. Kendi tepkime odaklanayım."', scores: { marcus: 3 } },
       { text: '"Öfkeyle karar vermeyeyim; biraz bekleyip sonra konuşayım."', scores: { seneca: 3 } },
+      { text: 'Yaptığının ona da zarar verdiğini düşünür, neyi göremediğini anlamaya çalışırım.', scores: { sokrates: 3, mevlana: 1 } },
     ],
   },
   {
@@ -103,8 +110,9 @@ const QUESTIONS: Question[] = [
       { text: 'Kendimi tanımak — maskelerin ardındaki gerçek benliğimle barışmak.', scores: { jung: 3, mevlana: 1 } },
       { text: 'Sınırlarımı aşmak — dünkü halimden daha güçlü, daha cesur olmak.', scores: { nietzsche: 3 } },
       { text: 'Huzur — kalbimin sesini dinleyip, sevgiyle dolu bir hayat sürmek.', scores: { mevlana: 3 } },
-      { text: 'Erdemli yaşamak — doğru olanı, koşullar ne olursa olsun yapmak.', scores: { marcus: 3, jung: 1 } },
+      { text: 'Erdemli yaşamak — doğru olanı, koşullar ne olursa olsun yapmak.', scores: { marcus: 3, jung: 1, sokrates: 1 } },
       { text: 'Zaman — ömrümü başkalarının beklentilerine değil, kendi seçtiklerime harcamak.', scores: { seneca: 3, nietzsche: 1 } },
+      { text: 'Kimsenin görmediği yerde de dürüst ve doğru kalabilmek.', scores: { sokrates: 3, marcus: 1 } },
     ],
   },
 ];
@@ -196,6 +204,13 @@ function analyzeResults(scores: Record<string, number>, firstChoices: Record<str
       shareEmoji: '📜',
       miniTask: 'Bu akşam yatmadan önce günü baştan sona gözden geçir: hangi saat gerçekten senindi?',
     },
+    sokrates: {
+      analysis: 'Zihnin bir sohbet gibi çalışıyor; hazır cevaptan çok doğru soruyu seviyor. Herkesin bildiğini sandığı şeyin altını kazmaktan çekinmiyorsun. Senin için iyi yaşamak, neyi neden yaptığını bilmekle başlıyor.',
+      blindSpot: 'Her şeyi sorgularken karar anını kaçırabilir, yanındakileri de fark etmeden yorabilirsin. Bazen karşındakinin sorudan çok yakınlığa ihtiyacı vardır.',
+      growth: 'Mevlânâ seni dengeler. Anlamak kadar hissetmeye de yer açmak, sorularını daha sıcak kılar.',
+      shareEmoji: '🏺',
+      miniTask: 'Bugün çok emin olduğun bir fikrini seç ve kendine üç kez "neden?" diye sor.',
+    },
   };
 
   const primaryData = analyses[primary.mentor.id] ?? analyses['jung']!;
@@ -244,10 +259,10 @@ function AskMentorCta({ mentor, compact }: { mentor: MentorMetadata; compact?: b
         </p>
       )}
       <p className={cn('text-sm text-white/55', compact && 'mb-3')}>
-        Sonucun bir başlangıç. Aklındaki gerçek soruyu {mentor.shortName}&apos;a sor, sana kendi felsefesiyle cevap versin.
+        Sonucun bir başlangıç. Aklındaki gerçek soruyu {dative(mentor.shortName)} sor, sana kendi felsefesiyle cevap versin.
       </p>
       <button onClick={go} className="btn-primary w-full sm:w-auto">
-        {mentor.shortName}&apos;a ilk sorunu sor →
+        {dative(mentor.shortName)} ilk sorunu sor →
       </button>
       {status !== 'user' && <p className="mt-2 text-[11px] text-white/35">Ücretsiz · kredi kartı istenmez · günde {DEFAULT_DAILY_LIMIT} soru</p>}
       {!compact && (

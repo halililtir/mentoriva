@@ -11,6 +11,7 @@ import { getKV } from '@/lib/kv';
 import { recordEvent } from '@/lib/admin/metrics';
 import { addMessage } from '@/lib/bridge/store';
 import { requireMember } from '@/lib/bridge/guard';
+import { notifyOther } from '@/lib/bridge/notify';
 
 export const runtime = 'nodejs';
 
@@ -33,6 +34,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   await kv.expire(usedKey, 60 * 60).catch(() => 0);
   const message = await addMessage(room, me, text);
   if (!message) return jsonError(404, 'Bu konuşma kapatıldı.');
-  await recordEvent('bridge_message');
+  await Promise.all([recordEvent('bridge_message'), notifyOther(room, me)]);
   return NextResponse.json({ message: { id: message.id, mine: true, text: message.text, at: message.at } });
 }
