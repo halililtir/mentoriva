@@ -236,9 +236,14 @@ export function finishStudy(study: GuidedStudy, turns: StudyTurn[], takeaway: st
 }
 
 async function finishOnce(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<ReturnType<typeof parseFinish>> {
+  return parseFinish(extractJson(await finishRaw(study, turns, takeaway)), study.outcome);
+}
+
+/** Modelin ham cevabı (admin sınaması da bunu okur). */
+export async function finishRaw(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<string> {
   const system = `${COMMON}\n\n# THIS STUDY: ${study.title}\n\n${finishRules(study.outcome)}`;
   const user = `${transcript(turns)}${takeaway ? `\n\n<takeaway>\n${takeaway}\n</takeaway>` : ''}`;
-  const out = await completeText({
+  return completeText({
     system,
     user,
     maxTokens: 2200,
@@ -254,5 +259,4 @@ async function finishOnce(study: GuidedStudy, turns: StudyTurn[], takeaway: stri
       steps: ['Bu hafta iki seçeneği de birine anlatıp kendi sesini dinlemek'],
     }),
   });
-  return parseFinish(extractJson(out), study.outcome);
 }

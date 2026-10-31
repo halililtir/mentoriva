@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/auth/session';
 import { jsonError, readJson } from '@/lib/http';
 import { GUIDED_BY_ID } from '@/lib/studies/guided-content';
-import { finishStudy } from '@/lib/studies/guided';
+import { finishRaw, finishStudy } from '@/lib/studies/guided';
 import { sanitizeTurns } from '@/lib/studies/guided-server';
 
 export const runtime = 'nodejs';
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
   const turns = sanitizeTurns(body?.['turns']);
   if (!study || !turns) return jsonError(400, 'Geçersiz istek');
   const takeaway = typeof body?.['takeaway'] === 'string' ? body['takeaway'].slice(0, 400) : '';
+  if (body?.['raw'] === true) return NextResponse.json({ raw: await finishRaw(study, turns, takeaway) });
   const result = await finishStudy(study, turns, takeaway);
   return result ? NextResponse.json({ result }) : jsonError(502, 'Üretilemedi');
 }
