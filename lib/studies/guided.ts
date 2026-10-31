@@ -10,7 +10,8 @@
  *
  * 2026-10-31: Karar çalışmasında "karar senin" demek yetmiyordu. Mentoriva yine
  * taraf tutmaz ama iki mentor açıkça farklı taraflarda durur ve ayrıldıkları
- * nokta gösterilir (ürün sahibi kararı). Zarar verecek bir seçeneği kimse savunmaz.
+ * nokta gösterilir (ürün sahibi kararı). Zarar verecek bir seçeneği kimse savunmaz;
+ * ilaç ve tedavi kararında kimse "doktora sormadan" tarafında durmaz.
  */
 
 import { completeText } from '@/lib/claude/client';
@@ -111,9 +112,19 @@ const STANCES = `two thinkers among jung, nietzsche, mevlana, marcus, seneca who
   words, 2-6 words", "text": "2-3 sentences in the third person ('Nietzsche
   bence gitmeni söylerdi: …'), why, from that thinker's documented ideas
   applied to what THIS person wrote"}]. No quotations.
-  Exception: no thinker backs an option that would plainly harm the person or
-  someone else. If the choice turns on medical, legal or financial facts they
-  have not established, "side" is what to find out first, not an option.`;
+  These limits override taking sides, everywhere in the result (perspectives,
+  decision map, "consider", "steps"):
+  - Health: if the decision is about starting, stopping or changing a
+    medication or treatment, no thinker backs doing it alone. Both "side"
+    values are about how to decide WITH their doctor (for example what to raise
+    first); they may differ in emphasis, never on skipping the doctor. "consider"
+    says plainly that such a change belongs in a conversation with their doctor.
+  - Harm: an option that would harm, expose, humiliate, threaten or unlawfully
+    retaliate against someone is never backed and never left open: no "wait
+    and then do it", no "check if it is legal first". Name what it would cost
+    them, and turn to what they can do instead. Thinkers then differ on that.
+  - If the choice turns on legal or financial facts they have not established,
+    "side" is what to find out first, not an option.`;
 
 function finishRules(outcome: StudyOutcome): string {
   return `The study is over. The person may have written in their own words what became
@@ -220,13 +231,24 @@ const MOCK_FINISH: Record<StudyOutcome, unknown> = {
   cycle: { trigger: 'Yeni bir işin ilk heyecanı geçince', response: 'Kendine "bu da benim yerim değil" demek', result: 'Bırakmak', experiment: 'Bir sonraki sıkıldığın gün bırakmak yerine bir hafta beklemek' },
 };
 
+const FINISH_TRIES = 2;
+
 export async function finishStudy(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<ReturnType<typeof parseFinish>> {
+  // Bozuk ya da yarım JSON nadiren gelir; kişi emeğini boşa harcamasın diye bir kez daha denenir.
+  for (let i = 0; i < FINISH_TRIES - 1; i++) {
+    const r = await finishOnce(study, turns, takeaway).catch(() => null);
+    if (r) return r;
+  }
+  return finishOnce(study, turns, takeaway);
+}
+
+async function finishOnce(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<ReturnType<typeof parseFinish>> {
   const system = `${COMMON}\n\n# THIS STUDY: ${study.title}\n\n${finishRules(study.outcome)}`;
   const user = `${transcript(turns)}${takeaway ? `\n\n<takeaway>\n${takeaway}\n</takeaway>` : ''}`;
   const out = await completeText({
     system,
     user,
-    maxTokens: 1400,
+    maxTokens: 2200,
     effort: 'medium',
     feature: 'study',
     mock: () => JSON.stringify({
