@@ -9,7 +9,7 @@
  * barışmayı ya da ilişkiyi sürdürmeyi varsayılan doğru saymaz.
  */
 
-import { completeText } from '@/lib/claude/client';
+import { completeText, withRetry } from '@/lib/claude/client';
 import { extractJson } from '@/lib/journey/schema';
 import type { RoomMessage } from './store';
 
@@ -49,9 +49,11 @@ WHAT CHANGES (this is the whole job; a near-copy of an angry text is a failure)
 - Sarcasm and irony are translated into what they literally mean, nothing more.
 - Insults, name-calling and self-insults are removed; the point behind them stays.
 - Threats are never passed on, not even veiled ones ("görürsün", "hafife
-  almam", "sonra karışmam"). Keep only a concrete consequence the writer
-  actually named, as a plain statement. If there was only a vague threat,
-  keep the objection and say in "kept" that the threat was left out.
+  almam", "sonra karışmam"), and you never invent a warning of your own. A
+  decision the writer stated about their own conduct stays ("artık sessiz
+  kalmayacağım"). Keep a concrete consequence they named as a plain statement.
+  If there was only a vague threat, keep the objection and say in "kept" that
+  the threat was left out.
 - Where it fits, end with what the writer wants, using only what they said or
   clearly implied (e.g. "bunu konuşmak istiyorum").
 
@@ -121,15 +123,17 @@ export async function softenForRoom(p: {
     `<what_i_want_to_say>\n${p.raw}\n</what_i_want_to_say>`,
     p.instruction ? `[${SOFTEN_INSTRUCTIONS[p.instruction]}]` : '',
   ].filter(Boolean).join('\n\n');
-  const out = await completeText({
-    system: SOFTEN_SYSTEM,
-    user,
-    maxTokens: 600,
-    effort: 'medium',
-    feature: 'bridge',
-    mock: () => JSON.stringify({ text: `Bunu sana açıkça söylemek istiyorum: ${p.raw.slice(0, 120)}`, kept: 'Asıl söylemek istediğini korudum.', safety: false }),
+  const parsed = await withRetry(async () => {
+    const out = await completeText({
+      system: SOFTEN_SYSTEM,
+      user,
+      maxTokens: 800,
+      effort: 'medium',
+      feature: 'bridge',
+      mock: () => JSON.stringify({ text: `Bunu sana açıkça söylemek istiyorum: ${p.raw.slice(0, 120)}`, kept: 'Asıl söylemek istediğini korudum.', safety: false }),
+    });
+    return parseSoften(extractJson(out));
   });
-  const parsed = parseSoften(extractJson(out));
   if (!parsed) throw new Error('Geçersiz çıktı');
   return parsed;
 }

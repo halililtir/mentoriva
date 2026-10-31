@@ -8,7 +8,7 @@
  * (`safety`); bu durumda "sakin konuş" önerisi zarar verebilir.
  */
 
-import { completeText } from '@/lib/claude/client';
+import { completeText, withRetry } from '@/lib/claude/client';
 import { extractJson } from '@/lib/journey/schema';
 
 import { PREPARE_LIMITS, PREPARE_STYLE_IDS, PREPARE_STYLES, type PrepareResult, type PrepareStyle } from './prepare-public';
@@ -45,10 +45,11 @@ angry text is a failure)
 - Sarcasm and irony are translated into what they literally mean, nothing more.
 - Insults, name-calling and self-insults are removed; the point behind them stays.
 - Threats are never passed on, not even veiled ones ("görürsün", "hafife
-  almam", "görmezden gelmem", "sessiz kalmam" used as a warning). Keep only a
-  concrete action the writer actually named, as a plain statement. If there was
-  only a vague threat, keep the objection and the request, and say in "kept"
-  that the threat was left out.
+  almam"), and you never invent a warning of your own. A decision the writer
+  stated about their own conduct stays ("artık sessiz kalmayacağım", "bir daha
+  yapmayacağım"); it is theirs. Keep a concrete action they named as a plain
+  statement. If there was only a vague threat, keep the objection and the
+  request, and say in "kept" that the threat was left out.
 - Where it fits, end with what the writer wants, using only what they said or
   clearly implied.
 
@@ -136,15 +137,17 @@ function mock(input: PrepareInput): string {
 
 /** Hata fırlatır (çağıran hakkı iade eder). */
 export async function prepareMessage(input: PrepareInput): Promise<PrepareResult> {
-  const out = await completeText({
-    system: SYSTEM,
-    user: userMessage(input),
-    maxTokens: 1200,
-    effort: 'medium',
-    feature: 'prepare',
-    mock: () => mock(input),
+  const parsed = await withRetry(async () => {
+    const out = await completeText({
+      system: SYSTEM,
+      user: userMessage(input),
+      maxTokens: 1600,
+      effort: 'medium',
+      feature: 'prepare',
+      mock: () => mock(input),
+    });
+    return parsePrepare(extractJson(out), input.styles);
   });
-  const parsed = parsePrepare(extractJson(out), input.styles);
   if (!parsed) throw new Error('Geçersiz çıktı');
   return parsed;
 }

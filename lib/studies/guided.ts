@@ -14,7 +14,7 @@
  * ilaç ve tedavi kararında kimse "doktora sormadan" tarafında durmaz.
  */
 
-import { completeText } from '@/lib/claude/client';
+import { completeText, withRetry } from '@/lib/claude/client';
 import { extractJson } from '@/lib/journey/schema';
 import { PERSPECTIVE_MENTORS, STUDY_ANSWER_MAX, type GuidedStudy, type PerspectiveMentor, type StudyFinish, type StudyOutcome, type StudyTurn } from './guided-content';
 
@@ -231,15 +231,8 @@ const MOCK_FINISH: Record<StudyOutcome, unknown> = {
   cycle: { trigger: 'Yeni bir işin ilk heyecanı geçince', response: 'Kendine "bu da benim yerim değil" demek', result: 'Bırakmak', experiment: 'Bir sonraki sıkıldığın gün bırakmak yerine bir hafta beklemek' },
 };
 
-const FINISH_TRIES = 2;
-
-export async function finishStudy(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<ReturnType<typeof parseFinish>> {
-  // Bozuk ya da yarım JSON nadiren gelir; kişi emeğini boşa harcamasın diye bir kez daha denenir.
-  for (let i = 0; i < FINISH_TRIES - 1; i++) {
-    const r = await finishOnce(study, turns, takeaway).catch(() => null);
-    if (r) return r;
-  }
-  return finishOnce(study, turns, takeaway);
+export function finishStudy(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<ReturnType<typeof parseFinish>> {
+  return withRetry(() => finishOnce(study, turns, takeaway));
 }
 
 async function finishOnce(study: GuidedStudy, turns: StudyTurn[], takeaway: string): Promise<ReturnType<typeof parseFinish>> {

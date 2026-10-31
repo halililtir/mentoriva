@@ -317,3 +317,12 @@ export async function completeText({ system, user, maxTokens, temperature = 0.6,
   }
   throw lastError instanceof Error ? lastError : new Error('Yapay zekâ isteği başarısız');
 }
+
+/**
+ * Yapılandırılmış çıktı nadiren yarım ya da bozuk gelir; emek harcamış kişiye
+ * hata göstermek yerine bir kez daha denenir. Son hata olduğu gibi fırlar.
+ */
+export async function withRetry<T>(run: () => Promise<T | null>): Promise<T | null> {
+  const first = await run().catch(() => null);
+  return first ?? run();
+}
