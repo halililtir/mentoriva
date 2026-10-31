@@ -17,6 +17,7 @@ export const SOFTEN_INSTRUCTIONS = {
   kisa: 'Make it shorter.',
   net: 'Make it clearer and more direct.',
   yumusak: 'Make it gentler in tone, without dropping any point.',
+  guclu: 'Let the weight of it show more: name the anger plainly and say how serious this is for them. Still no insults, threats or verdicts about the person.',
 } as const;
 export type SoftenInstruction = keyof typeof SOFTEN_INSTRUCTIONS;
 
@@ -37,8 +38,10 @@ WHAT STAYS
   decision. If they disagree, the message disagrees. If they set a deadline or
   a real consequence (moving out, ending something, not coming), it stays,
   said plainly as their decision.
-- The strength of the feeling. "Bıktım" may become "artık çok yoruldum" but
-  must not turn into mild annoyance.
+- The strength of the feeling. Anger stays named and felt ("çok kızgınım",
+  "artık çok yoruldum", "bu benim için ciddi"); the other person must understand
+  how much this matters. Softening the attack is the job, softening the
+  feeling is not. The writer must recognise their own anger in the result.
 
 WHAT CHANGES (this is the whole job; a near-copy of an angry text is a failure)
 - Verdicts about the other person ("beni hiç dinlemiyorsun", "hep sen
@@ -72,6 +75,11 @@ Natural spoken Turkish, first person ("ben"), addressed to the other person
 as the original. Take the earlier messages into account so it reads as a reply
 when it is one. If the original is already calm and clear, change little.
 
+"heard": one or two warm Turkish sentences to the writer only ("sen"), never
+sent to the other person. Show you took in what this costs them, using a
+concrete thing they wrote. No advice, no analysis of the other person, no
+"anlıyorum" cliché, and do not repeat the message.
+
 "kept": one short Turkish sentence to the writer ("sen"): what you kept and,
 if you left something out (a threat, an insult), that you left it out.
 
@@ -80,7 +88,7 @@ threats, stalking or serious coercion against them, do not rewrite; return
 {"safety": true}. Ordinary conflict, anger and hurt are NOT safety cases.
 
 No markdown, no emojis, no quotation marks around the message.
-Return ONLY JSON: {"text": "...", "kept": "...", "safety": false}`;
+Return ONLY JSON: {"heard": "...", "text": "...", "kept": "...", "safety": false}`;
 
 const EXPLAIN_SYSTEM = `In a two-person conversation room on Mentoriva (a Turkish app), one person
 asks you privately to help them understand a message from the other person.
@@ -100,14 +108,14 @@ No markdown, no emojis. Return ONLY JSON: {"meaning": "...", "ask": "..."}`;
 const clean = (v: unknown, max: number): string =>
   typeof v === 'string' ? v.replace(/[*#_`]/g, '').replace(/^["“]+|["”]+$/g, '').replace(/\s+/g, ' ').trim().slice(0, max) : '';
 
-export type SoftenResult = { safety: true } | { safety: false; text: string; kept: string };
+export type SoftenResult = { safety: true } | { safety: false; text: string; kept: string; heard: string };
 
 export function parseSoften(raw: unknown): SoftenResult | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
   if (o['safety'] === true) return { safety: true };
   const text = clean(o['text'], 1200);
-  return text ? { safety: false, text, kept: clean(o['kept'], 240) } : null;
+  return text ? { safety: false, text, kept: clean(o['kept'], 240), heard: clean(o['heard'], 300) } : null;
 }
 
 export async function softenForRoom(p: {
@@ -130,7 +138,7 @@ export async function softenForRoom(p: {
       maxTokens: 800,
       effort: 'medium',
       feature: 'bridge',
-      mock: () => JSON.stringify({ text: `Bunu sana açıkça söylemek istiyorum: ${p.raw.slice(0, 120)}`, kept: 'Asıl söylemek istediğini korudum.', safety: false }),
+      mock: () => JSON.stringify({ text: `Bunu sana açıkça söylemek istiyorum: ${p.raw.slice(0, 120)}`, kept: 'Asıl söylemek istediğini korudum.', heard: 'Bunu yazmak bile seni yormuş gibi; yükün belli.', safety: false }),
     });
     return parseSoften(extractJson(out));
   });

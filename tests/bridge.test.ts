@@ -67,7 +67,7 @@ describe('Aramızda odası', () => {
 describe('parseSoften', () => {
   it('güvenlik işaretini ve öneriyi okur, boşu reddeder', () => {
     expect(parseSoften({ safety: true })).toEqual({ safety: true });
-    expect(parseSoften({ text: 'Bunu konuşmak istiyorum.', kept: 'İsteğin korundu.' })).toEqual({ safety: false, text: 'Bunu konuşmak istiyorum.', kept: 'İsteğin korundu.' });
+    expect(parseSoften({ heard: 'Yorulmuşsun.', text: 'Bunu konuşmak istiyorum.', kept: 'İsteğin korundu.' })).toEqual({ safety: false, heard: 'Yorulmuşsun.', text: 'Bunu konuşmak istiyorum.', kept: 'İsteğin korundu.' });
     expect(parseSoften({ text: '   ' })).toBeNull();
     expect(parseSoften('metin')).toBeNull();
   });

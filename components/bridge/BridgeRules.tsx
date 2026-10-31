@@ -1,6 +1,6 @@
 /** "Aramızda" kuralları: oda açarken ve davete katılırken aynı metin onaylanır. */
 export const BRIDGE_RULES = [
-  'Yazdığın ham metin karşı tarafa hiçbir zaman gitmez ve saklanmaz; ona yalnızca senin onayladığın hâl gider.',
+  'Yazdığın ham metin karşı tarafa hiçbir zaman gitmez ve saklanmaz; ona yalnızca senin onayladığın hâl gider. Mesajların Mentoriva ile hazırlandığı iki tarafa da görünür.',
   'Mentoriva taraf tutmaz, kimin haklı olduğuna karar vermez ve kimseye tanı koymaz.',
   'İkinizden biri konuşmayı kapattığında konuşma ve içindeki bütün mesajlar iki taraf için de silinir.',
   'Bu bir terapi ya da arabuluculuk hizmeti değildir; birbirinizi daha iyi duymanız için bir araçtır.',

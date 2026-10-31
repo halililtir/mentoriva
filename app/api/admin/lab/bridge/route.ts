@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const raw = typeof body?.['raw'] === 'string' ? body['raw'].slice(0, 1200) : '';
   if (!topic || raw.length < 3) return jsonError(400, 'Geçersiz istek');
   const ins = body?.['instruction'];
-  const instruction = typeof ins === 'string' && ins in SOFTEN_INSTRUCTIONS ? (ins as SoftenInstruction) : undefined;
+  const instruction = typeof ins === 'string' && Object.hasOwn(SOFTEN_INSTRUCTIONS, ins) ? (ins as SoftenInstruction) : undefined;
   const hist = Array.isArray(body?.['history']) ? (body['history'] as unknown[]).slice(-20) : [];
   const messages: RoomMessage[] = hist.flatMap((h, i) => {
     const o = h as { mine?: unknown; text?: unknown };
