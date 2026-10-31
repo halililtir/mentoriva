@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { DECISION_LIMITS, type SavedDecision } from '@/lib/decisions-public';
+import { todayKey } from '@/lib/time';
 
 const DATE = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 const when = (iso: string) => DATE.format(new Date(iso));
@@ -44,7 +45,7 @@ export function DecisionList() {
 function DecisionItem({ d, onUpdate, onRemove }: { d: SavedDecision; onUpdate: (d: SavedDecision) => void; onRemove: () => void }) {
   const [outcome, setOutcome] = useState('');
   const [error, setError] = useState('');
-  const due = !d.outcome && d.checkDate <= new Date().toISOString().slice(0, 10);
+  const due = !d.outcome && d.checkDate <= todayKey();
 
   const save = async () => {
     setError('');

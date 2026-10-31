@@ -17,6 +17,8 @@ export interface SavedDecision {
   createdAt: string;
   /** Takip e-postasının tarihi (YYYY-MM-DD). */
   checkDate: string;
+  /** Takip e-postası gönderildiyse (bir kez gider). */
+  notifiedAt?: string;
   outcome?: string;
   outcomeAt?: string;
 }

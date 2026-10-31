@@ -6,12 +6,16 @@ import type { StudyFinish } from '@/lib/studies/guided-content';
 
 /** İki farklı mentorun bu meseleye bakışı. */
 export function StudyPerspectives({ result }: { result: StudyFinish }) {
-  if (!result.perspectives?.length) return null;
+  const list = result.perspectives ?? [];
+  const crux = result.decision?.crux;
+  if (!list.length && !crux) return null;
+  // Başlık ancak gerçekten iki ayrı taraf varsa bunu söyler
+  const split = list.length === 2 && !!list[0]?.side && !!list[1]?.side && list[0].side !== list[1].side;
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">{result.decision ? 'İki mentor, iki taraf' : 'İki farklı bakış'}</p>
+      {list.length > 0 && <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">{split ? 'İki mentor, iki taraf' : list.length > 1 ? 'İki farklı bakış' : 'Bir bakış'}</p>}
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        {result.perspectives.map((p) => {
+        {list.map((p) => {
           const m = getActiveMentor(p.mentor);
           const a = getAccent(m.accentColor);
           return (
@@ -28,10 +32,10 @@ export function StudyPerspectives({ result }: { result: StudyFinish }) {
           );
         })}
       </div>
-      {result.decision?.crux && (
+      {crux && (
         <div className="mt-3 rounded-2xl border border-brand-400/30 bg-brand-500/[0.06] p-4">
           <p className="text-[11px] uppercase tracking-[0.14em] text-brand-300">Ayrıldıkları yer</p>
-          <p className="mt-1.5 font-display text-lg leading-snug text-white/95">{result.decision.crux}</p>
+          <p className="mt-1.5 font-display text-lg leading-snug text-white/95">{crux}</p>
         </div>
       )}
     </div>

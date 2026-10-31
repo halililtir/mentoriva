@@ -16,6 +16,8 @@ import { SITE_URL } from '@/lib/site';
 
 const DEFAULT_FROM = 'Mentoriva <onboarding@resend.dev>';
 
+export const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
 export interface EmailMessage {
   to: string;
   subject: string;

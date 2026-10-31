@@ -319,7 +319,7 @@ export default function HomePage() {
           üyeye ise doğrudan mentor seçimi ve örnek sorular gösterilir. */}
       {view === 'gallery' && (
         <div className="flex-1">
-          <Hero user={user} onAsk={handlePickQuestion} onStart={scrollToGallery} />
+          <Hero user={user} guestTrial={session.status !== 'user' && !guestUsed} onAsk={handlePickQuestion} onStart={scrollToGallery} />
           {user && user.questionsUsed === 0 && <WelcomeCard name={user.name} onPick={handlePickQuestion} />}
           {user && <StepReminder />}
           <Doors />

@@ -8,7 +8,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { digest } from '@/lib/auth/tokens';
 import { jsonError } from '@/lib/http';
 import { sendDueReminders } from '@/lib/reminders';
-import { sendDueDecisions } from '@/lib/decisions';
+import { sendDueDecisions } from '@/lib/decisions-mail';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

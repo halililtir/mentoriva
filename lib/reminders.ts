@@ -10,9 +10,11 @@
  */
 
 import { getKV } from '@/lib/kv';
-import { todayKey } from '@/lib/time';
+import { addDays, todayKey } from '@/lib/time';
+
+export { addDays };
 import { SITE_URL } from '@/lib/site';
-import { sendEmailDetailed } from '@/lib/email';
+import { escapeHtml as esc, sendEmailDetailed } from '@/lib/email';
 import { getUser } from '@/lib/auth/users';
 import { getStep } from '@/lib/journey/store';
 import { recordEvent } from '@/lib/admin/metrics';
@@ -29,13 +31,6 @@ export interface Reminder {
 const key = (u: string) => `reminder:${u}`;
 const dayKey = (d: string) => `reminder-day:${d}`;
 export const reminderKey = key;
-
-/** YYYY-MM-DD + n gün (takvim günü). */
-export function addDays(date: string, n: number): string {
-  const d = new Date(`${date}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-}
 
 const parse = (raw: unknown): Reminder | null => {
   try { return (typeof raw === 'string' ? JSON.parse(raw) : raw) as Reminder | null; } catch { return null; }
@@ -73,7 +68,6 @@ ${link}
 
 Bu e-postayı yalnızca bir kez, sen istediğin için gönderdik.
 Mentoriva`;
-  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
   const html = `<div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;color:#14181f;line-height:1.6">
 <p>${esc(hello)}</p>
 <p>${days} gün önce kendine küçük bir adım seçmiştin: <b>${esc(label)}</b>.</p>

@@ -3,7 +3,10 @@ import { GUIDED_STUDIES, STUDY_MAX_QUESTIONS, finishToText, turnsToQuestion } fr
 import { parseFinish, parseNext } from '@/lib/studies/guided';
 import { sanitizeTurns, signStudy, verifyStudy } from '@/lib/studies/guided-server';
 import { addDays, getReminder, sendDueReminders, setReminder } from '@/lib/reminders';
-import { MAX_DECISIONS, addDecision, deleteDecision, listDecisions, sendDueDecisions, setDecisionOutcome } from '@/lib/decisions';
+import { MAX_DECISIONS, addDecision, decisionOwnerKey, deleteDecision, deleteUserDecisions, listDecisions, setDecisionOutcome } from '@/lib/decisions';
+import { sendDueDecisions } from '@/lib/decisions-mail';
+import { saveUser } from '@/lib/auth/users';
+import { getKV } from '@/lib/kv';
 import { saveStep, updateStepStatus } from '@/lib/journey/store';
 import { todayKey } from '@/lib/time';
 
@@ -132,10 +135,28 @@ describe('karar: mentorların tarafı ve takip', () => {
     expect(await addDecision(other, { title: 't', choice: 'c', why: '', days: 7 })).toBe('full');
   });
 
-  it('e-posta yalnızca sonucu yazılmamış, var olan karar için denenir', async () => {
-    const day = addDays(todayKey(), 40);
-    const ghost = await addDecision(u(), { title: 't', choice: 'c', why: '', days: 7 });
-    expect(ghost).not.toBe('full');
-    expect((await sendDueDecisions(day)).sent).toBe(0);
+  it('e-posta bir kez gider; sonucu yazılmış ya da silinmiş karara gitmez', async () => {
+    const user = u();
+    await saveUser({ username: user, password: 'x', isActive: true, createdAt: new Date().toISOString(), lastSeen: null });
+    const due = await addDecision(user, { title: 't', choice: 'c', why: '', days: 7 });
+    const answered = await addDecision(user, { title: 't', choice: 'c', why: '', days: 7 });
+    const removed = await addDecision(user, { title: 't', choice: 'c', why: '', days: 7 });
+    if (due === 'full' || answered === 'full' || removed === 'full') throw new Error('full');
+    await setDecisionOutcome(user, answered.id, 'Oldu.');
+    await deleteDecision(user, removed.id);
+    expect((await sendDueDecisions(due.checkDate)).sent).toBe(1);
+    expect((await listDecisions(user)).find((d) => d.id === due.id)?.notifiedAt).toBeTruthy();
+    // Cron yarıda kesilmiş gibi aynı kuyruk yeniden işlense de ikinci e-posta yok
+    await getKV().lpush(`decision-day:${due.checkDate}`, due.id);
+    expect((await sendDueDecisions(due.checkDate)).sent).toBe(0);
+  });
+
+  it('hesap silinince sahip kaydı kuyrukta kalmaz', async () => {
+    const user = u();
+    const d = await addDecision(user, { title: 't', choice: 'c', why: '', days: 30 });
+    if (d === 'full') throw new Error('full');
+    await deleteUserDecisions(user);
+    expect(await getKV().get(decisionOwnerKey(d.id))).toBeNull();
+    expect(await listDecisions(user)).toEqual([]);
   });
 });

@@ -16,6 +16,7 @@ import { getBonus, refundBonus, spendBonus } from '@/lib/auth/bonus';
 import { FOUNDER_DAILY_BONUS, deleteBadgeData, getPerks, hasBadge, type PerkId } from '@/lib/badges';
 import { deleteAllChats } from '@/lib/chats';
 import { deleteUserRooms } from '@/lib/bridge/store';
+import { deleteUserDecisions } from '@/lib/decisions';
 import type { ConsentRecord } from '@/lib/legal';
 
 export { DEFAULT_DAILY_LIMIT };
@@ -105,11 +106,11 @@ export async function deleteUser(username: string): Promise<void> {
     `cards:${username}`,
     `memory:${username}`,
     `reminder:${username}`,
-    `decisions:${username}`,
   );
   await deleteBadgeData(username);
   await deleteAllChats(username);
   await deleteUserRooms(username);
+  await deleteUserDecisions(username);
 }
 
 export async function listUsers(): Promise<StoredUser[]> {
