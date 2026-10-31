@@ -7,6 +7,10 @@
  * 2026-10-14: "yalnızca ayna" sonucu kullanıcıya bir şey vermiyordu. Artık
  * Mentoriva kişinin cevaplarında gördüğünü açıkça söyler; yine de karar
  * kişinindir ve söylenmeyen geçmiş/neden uydurulmaz.
+ *
+ * 2026-10-31: Karar çalışmasında "karar senin" demek yetmiyordu. Mentoriva yine
+ * taraf tutmaz ama iki mentor açıkça farklı taraflarda durur ve ayrıldıkları
+ * nokta gösterilir (ürün sahibi kararı). Zarar verecek bir seçeneği kimse savunmaz.
  */
 
 import { completeText } from '@/lib/claude/client';
@@ -65,8 +69,11 @@ const OUTCOME_RULES: Record<StudyOutcome, string> = {
   basıyor gibi; yeni iş ise merakını besliyor.' Empty only if truly balanced.",
   "consider": "something they have not considered: a third path, a way to
   combine the options, or a small test they could run before deciding (1-2
-  sentences)"}
-  2-3 options, 1-3 short items each. Do not recommend; show the scale clearly.`,
+  sentences)",
+  "crux": "one sentence: the single question on which the two thinkers part
+  ways and on which this decision really turns, in the person's own terms"}
+  2-3 options, 1-3 short items each. You yourself do not recommend; the
+  thinkers below do.`,
   boundary: `"boundary": {"line": "what crosses their line, concretely, in their words",
   "want": "what they want instead", "sentence": "a ready-to-say sentence in
   first person, kind and clear, that keeps their point (1-2 sentences)",
@@ -91,6 +98,23 @@ const OUTCOME_RULES: Record<StudyOutcome, string> = {
   a possibility, one sentence)"}. No psychological causes.`,
 };
 
+const PERSPECTIVES = `two short takes from two DIFFERENT thinkers among jung,
+  nietzsche, mevlana, marcus, seneca, chosen because they would see this
+  matter in clearly different ways: [{"mentor": "id", "text": "2-3 sentences,
+  in the third person ('Seneca buna şöyle bakardı: …'), applying that
+  thinker's documented ideas to THIS situation"}]. No quotations.`;
+
+const STANCES = `two thinkers among jung, nietzsche, mevlana, marcus, seneca who would come
+  down on DIFFERENT sides of THIS decision. Each one takes a clear side; this
+  is the heart of the result, so do not soften it into "it depends":
+  [{"mentor": "id", "side": "the option they would back, in the person's
+  words, 2-6 words", "text": "2-3 sentences in the third person ('Nietzsche
+  bence gitmeni söylerdi: …'), why, from that thinker's documented ideas
+  applied to what THIS person wrote"}]. No quotations.
+  Exception: no thinker backs an option that would plainly harm the person or
+  someone else. If the choice turns on medical, legal or financial facts they
+  have not established, "side" is what to find out first, not an option.`;
+
 function finishRules(outcome: StudyOutcome): string {
   return `The study is over. The person may have written in their own words what became
 clear to them ("takeaway"); honour it and never contradict it.
@@ -100,11 +124,7 @@ Give them a result worth having:
   what seems to weigh most and why that matters, a tension, a strength they
   showed without noticing, or a perspective from outside their own words.
   Never a summary of what they wrote.
-- "perspectives": two short takes from two DIFFERENT thinkers among jung,
-  nietzsche, mevlana, marcus, seneca, chosen because they would see this
-  matter in clearly different ways: [{"mentor": "id", "text": "2-3 sentences,
-  in the third person ('Seneca buna şöyle bakardı: …'), applying that
-  thinker's documented ideas to THIS situation"}]. No quotations.
+- "perspectives": ${outcome === 'decision' ? STANCES : PERSPECTIVES}
 - ${OUTCOME_RULES[outcome]}
 - "open": one OPEN question still open for them (at most 25 words). Never a
   choice between options ("X mi, yoksa Y mi?" or a list); ask what, how or
@@ -142,7 +162,7 @@ export function parseFinish(raw: unknown, outcome: StudyOutcome): ({ crisis: tru
   const f: StudyFinish = { insights, open: clean(o['open'], 240), steps: list(o['steps'], 2, 160) };
   const perspectives = (Array.isArray(o['perspectives']) ? o['perspectives'] : [])
     .map((x) => obj(x))
-    .map((x) => ({ mentor: clean(x['mentor'], 20) as PerspectiveMentor, text: clean(x['text'], 500) }))
+    .map((x) => ({ mentor: clean(x['mentor'], 20) as PerspectiveMentor, text: clean(x['text'], 500), side: clean(x['side'], 80) }))
     .filter((x) => PERSPECTIVE_MENTORS.includes(x.mentor) && x.text)
     .filter((x, i, arr) => arr.findIndex((y) => y.mentor === x.mentor) === i)
     .slice(0, 2);
@@ -155,7 +175,7 @@ export function parseFinish(raw: unknown, outcome: StudyOutcome): ({ crisis: tru
       .map((x) => ({ name: clean(x['name'], 80), gives: list(x['gives'], 3, 120), costs: list(x['costs'], 3, 120), serves: clean(x['serves'], 160) }))
       .filter((x) => x.name)
       .slice(0, 3);
-    if (options.length) f.decision = { options, leaning: clean(d['leaning'], 300), consider: clean(d['consider'], 400) };
+    if (options.length) f.decision = { options, leaning: clean(d['leaning'], 300), consider: clean(d['consider'], 400), crux: clean(d['crux'], 300) };
   } else if (outcome === 'boundary') {
     const b = obj(o['boundary']);
     const sentence = clean(b['sentence'], 400);
@@ -194,7 +214,7 @@ export async function nextQuestion(study: GuidedStudy, turns: StudyTurn[], last:
 }
 
 const MOCK_FINISH: Record<StudyOutcome, unknown> = {
-  decision: { options: [{ name: 'Burada kalmak', gives: ['ailene yakınlık', 'huzur'], costs: ['öğrenme fırsatı'], serves: 'huzur' }, { name: 'Yeni iş', gives: ['öğrenmek', 'heyecan'], costs: ['ailenden uzak kalmak'], serves: 'merak' }], leaning: 'Anlattıklarına bakınca huzur daha ağır basıyor gibi.' },
+  decision: { options: [{ name: 'Burada kalmak', gives: ['ailene yakınlık', 'huzur'], costs: ['öğrenme fırsatı'], serves: 'huzur' }, { name: 'Yeni iş', gives: ['öğrenmek', 'heyecan'], costs: ['ailenden uzak kalmak'], serves: 'merak' }], leaning: 'Anlattıklarına bakınca huzur daha ağır basıyor gibi.', crux: 'Asıl soru: huzuru mu korumak istiyorsun, yoksa merakının peşinden gitmek mi seni canlı tutuyor?' },
   boundary: { line: 'İşinin sürekli sana bırakılması', want: 'Kendi işine odaklanabilmek', sentence: 'Bu hafta kendi işlerimi bitirmem gerekiyor; bunu senin yerine alamayacağım.', ifSay: 'Kısa bir gerginlik, ama zamanının sana dönmesi', ifNot: 'Akşamları yorgun ve kırgın kalmak' },
   values: [{ name: 'Birine gerçekten faydalı olmak', present: 'Arkadaşlarına yardım ettiğinde', missing: 'İşinde' }],
   cycle: { trigger: 'Yeni bir işin ilk heyecanı geçince', response: 'Kendine "bu da benim yerim değil" demek', result: 'Bırakmak', experiment: 'Bir sonraki sıkıldığın gün bırakmak yerine bir hafta beklemek' },
@@ -212,6 +232,9 @@ export async function finishStudy(study: GuidedStudy, turns: StudyTurn[], takeaw
     mock: () => JSON.stringify({
       insights: ['İki seçeneği anlatırken her seferinde "huzur" kelimesine döndün; bu sana bir şey söylüyor olabilir.', 'Yeni işi anlatırken sesin canlanıyor ama hep "ama" ile bitiyor.'],
       [study.outcome === 'decision' ? 'decision' : study.outcome === 'boundary' ? 'boundary' : study.outcome === 'values' ? 'values' : 'cycle']: MOCK_FINISH[study.outcome],
+      perspectives: study.outcome === 'decision'
+        ? [{ mentor: 'nietzsche', side: 'Yeni iş', text: 'Nietzsche bence gitmeni söylerdi: canlandığın yer orası.' }, { mentor: 'seneca', side: 'Burada kalmak', text: 'Seneca kalmanı söylerdi: huzurun başka yerde bulunmaz.' }]
+        : undefined,
       open: 'Huzur senin için bugün neye benziyor?',
       steps: ['Bu hafta iki seçeneği de birine anlatıp kendi sesini dinlemek'],
     }),

@@ -23,7 +23,7 @@ export default function StudyPage({ params }: { params: { id: string } }) {
     <div className="flex min-h-dvh flex-col">
       <Header />
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 pb-16 pt-8">
-        <Link href="/calismalar" className="btn-ghost -ml-2 text-sm">← Çalışmalar</Link>
+        <div><Link href="/calismalar" className="btn-ghost -ml-2 text-sm">← Çalışmalar</Link></div>
         <p className="eyebrow mt-6">Rehberli çalışma</p>
         <h1 className="mt-3 font-display text-[clamp(2rem,5vw,2.7rem)] leading-tight">{study.title}</h1>
         <StudyRunner study={study} />

@@ -133,6 +133,9 @@ export const RATE_LIMITS = {
   STUDY_START_USER: { max: 8, windowSec: HOUR },
   STUDY_STEP_USER: { max: 60, windowSec: HOUR },
 
+  /** Karar takibi: ekleme ve "ne oldu?" kaydı. */
+  DECISIONS_USER: { max: 30, windowSec: HOUR },
+
   /** Aramızda: oda açma, yumuşatma taslağı (hak düşer), anlamaya yardım. */
   BRIDGE_CREATE_USER: { max: 5, windowSec: HOUR },
   BRIDGE_JOIN_USER: { max: 10, windowSec: HOUR },

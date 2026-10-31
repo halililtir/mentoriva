@@ -8,6 +8,7 @@ import { Footer } from '@/components/shared/Footer';
 import { MemoryPanel } from '@/components/me/MemoryPanel';
 import { SavedCards } from '@/components/feelings/SavedCards';
 import { ReminderToggle } from '@/components/me/ReminderToggle';
+import { DecisionList } from '@/components/me/DecisionList';
 import { useSession } from '@/lib/session';
 import { getActiveMentor, getAccent } from '@/lib/mentors/metadata';
 import { MAP_FIELDS } from '@/lib/journey/content';
@@ -47,6 +48,9 @@ export default function YolculugumPage() {
           <div className="mt-10 space-y-12">
             <Section title="Hafızam" id="hafiza">
               <MemoryPanel />
+            </Section>
+            <Section title="Kararlarım" id="kararlar">
+              <DecisionList />
             </Section>
             <Section title="Seçtiğim adım" id="adim">
               <StepSection />

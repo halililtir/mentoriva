@@ -3,6 +3,7 @@ import { GUIDED_STUDIES, STUDY_MAX_QUESTIONS, finishToText, turnsToQuestion } fr
 import { parseFinish, parseNext } from '@/lib/studies/guided';
 import { sanitizeTurns, signStudy, verifyStudy } from '@/lib/studies/guided-server';
 import { addDays, getReminder, sendDueReminders, setReminder } from '@/lib/reminders';
+import { MAX_DECISIONS, addDecision, deleteDecision, listDecisions, sendDueDecisions, setDecisionOutcome } from '@/lib/decisions';
 import { saveStep, updateStepStatus } from '@/lib/journey/store';
 import { todayKey } from '@/lib/time';
 
@@ -103,5 +104,38 @@ describe('çalışma sonucu katkı alanları', () => {
     }, 'values');
     expect(r && !r.crisis && r.perspectives?.map((p) => p.mentor)).toEqual(['seneca', 'jung']);
     expect(r && !r.crisis && r.valuesTension).toBe('Gerilim.');
+  });
+});
+
+describe('karar: mentorların tarafı ve takip', () => {
+  it('tarafı ve ayrılma noktasını okur', () => {
+    const r = parseFinish({
+      insights: ['x'],
+      perspectives: [{ mentor: 'nietzsche', side: 'Yeni iş', text: 'Nietzsche…' }, { mentor: 'seneca', side: 'Kalmak', text: 'Seneca…' }],
+      decision: { options: [{ name: 'Kalmak', gives: [], costs: [] }], leaning: '', crux: 'Asıl soru bu.' },
+    }, 'decision');
+    expect(r && !r.crisis && r.perspectives?.map((p) => p.side)).toEqual(['Yeni iş', 'Kalmak']);
+    expect(r && !r.crisis && r.decision?.crux).toBe('Asıl soru bu.');
+  });
+
+  it('kaydeder, sonucu yazar, siler; sınırı aşmaz', async () => {
+    const user = u();
+    const d = await addDecision(user, { title: 'A / B', choice: 'A', why: '', days: 30 });
+    if (d === 'full') throw new Error('full');
+    expect(d.checkDate).toBe(addDays(todayKey(), 30));
+    expect((await setDecisionOutcome(user, d.id, 'İyi gitti.'))?.outcome).toBe('İyi gitti.');
+    expect(await setDecisionOutcome(user, 'yok', 'x')).toBeNull();
+    expect(await deleteDecision(user, d.id)).toBe(true);
+    expect(await listDecisions(user)).toEqual([]);
+    const other = u();
+    for (let i = 0; i < MAX_DECISIONS; i++) await addDecision(other, { title: 't', choice: 'c', why: '', days: 7 });
+    expect(await addDecision(other, { title: 't', choice: 'c', why: '', days: 7 })).toBe('full');
+  });
+
+  it('e-posta yalnızca sonucu yazılmamış, var olan karar için denenir', async () => {
+    const day = addDays(todayKey(), 40);
+    const ghost = await addDecision(u(), { title: 't', choice: 'c', why: '', days: 7 });
+    expect(ghost).not.toBe('full');
+    expect((await sendDueDecisions(day)).sent).toBe(0);
   });
 });

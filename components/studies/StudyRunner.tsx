@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CrisisNotice } from '@/components/mentors/CrisisNotice';
+import { DecisionFollowUp } from '@/components/studies/DecisionFollowUp';
 import { ReminderToggle } from '@/components/me/ReminderToggle';
 import { StudyOutcome, StudyPerspectives } from '@/components/studies/StudyResultView';
 import { PREPARE_DRAFT_KEY } from '@/lib/prepare-public';
@@ -224,23 +225,25 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
               <p className="mt-2 font-display text-xl leading-snug text-white/95">{takeaway.trim()}</p>
             </div>
           )}
-          <div className="glass rounded-3xl p-5 sm:p-6">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Mentoriva&apos;nın gözünden</p>
-            <div className="mt-2 space-y-3">
-              {result.insights.map((t, i) => (
-                <p key={i} className="text-[15.5px] leading-relaxed text-white/85">{t}</p>
-              ))}
-            </div>
-          </div>
-
-          <StudyPerspectives result={result} />
-
-          <StudyOutcome result={result} onPrepare={toPrepare} />
-
-          {result.open && (
-            <p className="rounded-2xl border border-white/[0.08] px-4 py-3 text-[14.5px] leading-relaxed text-white/70">
-              <span className="text-white/40">Üzerine düşünebileceğin soru: </span>{result.open}
-            </p>
+          {/* Kararda önce mentorların tarafları: sonucun en değerli kısmı */}
+          {result.decision ? (
+            <>
+              <StudyPerspectives result={result} />
+              <StudyOutcome result={result} onPrepare={toPrepare} />
+              <StudyInsights insights={result.insights} />
+              <DecisionFollowUp options={result.decision.options.map((o) => o.name)} />
+            </>
+          ) : (
+            <>
+              <StudyInsights insights={result.insights} />
+              <StudyPerspectives result={result} />
+              <StudyOutcome result={result} onPrepare={toPrepare} />
+              {result.open && (
+                <p className="rounded-2xl border border-white/[0.08] px-4 py-3 text-[14.5px] leading-relaxed text-white/70">
+                  <span className="text-white/40">Üzerine düşünebileceğin soru: </span>{result.open}
+                </p>
+              )}
+            </>
           )}
 
           <div>
@@ -273,6 +276,19 @@ export function StudyRunner({ study }: { study: GuidedStudy }) {
           {cardState === 'error' && <p className="text-sm text-red-300/90">Kart kaydedilemedi.</p>}
         </section>
       )}
+    </div>
+  );
+}
+
+function StudyInsights({ insights }: { insights: string[] }) {
+  return (
+    <div className="glass rounded-3xl p-5 sm:p-6">
+      <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Mentoriva&apos;nın gözünden</p>
+      <div className="mt-2 space-y-3">
+        {insights.map((t, i) => (
+          <p key={i} className="text-[15.5px] leading-relaxed text-white/85">{t}</p>
+        ))}
+      </div>
     </div>
   );
 }

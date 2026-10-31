@@ -8,6 +8,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { digest } from '@/lib/auth/tokens';
 import { jsonError } from '@/lib/http';
 import { sendDueReminders } from '@/lib/reminders';
+import { sendDueDecisions } from '@/lib/decisions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,5 +19,6 @@ export async function GET(req: Request) {
   if (!secret) return jsonError(503, 'CRON_SECRET tanımlı değil');
   const given = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
   if (!timingSafeEqual(Buffer.from(digest(given)), Buffer.from(digest(secret)))) return jsonError(401, 'Yetkisiz');
-  return NextResponse.json(await sendDueReminders());
+  const [reminders, decisions] = await Promise.all([sendDueReminders(), sendDueDecisions()]);
+  return NextResponse.json({ reminders, decisions });
 }

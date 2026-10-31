@@ -32,7 +32,7 @@ export const GUIDED_STUDIES: GuidedStudy[] = [
     outcome: 'decision',
     title: 'Karar vermek',
     tagline: 'Seçenekler arasında sıkıştığında neyin senin için ağır bastığını görmek.',
-    intro: 'Senin yerine karar vermeyeceğiz. Birkaç soruyla seçeneklerini, neyi kazanıp neyi bıraktığını ve asıl neyin önemli olduğunu kendi kelimelerinle ortaya koyacaksın.',
+    intro: 'Seçeneklerini yaz, birkaç soruyla ne kazanıp neyi bıraktığını netleştirelim. Sonunda iki mentor açıkça farklı taraflarda durur, nerede ayrıldıklarını görürsün. Son sözü sen söylersin.',
     opening: 'Hangi kararın eşiğindesin? Seçeneklerini kendi kelimelerinle yaz.',
     placeholder: 'Örneğin: Şehir değiştirip yeni işe mi geçeyim, yoksa burada mı kalayım…',
     guide: `Areas you may explore, in whatever order the answers call for:
@@ -123,12 +123,12 @@ export interface StudyFinish {
   /** Mentoriva'nın gözünden 2-3 fark ediş: kişinin yazmadığı bir şey katar. */
   insights: string[];
   /** İki farklı mentorun bu meseleye bakışı (üçüncü şahıs, alıntısız). */
-  perspectives?: Array<{ mentor: PerspectiveMentor; text: string }>;
+  perspectives?: Array<{ mentor: PerspectiveMentor; text: string; /** Karar çalışmasında mentorun durduğu taraf. */ side?: string }>;
   /** Hâlâ açık kalan tek soru. */
   open: string;
   /** Söylenenlerden çıkan en fazla iki küçük adım fikri. */
   steps: string[];
-  decision?: { options: Array<{ name: string; gives: string[]; costs: string[]; serves: string }>; leaning: string; consider?: string };
+  decision?: { options: Array<{ name: string; gives: string[]; costs: string[]; serves: string }>; leaning: string; consider?: string; /** İki mentorun ayrıldığı, kararın asıl döndüğü soru. */ crux?: string };
   boundary?: { line: string; want: string; sentence: string; ifSay: string; ifNot: string; protects?: string };
   values?: Array<{ name: string; present: string; missing: string }>;
   valuesTension?: string;
@@ -138,10 +138,11 @@ export interface StudyFinish {
 
 /** Sonucu karta yazılacak düz metne çevirir. */
 export function finishToText(f: StudyFinish): string {
-  const parts: string[] = [...f.insights, ...(f.perspectives ?? []).map((p) => p.text)];
+  const parts: string[] = [...f.insights, ...(f.perspectives ?? []).map((p) => (p.side ? `${p.side}: ${p.text}` : p.text))];
   if (f.decision) {
     for (const o of f.decision.options) parts.push(`${o.name}: kazandırdığı ${o.gives.join(', ') || '-'}; bedeli ${o.costs.join(', ') || '-'}${o.serves ? `; hizmet ettiği: ${o.serves}` : ''}.`);
     if (f.decision.leaning) parts.push(f.decision.leaning);
+    if (f.decision.crux) parts.push(f.decision.crux);
     if (f.decision.consider) parts.push(f.decision.consider);
   }
   if (f.boundary) parts.push(`Söyleyebileceğin: "${f.boundary.sentence}"`);

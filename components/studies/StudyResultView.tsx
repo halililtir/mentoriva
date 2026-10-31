@@ -9,7 +9,7 @@ export function StudyPerspectives({ result }: { result: StudyFinish }) {
   if (!result.perspectives?.length) return null;
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">İki farklı bakış</p>
+      <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">{result.decision ? 'İki mentor, iki taraf' : 'İki farklı bakış'}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         {result.perspectives.map((p) => {
           const m = getActiveMentor(p.mentor);
@@ -22,11 +22,18 @@ export function StudyPerspectives({ result }: { result: StudyFinish }) {
                 </span>
                 <span className="font-display text-[15px]" style={{ color: a.text }}>{m.shortName}</span>
               </div>
+              {p.side && <p className="mt-2 font-display text-lg leading-snug text-white/95">{p.side}</p>}
               <p className="mt-2 text-[14px] leading-relaxed text-white/80">{p.text}</p>
             </div>
           );
         })}
       </div>
+      {result.decision?.crux && (
+        <div className="mt-3 rounded-2xl border border-brand-400/30 bg-brand-500/[0.06] p-4">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-brand-300">Ayrıldıkları yer</p>
+          <p className="mt-1.5 font-display text-lg leading-snug text-white/95">{result.decision.crux}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -54,7 +61,7 @@ export function StudyOutcome({ result, onPrepare }: { result: StudyFinish; onPre
         </div>
         {d.leaning && <p className="mt-4 rounded-2xl bg-white/[0.03] px-4 py-3 text-[15px] leading-relaxed text-white/85">{d.leaning}</p>}
         {d.consider && <Highlight label="Belki düşünmediğin bir yol" text={d.consider} />}
-        <p className="mt-2 text-[12px] text-white/35">Karar senin; bu tablo yalnızca anlattıklarını yan yana koyuyor.</p>
+        <p className="mt-2 text-[12px] text-white/35">Tablo anlattıklarından çıktı. Son söz senin.</p>
       </div>
     );
   }
