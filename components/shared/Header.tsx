@@ -18,7 +18,7 @@ interface HeaderProps {
 const NAV = [
   { href: '/calismalar/karar', label: 'Karar veriyorum' },
   { href: '/hazirla', label: 'Bir konuşmam var' },
-  { href: '/icimde', label: 'Kendimi anlamak' },
+  { href: '/kendim', label: 'Kendimi anlamak' },
   { href: '/hakkimizda', label: 'Hakkımızda' },
 ];
 

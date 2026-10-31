@@ -6,6 +6,7 @@ const PAGES: Array<{ path: string; priority: number; changeFrequency: 'weekly' |
   { path: '', priority: 1, changeFrequency: 'weekly' },
   { path: '/yolculuk', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/icimde', priority: 0.9, changeFrequency: 'monthly' },
+  { path: '/kendim', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/calismalar', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/calismalar/karar', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/calismalar/sinir', priority: 0.7, changeFrequency: 'monthly' },

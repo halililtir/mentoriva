@@ -4,9 +4,9 @@ import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
 
 const LINKS = [
   { href: '/calismalar', label: 'Çalışmalar' },
-  { href: '/icimde', label: 'İçimde ne var?' },
-  { href: '/yolculuk', label: 'Kendine Yolculuk' },
+  { href: '/calismalar/karar', label: 'Karar vermek' },
   { href: '/hazirla', label: 'Söyleyeceğimi hazırla' },
+  { href: '/kendim', label: 'Kendimi anlamak' },
   { href: '/test', label: 'Kişilik Testi' },
   { href: '/alintilar', label: 'Kaynaklı Alıntılar' },
   { href: '/hakkimizda', label: 'Hakkımızda' },

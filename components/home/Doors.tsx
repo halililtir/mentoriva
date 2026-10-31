@@ -17,7 +17,7 @@ const DOORS = [
     tint: 'bg-amber-400/10',
   },
   {
-    href: '/icimde',
+    href: '/kendim',
     title: 'Kendimi anlamak istiyorum',
     desc: 'İçindeki karmaşayı birlikte açalım; bir fark ediş ve küçük bir adımla çık.',
     cta: 'Başlayalım',
