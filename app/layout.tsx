@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Outfit, Playfair_Display } from 'next/font/google';
 import { Atmosphere } from '@/components/shared/Atmosphere';
+import { PwaRegister } from '@/components/shared/InstallApp';
 import { ErrorReporter } from '@/components/shared/ErrorReporter';
 import { BadgeToaster } from '@/components/shared/BadgeToaster';
 import { SessionProvider } from '@/lib/session';
@@ -50,6 +51,7 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   icons: { icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }] },
+  appleWebApp: { capable: true, title: 'Mentoriva', statusBarStyle: 'default' },
 };
 
 export const viewport: Viewport = {
@@ -78,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <Atmosphere />
         <ErrorReporter />
+        <PwaRegister />
         <SessionProvider>
           <div id="main-content">{children}</div>
           <BadgeToaster />

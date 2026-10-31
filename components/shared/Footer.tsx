@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Logo } from '@/components/shared/Logo';
+import { InstallApp } from '@/components/shared/InstallApp';
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site';
 
 const LINKS = [
@@ -42,6 +43,7 @@ export function Footer() {
 
         <div className="space-y-3">
           <p className="text-[11px] uppercase tracking-[0.14em] text-white/30">İletişim</p>
+          <InstallApp className="mb-2" />
           <a href={`mailto:${CONTACT_EMAIL}`} className="block text-sm text-white/50 transition-colors hover:text-brand-300">
             {CONTACT_EMAIL}
           </a>

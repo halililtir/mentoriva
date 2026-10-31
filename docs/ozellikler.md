@@ -83,3 +83,8 @@ CLAUDE.md'den taşındı (2026-10-25). Her özelliğin depo anahtarları, uçlar
 - Yapay zekâ çağrısı akışsız: `completeText` (`lib/claude/client.ts`) → JSON → `lib/journey/schema.ts` ile doğrulanır. Talimatlar `lib/journey/prompts.ts`: tanı/etiket yasağı, inanç varsaymama, alıntı yok, mentorlardan üçüncü şahısla söz edilir, kriz → `{"crisis": true}`.
 - Saklama YALNIZCA kullanıcı isterse: `journey-step:<email>`, `journeys:<email>` (`lib/journey/store.ts`). Admin panelinde gösterilmez; `deleteUser` bunları da siler. Yeni bir özellik eklerken yolculuk metinlerini başka isteklere taşıma ve loglama.
 - Sabit metinler (başlangıç noktaları, küçük adımlar, mentor davetleri, harita alanları) `lib/journey/content.ts`.
+
+## Telefona ekleme (PWA)
+
+- `app/manifest.ts`, simgeler `app/pwa-icon/[size]/route.tsx`, `public/sw.js`, `public/offline.html`, kurulum `components/shared/InstallApp.tsx` (menü ve alt bilgi). Android'de kurulum penceresi, iPhone'da "Ana Ekrana Ekle" adımları.
+- Servis çalışanı bilerek yalnızca çevrimdışı ekranı sunar: API, oturum ve kişisel içerik önbelleğe alınmaz; önbellek eklersen gizliliği yeniden düşün.

@@ -23,6 +23,8 @@ const nextConfig = {
   poweredByHeader: false,
   async headers() {
     return [
+      // Servis çalışanı güncellemesi gecikmesin
+      { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
       {
         source: '/(.*)',
         headers: [

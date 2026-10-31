@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from '@/components/shared/Logo';
+import { InstallApp } from '@/components/shared/InstallApp';
 import { ThemeSwitcher } from '@/components/shared/ThemeSwitcher';
 import { useSession } from '@/lib/session';
 import { cn } from '@/lib/cn';
@@ -258,6 +259,7 @@ export function Header({ onNewQuestion, showBack, onBack, title }: HeaderProps) 
                     Yeni soru sor
                   </button>
                 )}
+                <InstallApp className="px-3 py-2.5" />
                 {status === 'guest' && (
                   <Link href="/giris" className="mt-1 block rounded-xl border-t border-white/[0.06] px-3 py-2.5 text-sm text-white/60 hover:bg-white/[0.05] hover:text-white">
                     Giriş yap
