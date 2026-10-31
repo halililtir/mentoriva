@@ -237,7 +237,7 @@ function analyzeResults(scores: Record<string, number>, firstChoices: Record<str
 // Testten soru akışına geçiş
 // -----------------------------------------------------------
 
-function AskMentorCta({ mentor, compact }: { mentor: MentorMetadata; compact?: boolean }) {
+function AskMentorCta({ mentor }: { mentor: MentorMetadata }) {
   const router = useRouter();
   const { status } = useSession();
   const a = getAccent(mentor.accentColor);
@@ -250,27 +250,23 @@ function AskMentorCta({ mentor, compact }: { mentor: MentorMetadata; compact?: b
 
   return (
     <div
-      className={cn('rounded-2xl border text-center', compact ? 'p-5' : 'p-7 space-y-4')}
+      className="space-y-4 rounded-2xl border p-7 text-center"
       style={{ borderColor: a.border, background: a.bg }}
     >
-      {!compact && (
-        <p className="font-display text-xl text-white/85">
-          {mentor.shortName} seni bekliyor.
-        </p>
-      )}
-      <p className={cn('text-sm text-white/55', compact && 'mb-3')}>
+      <p className="font-display text-xl text-white/85">
+        {mentor.shortName} seni bekliyor.
+      </p>
+      <p className="text-sm text-white/55">
         Sonucun bir başlangıç. Aklındaki gerçek soruyu {dative(mentor.shortName)} sor, sana kendi felsefesiyle cevap versin.
       </p>
       <button onClick={go} className="btn-primary w-full sm:w-auto">
         {dative(mentor.shortName)} ilk sorunu sor →
       </button>
       {status !== 'user' && <p className="mt-2 text-[11px] text-white/35">Ücretsiz · kredi kartı istenmez · günde {DEFAULT_DAILY_LIMIT} soru</p>}
-      {!compact && (
-        <p className="mt-4 text-xs text-white/45">
-          Bu test eğlenceli bir başlangıç. Kendini daha derinden tanımak istersen{' '}
-          <Link href="/yolculuk" className="text-brand-300 hover:text-brand-200">Kendine Yolculuk</Link>’a çık.
-        </p>
-      )}
+      <p className="mt-4 text-xs text-white/45">
+        Bu test eğlenceli bir başlangıç. Kendini daha derinden tanımak istersen{' '}
+        <Link href="/kendim" className="text-brand-300 hover:text-brand-200">Kendimi anlamak</Link> bölümüne geç.
+      </p>
     </div>
   );
 }
@@ -533,7 +529,6 @@ export default function QuizPage() {
               })}
             </div>
 
-            <AskMentorCta mentor={result.primary.mentor} compact />
 
             {/* Analiz */}
             <div className="space-y-5">

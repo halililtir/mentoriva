@@ -116,7 +116,7 @@ export const USE_CASES: Array<{ id: string; label: string; hint: string; questio
 export const FAQ: Array<{ q: string; a: string }> = [
   {
     q: 'Mentoriva nedir, ne işe yarar?',
-    a: 'Aklındaki bir soruyu Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca gibi düşünürlerin bakış açısıyla ele alan bir yapay zekâ aracıdır. Tek bir "doğru cevap" vermek yerine aynı soruya farklı düşünce okullarından bakmanı, kendi cevabını bulmana yardım edecek soruları görmeni sağlar.',
+    a: 'Aklındaki bir soruyu Jung, Nietzsche, Mevlânâ, Marcus Aurelius, Seneca ve Sokrates gibi düşünürlerin bakış açısıyla ele alan bir yapay zekâ aracıdır. Tek bir "doğru cevap" vermek yerine aynı soruya farklı düşünce okullarından bakmanı, kendi cevabını bulmana yardım edecek soruları görmeni sağlar.',
   },
   {
     q: 'Ücretli mi?',
@@ -128,7 +128,7 @@ export const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Hangi mentoru seçmeliyim?',
-    a: 'Kararsızsan birkaç mentor seç ve cevapları yan yana karşılaştır; seni en çok düşündürenle sohbete devam et. Kendini daha iyi tanımak için Jung, cesaret için Nietzsche, kırgınlık ve anlam arayışı için Mevlânâ, kontrol edemediğin şeyler için Marcus, zaman, öfke ve kaygı için Seneca iyi bir başlangıçtır. Kişilik testi de sana en yakın mentoru gösterir.',
+    a: 'Kararsızsan birkaç mentor seç ve cevapları yan yana karşılaştır; seni en çok düşündürenle sohbete devam et. Kendini daha iyi tanımak için Jung, cesaret için Nietzsche, kırgınlık ve anlam arayışı için Mevlânâ, kontrol edemediğin şeyler için Marcus, zaman, öfke ve kaygı için Seneca, bildiğini sandığın şeyi sorgulamak için Sokrates iyi bir başlangıçtır. Kişilik testi de sana en yakın mentoru gösterir.',
   },
   {
     q: 'Cevaplar gerçekten o düşünürlere mi ait?',

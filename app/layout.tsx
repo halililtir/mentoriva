@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: '%s · Mentoriva',
   },
   description:
-    'Aklındaki soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca\'nın bakış açısından farklı cevaplar. Kararlar, ilişkiler ve anlam arayışı için yapay zekâ destekli bir düşünme aracı.',
+    'Aklındaki soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius, Seneca ve Sokrates\'in bakış açısından farklı cevaplar. Kararlar, ilişkiler ve anlam arayışı için yapay zekâ destekli bir düşünme aracı.',
   applicationName: 'Mentoriva',
   keywords: ['mentor', 'felsefe', 'Jung', 'Nietzsche', 'Mevlânâ', 'Marcus Aurelius', 'Seneca', 'stoacılık', 'yapay zeka', 'perspektif', 'düşünce', 'psikoloji'],
   authors: [{ name: 'Mentoriva' }],
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: 'Mentoriva',
     title: 'Mentoriva — Tek soru, farklı zihinler',
-    description: 'Aynı soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca\'dan farklı perspektifler.',
+    description: 'Aynı soruya Jung, Nietzsche, Mevlânâ, Marcus Aurelius, Seneca ve Sokrates\'ten farklı perspektifler.',
   },
   twitter: {
     card: 'summary_large_image',

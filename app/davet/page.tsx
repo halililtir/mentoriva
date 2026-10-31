@@ -35,7 +35,7 @@ export default function DavetPage() {
 
   // Canlıda gerçek alan adı; yerelde de paylaşılabilir mutlak adres
   const link = info ? `${typeof window !== 'undefined' ? window.location.origin : SITE_URL}/?ref=${info.code}` : '';
-  const message = 'Aklındaki soruyu Jung, Nietzsche, Mevlânâ, Marcus Aurelius ve Seneca’ya sorabildiğin bir uygulama buldum. Bu linkle katılırsan ikimize de bonus soru hakkı tanımlanıyor:';
+  const message = 'Aklındaki soruyu Jung, Nietzsche, Mevlânâ, Marcus Aurelius, Seneca ve Sokrates’e sorabildiğin bir uygulama buldum. Bu linkle katılırsan ikimize de bonus soru hakkı tanımlanıyor:';
 
   const copy = async () => {
     try {
