@@ -130,7 +130,7 @@ function finishRules(outcome: StudyOutcome): string {
   return `The study is over. The person may have written in their own words what became
 clear to them ("takeaway"); honour it and never contradict it.
 Give them a result worth having:
-- "insights": 2-3 short paragraphs (each 1-3 sentences). Each must add
+- "insights": an array of 2-3 plain strings, each a short paragraph (1-3 sentences). Each must add
   something new (see WHAT YOU ADD): a link between answers they did not make,
   what seems to weigh most and why that matters, a tension, a strength they
   showed without noticing, or a perspective from outside their own words.
@@ -148,8 +148,10 @@ Return ONLY JSON with keys: "insights", "perspectives", "${outcome}",${outcome =
 
 const clean = (v: unknown, max: number): string =>
   typeof v === 'string' ? v.replace(/[*#_`]/g, '').replace(/^["“]+|["”]+$/g, '').replace(/\s+/g, ' ').trim().slice(0, max) : '';
+/** Model bazen dizideki metni `{text: ...}` nesnesi olarak yazar; ikisi de kabul edilir. */
+const itemText = (x: unknown): unknown => (x && typeof x === 'object' && 'text' in x ? (x as { text: unknown }).text : x);
 const list = (v: unknown, n: number, max: number): string[] =>
-  Array.isArray(v) ? v.map((x) => clean(x, max)).filter(Boolean).slice(0, n) : [];
+  Array.isArray(v) ? v.map((x) => clean(itemText(x), max)).filter(Boolean).slice(0, n) : [];
 const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
 
 export type NextStep = { crisis: true } | { crisis: false; reflect: string; question: string; done: boolean };

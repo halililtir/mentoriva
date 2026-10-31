@@ -37,6 +37,12 @@ describe('rehberli çalışmalar', () => {
     expect(c && !c.crisis && c.values).toBeUndefined();
   });
 
+  it('fark edişler nesne olarak gelse de okunur', () => {
+    const r = parseFinish({ insights: [{ text: 'Bir.' }, 'İki.'], open: '', steps: [{ text: 'Adım' }] }, 'decision');
+    expect(r && !r.crisis && r.insights).toEqual(['Bir.', 'İki.']);
+    expect(r && !r.crisis && r.steps).toEqual(['Adım']);
+  });
+
   it('karta yazılan metin ürünü içerir', () => {
     expect(finishToText({ insights: ['Fark.'], open: '', steps: [], boundary: { line: '', want: '', sentence: 'Hayır diyorum.', ifSay: '', ifNot: '' } })).toContain('"Hayır diyorum."');
   });
